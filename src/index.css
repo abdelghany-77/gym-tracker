@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/* ── Custom theme overrides ── */
+@theme {
+  --color-neon-green: #39ff14;
+  --color-neon-blue: #00d4ff;
+  --color-neon-purple: #b347d9;
+  --color-surface: #0f172a;
+  --color-surface-light: #1e293b;
+  --color-surface-lighter: #334155;
+}
+
+/* ── Global resets ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  overscroll-behavior-y: contain;
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+/* ── Number input spinner removal ── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* ── Heatmap cell animation ── */
+.heatmap-cell {
+  transition: all 0.15s ease;
+}
+.heatmap-cell:hover {
+  transform: scale(1.4);
+  z-index: 10;
+}
+
+/* ── Rest timer pulse ── */
+@keyframes pulse-neon {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(0, 212, 255, 0.8);
+  }
+}
+.animate-pulse-neon {
+  animation: pulse-neon 1.5s ease-in-out infinite;
+}

@@ -1,0 +1,287 @@
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Dumbbell,
+  Calendar,
+  TrendingUp,
+  Droplets,
+  Pill,
+  Zap,
+  ChevronRight,
+  Flame,
+} from "lucide-react";
+import Heatmap from "../components/Heatmap";
+import useWorkoutStore from "../store/workoutStore";
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const heatmapData = useWorkoutStore((s) => s.getHeatmapData());
+  const nextWorkout = useWorkoutStore((s) => s.getNextWorkout());
+  const lastSession = useWorkoutStore((s) => s.getLastSession());
+  const history = useWorkoutStore((s) => s.history);
+  const dailyChecklist = useWorkoutStore((s) => s.dailyChecklist);
+  const toggleChecklistItem = useWorkoutStore((s) => s.toggleChecklistItem);
+  const incrementWater = useWorkoutStore((s) => s.incrementWater);
+  const decrementWater = useWorkoutStore((s) => s.decrementWater);
+
+  const stats = useMemo(() => {
+    const totalSessions = history.length;
+    const thisWeek = history.filter((s) => {
+      const d = new Date(s.date);
+      const now = new Date();
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay() + 1);
+      weekStart.setHours(0, 0, 0, 0);
+      return d >= weekStart;
+    }).length;
+
+    // Current streak
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateStr = checkDate.toISOString().split("T")[0];
+      if (heatmapData[dateStr]) {
+        streak++;
+      } else if (i > 0) {
+        break;
+      }
+    }
+
+    return { totalSessions, thisWeek, streak };
+  }, [history, heatmapData]);
+
+  const waterGoal = 8; // glasses
+
+  return (
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            Gym<span className="text-neon-blue">Tracker</span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "short",
+              day: "numeric",
+            })}
+          </p>
+        </div>
+        <div className="flex items-center gap-1 bg-slate-900 rounded-full px-3 py-1.5 border border-slate-800">
+          <Flame size={14} className="text-orange-400" />
+          <span className="text-sm font-bold text-orange-400">
+            {stats.streak}
+          </span>
+          <span className="text-[10px] text-slate-500">streak</span>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          {
+            label: "This Week",
+            value: stats.thisWeek,
+            icon: Calendar,
+            color: "text-neon-blue",
+          },
+          {
+            label: "Total",
+            value: stats.totalSessions,
+            icon: TrendingUp,
+            color: "text-neon-green",
+          },
+          {
+            label: "Streak",
+            value: `${stats.streak}d`,
+            icon: Flame,
+            color: "text-orange-400",
+          },
+        ].map(({ label, value, icon: StatIcon, color }) => (
+          <div
+            key={label}
+            className="bg-slate-900 rounded-xl p-3 border border-slate-800 text-center"
+          >
+            <StatIcon size={16} className={`${color} mx-auto mb-1.5`} />
+            <p className="text-lg font-bold text-white">{value}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+              {label}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Next Workout Card */}
+      {nextWorkout && (
+        <button
+          onClick={() => navigate("/workout")}
+          className="w-full bg-linear-to-r from-neon-blue/10 to-neon-purple/10 rounded-2xl p-4 border border-neon-blue/20 hover:border-neon-blue/40 transition-all active:scale-[0.98] text-left"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-neon-blue/15 flex items-center justify-center">
+                <Dumbbell size={20} className="text-neon-blue" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">
+                  {nextWorkout.daysUntil === 0
+                    ? "🔥 Today\u2019s Workout"
+                    : `In ${nextWorkout.daysUntil} day${nextWorkout.daysUntil > 1 ? "s" : ""}`}
+                </p>
+                <p className="text-base font-semibold text-white">
+                  {nextWorkout.program.name}
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {nextWorkout.program.muscles.join(" · ")}
+                </p>
+              </div>
+            </div>
+            <ChevronRight size={20} className="text-slate-600" />
+          </div>
+        </button>
+      )}
+
+      {/* Last Session */}
+      {lastSession && (
+        <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800">
+          <p className="text-xs text-slate-500 mb-1">Last Session</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-white">
+                {lastSession.programName}
+              </p>
+              <p className="text-xs text-slate-500">
+                {new Date(lastSession.date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-slate-400">
+                {lastSession.exercises.length} exercises
+              </p>
+              <p className="text-xs text-slate-500">
+                {lastSession.exercises.reduce(
+                  (acc, e) => acc + e.sets.length,
+                  0,
+                )}{" "}
+                sets
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contribution Heatmap */}
+      <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800">
+        <h2 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+          <Calendar size={14} className="text-neon-green" />
+          Activity
+        </h2>
+        <Heatmap data={heatmapData} />
+      </div>
+
+      {/* Daily Checklist */}
+      <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 space-y-3">
+        <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <Zap size={14} className="text-amber-400" />
+          Daily Checklist
+        </h2>
+
+        {/* Vitamin */}
+        <button
+          onClick={() => toggleChecklistItem("vitamin")}
+          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] ${
+            dailyChecklist.vitamin
+              ? "bg-emerald-500/10 border-emerald-500/30"
+              : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
+          }`}
+        >
+          <Pill
+            size={18}
+            className={
+              dailyChecklist.vitamin ? "text-emerald-400" : "text-slate-500"
+            }
+          />
+          <span
+            className={`text-sm ${dailyChecklist.vitamin ? "text-emerald-400 line-through" : "text-white"}`}
+          >
+            Centrum Vitamin
+          </span>
+          {dailyChecklist.vitamin && (
+            <span className="ml-auto text-emerald-400 text-xs">✓</span>
+          )}
+        </button>
+
+        {/* Creatine */}
+        <button
+          onClick={() => toggleChecklistItem("creatine")}
+          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] ${
+            dailyChecklist.creatine
+              ? "bg-emerald-500/10 border-emerald-500/30"
+              : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
+          }`}
+        >
+          <Zap
+            size={18}
+            className={
+              dailyChecklist.creatine ? "text-emerald-400" : "text-slate-500"
+            }
+          />
+          <span
+            className={`text-sm ${dailyChecklist.creatine ? "text-emerald-400 line-through" : "text-white"}`}
+          >
+            Creatine (5g)
+          </span>
+          {dailyChecklist.creatine && (
+            <span className="ml-auto text-emerald-400 text-xs">✓</span>
+          )}
+        </button>
+
+        {/* Water Counter */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700">
+          <div className="flex items-center gap-3">
+            <Droplets size={18} className="text-blue-400" />
+            <div>
+              <p className="text-sm text-white">Water</p>
+              <p className="text-[10px] text-slate-500">
+                {dailyChecklist.water}/{waterGoal} glasses
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={decrementWater}
+              className="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-white active:scale-90 transition-all"
+            >
+              −
+            </button>
+            <span className="text-lg font-bold text-neon-blue w-8 text-center">
+              {dailyChecklist.water}
+            </span>
+            <button
+              onClick={incrementWater}
+              className="w-8 h-8 rounded-lg bg-neon-blue/20 hover:bg-neon-blue/30 flex items-center justify-center text-neon-blue active:scale-90 transition-all"
+            >
+              +
+            </button>
+          </div>
+          {/* Mini progress bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-800 hidden">
+            <div
+              className="h-full bg-blue-400 transition-all"
+              style={{
+                width: `${Math.min(100, (dailyChecklist.water / waterGoal) * 100)}%`,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
