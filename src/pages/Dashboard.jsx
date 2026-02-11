@@ -15,10 +15,10 @@ import useWorkoutStore from "../store/workoutStore";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const heatmapData = useWorkoutStore((s) => s.getHeatmapData());
-  const nextWorkout = useWorkoutStore((s) => s.getNextWorkout());
-  const lastSession = useWorkoutStore((s) => s.getLastSession());
   const history = useWorkoutStore((s) => s.history);
+  const heatmapData = useMemo(() => useWorkoutStore.getState().getHeatmapData(), [history]);
+  const nextWorkout = useMemo(() => useWorkoutStore.getState().getNextWorkout(), [history]);
+  const lastSession = useWorkoutStore((s) => s.getLastSession());
   const dailyChecklist = useWorkoutStore((s) => s.dailyChecklist);
   const toggleChecklistItem = useWorkoutStore((s) => s.toggleChecklistItem);
   const incrementWater = useWorkoutStore((s) => s.incrementWater);
