@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Play, ChevronRight } from "lucide-react";
+import { Play, ChevronRight, Activity } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { workoutPrograms } from "../data/exercises";
 
@@ -39,8 +39,9 @@ export default function WorkoutSelect() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-emerald-400 font-medium">
-                ⚡ Active Workout
+              <p className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
+                <Activity size={12} />
+                Active Workout
               </p>
               <p className="text-base font-semibold text-white mt-0.5">
                 {activeWorkout.programName}

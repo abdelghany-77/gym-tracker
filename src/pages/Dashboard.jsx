@@ -100,12 +100,12 @@ export default function Dashboard() {
             icon: Flame,
             color: "text-orange-400",
           },
-        ].map(({ label, value, icon: StatIcon, color }) => (
+        ].map(({ label, value, color }) => (
           <div
             key={label}
             className="bg-slate-900 rounded-xl p-3 border border-slate-800 text-center"
           >
-            <StatIcon size={16} className={`${color} mx-auto mb-1.5`} />
+            <Icon size={16} className={`${color} mx-auto mb-1.5`} />
             <p className="text-lg font-bold text-white">{value}</p>
             <p className="text-[10px] text-slate-500 uppercase tracking-wider">
               {label}
@@ -126,10 +126,18 @@ export default function Dashboard() {
                 <Dumbbell size={20} className="text-neon-blue" />
               </div>
               <div>
-                <p className="text-xs text-slate-400">
-                  {nextWorkout.daysUntil === 0
-                    ? "🔥 Today\u2019s Workout"
-                    : `In ${nextWorkout.daysUntil} day${nextWorkout.daysUntil > 1 ? "s" : ""}`}
+                <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                  {nextWorkout.daysUntil === 0 ? (
+                    <>
+                      <Flame size={12} className="text-orange-400" />
+                      <span className="text-orange-400 font-medium">Today&rsquo;s Workout</span>
+                    </>
+                  ) : (
+                    <>
+                      <Calendar size={12} className="text-slate-500" />
+                      <span>In {nextWorkout.daysUntil} day{nextWorkout.daysUntil > 1 ? "s" : ""}</span>
+                    </>
+                  )}
                 </p>
                 <p className="text-base font-semibold text-white">
                   {nextWorkout.program.name}

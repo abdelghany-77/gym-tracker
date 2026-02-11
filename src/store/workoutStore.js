@@ -51,6 +51,7 @@ const useWorkoutStore = create((set, get) => ({
     water: 0,
   }),
   activeWorkout: null, // { programId, startedAt, exercises: [ { exerciseId, sets: [{ weight, reps, done }] } ] }
+  restTimerTrigger: 0, // Timestamp when a set is marked done, triggering the timer
   personalRecords: loadFromStorage("gym_prs", {}),
 
   // ── Getters ──
@@ -177,10 +178,14 @@ const useWorkoutStore = create((set, get) => ({
       if (!state.activeWorkout) return state;
       const exercises = [...state.activeWorkout.exercises];
       const sets = [...exercises[exerciseIndex].sets];
-      sets[setIndex] = { ...sets[setIndex], done: !sets[setIndex].done };
+
+      const newDoneState = !sets[setIndex].done;
+      sets[setIndex] = { ...sets[setIndex], done: newDoneState };
+
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
       return {
         activeWorkout: { ...state.activeWorkout, exercises },
+        restTimerTrigger: newDoneState ? Date.now() : state.restTimerTrigger,
       };
     });
   },

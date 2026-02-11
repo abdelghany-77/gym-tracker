@@ -93,28 +93,42 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
             <span className="text-xs text-slate-500 font-mono pl-1">
               {si + 1}
             </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              placeholder={ghostData?.sets[si]?.weight || "—"}
-              value={set.weight}
-              onChange={(e) =>
-                updateSet(exerciseIndex, si, "weight", e.target.value)
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
-              disabled={set.done}
-            />
-            <input
-              type="number"
-              inputMode="numeric"
-              placeholder={ghostData?.sets[si]?.reps || "—"}
-              value={set.reps}
-              onChange={(e) =>
-                updateSet(exerciseIndex, si, "reps", e.target.value)
-              }
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
-              disabled={set.done}
-            />
+            <div className="flex flex-col gap-0.5">
+              <input
+                type="number"
+                inputMode="decimal"
+                placeholder={ghostData?.sets[si]?.weight || "—"}
+                value={set.weight}
+                onChange={(e) =>
+                  updateSet(exerciseIndex, si, "weight", e.target.value)
+                }
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
+                disabled={set.done}
+              />
+              {ghostData?.sets[si] && (
+                <span className="text-[10px] text-slate-500 pl-1 truncate">
+                  {ghostData.sets[si].weight}kg
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder={ghostData?.sets[si]?.reps || "—"}
+                value={set.reps}
+                onChange={(e) =>
+                  updateSet(exerciseIndex, si, "reps", e.target.value)
+                }
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
+                disabled={set.done}
+              />
+              {ghostData?.sets[si] && (
+                <span className="text-[10px] text-slate-500 pl-1 truncate">
+                  {ghostData.sets[si].reps} reps
+                </span>
+              )}
+            </div>
             <button
               onClick={() => toggleSetDone(exerciseIndex, si)}
               className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 ${
@@ -129,24 +143,24 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
         ))}
 
         {/* Add/Remove set buttons */}
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <button
-            onClick={() => removeSet(exerciseIndex, sets.length - 1)}
-            className="text-xs text-slate-500 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30"
-            disabled={sets.length <= 1}
-          >
-            <Minus size={14} /> Remove
-          </button>
-          <button
-            onClick={() => addSet(exerciseIndex)}
-            className="text-xs text-neon-blue hover:text-neon-blue/80 flex items-center gap-1 transition-colors"
-          >
-            <Plus size={14} /> Add Set
-          </button>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => removeSet(exerciseIndex, sets.length - 1)}
+              className="text-xs text-slate-500 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30"
+              disabled={sets.length <= 1}
+            >
+              <Minus size={14} /> Remove
+            </button>
+            <button
+              onClick={() => addSet(exerciseIndex)}
+              className="text-xs text-neon-blue hover:text-neon-blue/80 flex items-center gap-1 transition-colors"
+            >
+              <Plus size={14} /> Add Set
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-export default memo(ExerciseCard);
+    );
+  }
+  
+  export default memo(ExerciseCard);
