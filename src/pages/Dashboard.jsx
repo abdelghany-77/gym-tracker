@@ -100,18 +100,21 @@ export default function Dashboard() {
             icon: Flame,
             color: "text-orange-400",
           },
-        ].map(({ label, value, color }) => (
-          <div
-            key={label}
-            className="bg-slate-900 rounded-xl p-3 border border-slate-800 text-center"
-          >
-            <Icon size={16} className={`${color} mx-auto mb-1.5`} />
-            <p className="text-lg font-bold text-white">{value}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">
-              {label}
-            </p>
-          </div>
-        ))}
+        ].map(({ label, value, icon, color }) => {
+          const Icon = icon;
+          return (
+            <div
+              key={label}
+              className="bg-slate-900 rounded-xl p-3 border border-slate-800 text-center"
+            >
+              <Icon size={16} className={`${color} mx-auto mb-1.5`} />
+              <p className="text-lg font-bold text-white">{value}</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                {label}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Next Workout Card */}
