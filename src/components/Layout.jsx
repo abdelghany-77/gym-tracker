@@ -19,11 +19,11 @@ export default function Layout() {
       {/* Bottom Navigation Bar */}
       <nav className="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800">
         <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {navItems.map((item) => (
             <NavLink
-              key={to}
-              to={to}
-              end={to === "/"}
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
                   isActive
@@ -32,12 +32,15 @@ export default function Layout() {
                 }`
               }
             >
-              {({ isActive }) => (
-                <>
-                  <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-                  <span className="text-[10px] font-medium">{label}</span>
-                </>
-              )}
+              {({ isActive }) => {
+                const Icon = item.icon;
+                return (
+                  <>
+                    <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                    <span className="text-[10px] font-medium">{item.label}</span>
+                  </>
+                );
+              }}
             </NavLink>
           ))}
         </div>
