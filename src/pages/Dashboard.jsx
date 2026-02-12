@@ -571,9 +571,6 @@ export default function Dashboard() {
             <p className="text-[11px] font-semibold text-emerald-400">🎉 All meals completed!</p>
           </div>
         )}
-
-        {/* Compact Nutrition Card */}
-        <NutritionCard compact />
       </div>
 
       {/* Meal Plan Modal */}
