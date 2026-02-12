@@ -8,6 +8,7 @@ import {
   Pill,
   Zap,
   ChevronRight,
+  ChevronLeft,
   Flame,
   Edit2,
   X,
@@ -18,7 +19,7 @@ import {
   Check
 } from "lucide-react";
 import ActivityChart from "../components/ActivityChart";
-import NutritionCard from "../components/NutritionCard";
+
 import MealPlanModal from "../components/MealPlanModal";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
@@ -26,7 +27,7 @@ import { getImageUrl } from "../utils/imageUtil";
 export default function Dashboard() {
   const navigate = useNavigate();
   const [editingSchedule, setEditingSchedule] = useState(false);
-  const [activityRange, setActivityRange] = useState("monthly");
+  const [activityDate, setActivityDate] = useState(new Date());
   const history = useWorkoutStore((s) => s.history);
   const weeklySchedule = useWorkoutStore((s) => s.weeklySchedule);
   const heatmapData = useMemo(() => useWorkoutStore.getState().getHeatmapData(), [history]);
@@ -345,28 +346,28 @@ export default function Dashboard() {
              Activity
            </h2>
            
-           {/* Range Selector */}
-           <div className="flex p-1 bg-slate-900 rounded-lg border border-slate-800">
-              {["Weekly", "Monthly", "Yearly"].map((range) => {
-                 const isActive = activityRange === range.toLowerCase();
-                 return (
-                    <button
-                       key={range}
-                       onClick={() => setActivityRange(range.toLowerCase())}
-                       className={`px-3 py-1 rounded-md text-[11px] font-medium transition-all ${
-                          isActive 
-                             ? "bg-slate-800 text-white shadow-xs" 
-                             : "text-slate-500 hover:text-slate-300"
-                       }`}
-                       aria-label={`Show ${range.toLowerCase()} activity`}
-                    >
-                       {range}
-                    </button>
-                 );
-              })}
+           {/* Month Navigator */}
+           <div className="flex items-center gap-2 bg-slate-900 rounded-lg border border-slate-800 p-1">
+             <button
+               onClick={() => setActivityDate(new Date(activityDate.getFullYear(), activityDate.getMonth() - 1, 1))}
+               className="p-1 rounded-md text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
+               aria-label="Previous month"
+             >
+               <ChevronLeft size={14} />
+             </button>
+             <span className="text-[11px] font-semibold text-white min-w-[80px] text-center select-none">
+               {activityDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+             </span>
+             <button
+               onClick={() => setActivityDate(new Date(activityDate.getFullYear(), activityDate.getMonth() + 1, 1))}
+               className="p-1 rounded-md text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
+               aria-label="Next month"
+             >
+               <ChevronRight size={14} />
+             </button>
            </div>
         </div>
-        <ActivityChart data={heatmapData} range={activityRange} />
+        <ActivityChart data={heatmapData} currentDate={activityDate} />
       </div>
 
       {/* Last Session — either show data or motivational empty state */}
