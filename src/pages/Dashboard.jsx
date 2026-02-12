@@ -37,12 +37,16 @@ export default function Dashboard() {
   const incrementWater = useWorkoutStore((s) => s.incrementWater);
   const decrementWater = useWorkoutStore((s) => s.decrementWater);
   const waterGoal = useWorkoutStore((s) => s.getWaterGoal());
-  const caloriesConsumed = useWorkoutStore((s) => s.caloriesConsumed);
-  const updateCaloriesConsumed = useWorkoutStore((s) => s.updateCaloriesConsumed);
-  const mealPlanFollowed = useWorkoutStore((s) => s.mealPlanFollowed);
-  const toggleMealPlan = useWorkoutStore((s) => s.toggleMealPlan);
+  const toggleMealEaten = useWorkoutStore((s) => s.toggleMealEaten);
   const nutritionTargets = useWorkoutStore((s) => s.nutritionTargets);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const meals = useMemo(() => useWorkoutStore.getState().getMealPlan(), [nutritionTargets?.calories]);
   const [showMealPlan, setShowMealPlan] = useState(false);
+
+  // Derived values from dailyChecklist
+  const caloriesConsumed = dailyChecklist?.caloriesConsumed || 0;
+  const mealPlanFollowed = dailyChecklist?.mealPlanFollowed || false;
+  const mealsEaten = dailyChecklist?.mealsEaten || [];
 
   const stats = useMemo(() => {
     const totalSessions = history.length;
@@ -496,12 +500,12 @@ export default function Dashboard() {
             onClick={() => setShowMealPlan(true)}
             className="text-[11px] text-neon-blue hover:text-neon-blue/80 font-medium transition-colors"
           >
-            View Meal Plan
+            Full Meal Plan →
           </button>
         </div>
 
         {/* Calorie Progress */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500">Calories consumed</span>
             <span className="text-neon-blue font-medium">
@@ -510,46 +514,63 @@ export default function Dashboard() {
           </div>
           <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-neon-blue to-neon-green rounded-full transition-all duration-500"
+              className={`h-full rounded-full transition-all duration-500 ${
+                caloriesConsumed >= (nutritionTargets.calories || 3500) * 0.9
+                  ? "bg-gradient-to-r from-emerald-500 to-neon-green"
+                  : "bg-gradient-to-r from-neon-blue to-neon-green"
+              }`}
               style={{ width: `${Math.min(100, (caloriesConsumed / (nutritionTargets.calories || 3500)) * 100)}%` }}
             />
           </div>
-          <input
-            type="number"
-            inputMode="numeric"
-            value={caloriesConsumed || ""}
-            onChange={(e) => updateCaloriesConsumed(Number(e.target.value) || 0)}
-            placeholder="Enter calories eaten today"
-            className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 text-sm focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors placeholder-slate-600"
-          />
         </div>
 
-        {/* Meal Plan Toggle */}
-        <button
-          onClick={toggleMealPlan}
-          className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all active:scale-[0.98] ${
-            mealPlanFollowed
-              ? "bg-emerald-500/10 border-emerald-500/30"
-              : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
-          }`}
-        >
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-            mealPlanFollowed ? "bg-emerald-500 text-white" : "bg-slate-800 text-slate-500"
-          }`}>
-            <Check size={20} />
+        {/* Per-meal quick track */}
+        <div className="space-y-1.5">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+            Tap meals you've eaten
+          </p>
+          {meals.map((meal, i) => {
+            const isEaten = mealsEaten.includes(i);
+            return (
+              <button
+                key={i}
+                onClick={() => toggleMealEaten(i, meal.calories)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] ${
+                  isEaten
+                    ? "bg-emerald-500/10 border-emerald-500/30"
+                    : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
+                }`}
+              >
+                {/* Checkmark */}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all ${
+                  isEaten
+                    ? "bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                    : "bg-slate-800 border-2 border-slate-600 text-transparent"
+                }`}>
+                  <Check size={12} />
+                </div>
+                {/* Meal info */}
+                <div className="flex-1 text-left min-w-0">
+                  <span className={`text-[11px] font-semibold block truncate ${isEaten ? "text-emerald-400" : "text-white"}`}>
+                    {meal.name}
+                  </span>
+                  <span className="text-[9px] text-slate-500">{meal.time}</span>
+                </div>
+                {/* Cals */}
+                <span className={`text-[10px] font-medium shrink-0 ${isEaten ? "text-emerald-400/70" : "text-orange-400"}`}>
+                  {meal.calories} kcal
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Progress summary */}
+        {mealPlanFollowed && (
+          <div className="py-2 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+            <p className="text-[11px] font-semibold text-emerald-400">🎉 All meals completed!</p>
           </div>
-          <div className="text-left">
-            <span className={`text-sm font-semibold block ${mealPlanFollowed ? "text-emerald-400" : "text-white"}`}>
-              Meal Plan Followed
-            </span>
-            <span className="text-[11px] text-slate-500">Did you follow today's meal plan?</span>
-          </div>
-          {mealPlanFollowed && (
-            <div className="ml-auto w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            </div>
-          )}
-        </button>
+        )}
 
         {/* Compact Nutrition Card */}
         <NutritionCard compact />

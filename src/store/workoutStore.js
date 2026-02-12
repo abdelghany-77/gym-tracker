@@ -89,6 +89,7 @@ const useWorkoutStore = create((set, get) => ({
     water: 0,
     mealPlanFollowed: false,
     caloriesConsumed: 0,
+    mealsEaten: [], // Array of meal indices that have been checked off
   }),
   userProfile: loadFromStorage("gym_profile", {
     name: "",
@@ -611,6 +612,116 @@ const useWorkoutStore = create((set, get) => ({
       saveToStorage("gym_checklist_" + todayKey(), updated);
       return { dailyChecklist: updated };
     });
+  },
+
+  toggleMealEaten: (mealIndex, mealCalories) => {
+    set((state) => {
+      const mealsEaten = [...(state.dailyChecklist.mealsEaten || [])];
+      const alreadyEaten = mealsEaten.includes(mealIndex);
+
+      let newMeals;
+      let caloriesDelta;
+      if (alreadyEaten) {
+        newMeals = mealsEaten.filter((i) => i !== mealIndex);
+        caloriesDelta = -mealCalories;
+      } else {
+        newMeals = [...mealsEaten, mealIndex];
+        caloriesDelta = mealCalories;
+      }
+
+      const newCalories = Math.max(
+        0,
+        (state.dailyChecklist.caloriesConsumed || 0) + caloriesDelta,
+      );
+      const allMealsEaten = newMeals.length >= 6; // 6 meals total
+
+      const updated = {
+        ...state.dailyChecklist,
+        mealsEaten: newMeals,
+        caloriesConsumed: newCalories,
+        mealPlanFollowed: allMealsEaten,
+      };
+      saveToStorage("gym_checklist_" + todayKey(), updated);
+      return { dailyChecklist: updated };
+    });
+  },
+
+  // Dynamic meal plan generator based on calorie target
+  getMealPlan: () => {
+    const { nutritionTargets } = get();
+    const totalCal = nutritionTargets.calories || 3500;
+    const totalProtein = nutritionTargets.protein || 200;
+
+    // Meal distribution ratios (must sum to 1.0)
+    const mealRatios = [
+      {
+        time: "7:00 AM",
+        name: "Breakfast",
+        ratio: 0.2,
+        proteinRatio: 0.19,
+        items: [
+          "6 egg whites + 2 whole eggs scrambled",
+          "1 cup oatmeal with banana",
+          "1 tbsp peanut butter",
+          "1 glass whole milk",
+        ],
+      },
+      {
+        time: "10:00 AM",
+        name: "Snack 1",
+        ratio: 0.11,
+        proteinRatio: 0.1,
+        items: ["Greek yogurt (200g)", "Handful of almonds (30g)", "1 apple"],
+      },
+      {
+        time: "1:00 PM",
+        name: "Lunch",
+        ratio: 0.22,
+        proteinRatio: 0.22,
+        items: [
+          "250g grilled chicken breast",
+          "1.5 cups brown rice",
+          "Mixed vegetables",
+          "1 tbsp olive oil",
+        ],
+      },
+      {
+        time: "4:00 PM",
+        name: "Pre-Workout",
+        ratio: 0.13,
+        proteinRatio: 0.18,
+        items: [
+          "Protein shake (2 scoops)",
+          "1 banana",
+          "2 rice cakes with honey",
+        ],
+      },
+      {
+        time: "7:00 PM",
+        name: "Dinner",
+        ratio: 0.21,
+        proteinRatio: 0.2,
+        items: [
+          "250g lean beef or salmon",
+          "Sweet potato (200g)",
+          "Steamed broccoli",
+          "Mixed salad with olive oil",
+        ],
+      },
+      {
+        time: "9:30 PM",
+        name: "Pre-Bed Snack",
+        ratio: 0.13,
+        proteinRatio: 0.11,
+        items: ["Cottage cheese (200g)", "1 tbsp honey", "Handful of walnuts"],
+      },
+    ];
+
+    return mealRatios.map((meal) => ({
+      ...meal,
+      calories: Math.round(totalCal * meal.ratio),
+      protein: Math.round(totalProtein * meal.proteinRatio),
+    }));
   },
 
   // ══════════════════════════════════════════
