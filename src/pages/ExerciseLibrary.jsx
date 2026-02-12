@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { Search, Grid, List, X, Target, Layers, ChevronsUp, Dumbbell, Footprints } from "lucide-react";
+import { Search, Grid, List, X, Target, Layers, ChevronsUp, Dumbbell, Footprints, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 
@@ -12,6 +13,7 @@ const muscleIcons = {
 };
 
 export default function ExerciseLibrary() {
+  const navigate = useNavigate();
   const exercises = useWorkoutStore((s) => s.exercises);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMuscle, setSelectedMuscle] = useState("All");
@@ -55,9 +57,21 @@ export default function ExerciseLibrary() {
   return (
     <div className="p-4 space-y-6 pb-24">
       <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-          Exercise Library
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            Exercise Library
+          </h1>
+          <p className="text-[11px] text-slate-500 mt-0.5">{exercises.length} exercises</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/exercises/manage")}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 text-slate-400 text-xs border border-slate-700 hover:bg-slate-700 hover:text-white transition-all"
+            aria-label="Manage exercises"
+          >
+            <Settings size={13} />
+            Manage
+          </button>
         <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
           <button
             onClick={() => setViewMode("grid")}
@@ -81,6 +95,7 @@ export default function ExerciseLibrary() {
           >
             <List size={18} />
           </button>
+        </div>
         </div>
       </header>
 

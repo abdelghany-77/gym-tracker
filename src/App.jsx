@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import WorkoutSelect from "./pages/WorkoutSelect";
 import ActiveWorkout from "./pages/ActiveWorkout";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
+import ManageExercises from "./pages/ManageExercises";
 import Profile from "./pages/Profile";
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/workout" element={<WorkoutSelect />} />
           <Route path="/workout/active" element={<ActiveWorkout />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
+          <Route path="/exercises/manage" element={<ManageExercises />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
       </Routes>

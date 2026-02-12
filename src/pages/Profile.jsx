@@ -1,15 +1,17 @@
 import { useState, useMemo } from "react";
-import { Trash2, Download, Upload, Trophy, RotateCcw, User, Activity, Flag, Dumbbell, Flame, Zap, Crown, Target, BarChart2, Rocket, Award } from "lucide-react";
+import { Trash2, Download, Upload, Trophy, RotateCcw, User, Activity, Flag, Dumbbell, Flame, Zap, Crown, Target, BarChart2, Rocket, Award, RefreshCw } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 
 export default function Profile() {
   const history = useWorkoutStore((s) => s.history);
   const personalRecords = useWorkoutStore((s) => s.personalRecords);
   const clearHistory = useWorkoutStore((s) => s.clearHistory);
+  const resetToDefaults = useWorkoutStore((s) => s.resetToDefaults);
   const getExerciseById = useWorkoutStore((s) => s.getExerciseById);
   const userProfile = useWorkoutStore((s) => s.userProfile);
   const updateUserProfile = useWorkoutStore((s) => s.updateUserProfile);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
 
   const achievements = useMemo(() => {
     const state = useWorkoutStore.getState();
@@ -35,17 +37,10 @@ export default function Profile() {
     "rocket": Rocket
   };
   
-  // BMI calculation
+  // BMI calculation from store
   const bmi = useMemo(() => {
-    if (!userProfile.weight || !userProfile.height) return null;
-    const heightM = userProfile.height / 100;
-    const value = (userProfile.weight / (heightM * heightM)).toFixed(1);
-    let category = "Normal";
-    let color = "text-emerald-400";
-    if (value < 18.5) { category = "Underweight"; color = "text-amber-400"; }
-    else if (value >= 25 && value < 30) { category = "Overweight"; color = "text-amber-400"; }
-    else if (value >= 30) { category = "Obese"; color = "text-red-400"; }
-    return { value, category, color };
+    return useWorkoutStore.getState().getBMI();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userProfile.weight, userProfile.height]);
 
   // Export data as JSON
@@ -126,49 +121,54 @@ export default function Profile() {
       {/* User Stats */}
       <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4">
         <h2 className="text-sm font-semibold text-white">Your Stats</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-[11px] text-slate-500 mb-1 block">
-              Weight (kg)
-            </label>
+            <label className="text-[11px] text-slate-500 mb-1 block">Weight (kg)</label>
             <input
               type="number"
               inputMode="decimal"
               value={userProfile.weight || ""}
-              onChange={(e) =>
-                updateUserProfile({ weight: Number(e.target.value) })
-              }
+              onChange={(e) => updateUserProfile({ weight: Number(e.target.value) })}
               placeholder="0"
               className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
             />
           </div>
           <div>
-            <label className="text-[11px] text-slate-500 mb-1 block">
-              Height (cm)
-            </label>
+            <label className="text-[11px] text-slate-500 mb-1 block">Height (cm)</label>
             <input
               type="number"
               inputMode="decimal"
               value={userProfile.height || ""}
-              onChange={(e) =>
-                updateUserProfile({ height: Number(e.target.value) })
-              }
+              onChange={(e) => updateUserProfile({ height: Number(e.target.value) })}
               placeholder="0"
               className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-green focus:outline-none focus:ring-1 focus:ring-neon-green/30 transition-colors"
             />
           </div>
+          <div>
+            <label className="text-[11px] text-slate-500 mb-1 block">Age</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={userProfile.age || ""}
+              onChange={(e) => updateUserProfile({ age: Number(e.target.value) })}
+              placeholder="24"
+              className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-purple focus:outline-none focus:ring-1 focus:ring-neon-purple/30 transition-colors"
+            />
+          </div>
         </div>
         
-        {/* BMI Auto-Calculation */}
+        {/* BMI Row */}
         {bmi && (
-          <div className="flex items-center justify-between bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-            <div>
-              <p className="text-[11px] text-slate-500 uppercase tracking-wider font-medium">BMI</p>
-              <p className={`text-lg font-bold ${bmi.color}`}>{bmi.value}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center justify-between bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 col-span-2">
+              <div>
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">BMI</p>
+                <p className={`text-lg font-bold ${bmi.color}`}>{bmi.value}</p>
+              </div>
+              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${bmi.color} bg-white/5`}>
+                {bmi.category}
+              </span>
             </div>
-            <span className={`text-xs font-medium px-3 py-1 rounded-full ${bmi.color} bg-white/5`}>
-              {bmi.category}
-            </span>
           </div>
         )}
       </div>
@@ -334,6 +334,18 @@ export default function Profile() {
         </label>
 
         <button
+          onClick={() => setShowConfirmReset(true)}
+          className="w-full flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 transition-colors active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:outline-none"
+          aria-label="Reset exercises and programs to defaults"
+        >
+          <RefreshCw size={16} className="text-amber-400" />
+          <div className="text-left">
+            <p className="text-sm text-amber-400">Reset to Defaults</p>
+            <p className="text-[11px] text-amber-400/50">Restore original exercises & programs</p>
+          </div>
+        </button>
+
+        <button
           onClick={() => setShowConfirmClear(true)}
           className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:outline-none"
           aria-label="Clear all workout data"
@@ -377,6 +389,32 @@ export default function Profile() {
                 className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-medium border border-red-500/30 hover:bg-red-500/30 transition-colors focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:outline-none"
               >
                 Delete Everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Reset Modal */}
+      {showConfirmReset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700 w-full max-w-sm space-y-4">
+            <h3 className="text-lg font-semibold text-white">Reset to Defaults?</h3>
+            <p className="text-sm text-slate-400">
+              This will restore all exercises and programs to the original defaults. Custom exercises will be lost. Your workout history and PRs will NOT be affected.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmReset(false)}
+                className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { resetToDefaults(); setShowConfirmReset(false); }}
+                className="flex-1 py-3 rounded-xl bg-amber-500/20 text-amber-400 font-medium border border-amber-500/30 hover:bg-amber-500/30 transition-colors"
+              >
+                Reset
               </button>
             </div>
           </div>

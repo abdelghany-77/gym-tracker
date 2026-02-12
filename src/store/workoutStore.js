@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import exercises, { workoutPrograms, weeklySchedule } from "../data/exercises";
+import defaultExercises, {
+  workoutPrograms as defaultPrograms,
+  weeklySchedule as defaultSchedule,
+} from "../data/exercises";
 
 // ── Helper: localStorage read/write ──
 const loadFromStorage = (key, fallback) => {
@@ -20,7 +23,62 @@ const saveToStorage = (key, value) => {
 };
 
 // ── Helpers ──
-const todayKey = () => new Date().toISOString().split("T")[0]; // "2026-02-12"
+const todayKey = () => new Date().toISOString().split("T")[0];
+const generateId = () =>
+  `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+// ── Seed logic: use localStorage if present, otherwise seed from defaults ──
+const seedExercises = () => {
+  const stored = loadFromStorage("gym_exercises", null);
+  if (stored) return stored;
+  saveToStorage("gym_exercises", defaultExercises);
+  return defaultExercises;
+};
+
+const seedPrograms = () => {
+  const stored = loadFromStorage("gym_programs", null);
+  if (stored) return stored;
+  const programs = { ...defaultPrograms };
+  saveToStorage("gym_programs", programs);
+  return programs;
+};
+
+// ── Default nutrition targets ──
+const defaultNutritionTargets = {
+  calories: 3510,
+  protein: 235,
+  carbs: 367,
+  fat: 132,
+  fiber: 59,
+  calcium: 1550,
+  age: 24,
+};
+
+// ── Helper: Calculate Macros ──
+const calculateMacros = (profile) => {
+  const { weight, height, age } = profile;
+  if (!weight || !height) return defaultNutritionTargets;
+
+  // Mifflin-St Jeor (Male)
+  const bmr = 10 * weight + 6.25 * height - 5 * (age || 24) + 5;
+  const tdee = bmr * 1.55; // Moderate activity
+  const calories = Math.round(tdee + 500); // Bulk surplus
+
+  // Macro Split: Protein 2g/kg, Fat 0.9g/kg, Rest Carbs
+  const protein = Math.round(weight * 2.1);
+  const fat = Math.round(weight * 0.9);
+  const carbs = Math.round((calories - (protein * 4 + fat * 9)) / 4);
+
+  return {
+    calories,
+    protein,
+    carbs,
+    fat,
+    fiber: 35, // General guideline
+    calcium: 1000,
+    water: Math.ceil((weight * 33) / 250), // Glasses (approx)
+  };
+};
 
 // ── Zustand Store ──
 const useWorkoutStore = create((set, get) => ({
@@ -29,24 +87,32 @@ const useWorkoutStore = create((set, get) => ({
   dailyChecklist: loadFromStorage("gym_checklist_" + todayKey(), {
     vitamin: false,
     water: 0,
+    mealPlanFollowed: false,
+    caloriesConsumed: 0,
   }),
   userProfile: loadFromStorage("gym_profile", {
     name: "",
-    weight: 0,
-    height: 0,
+    weight: 70, // Default weight to avoid 0 div
+    height: 175, // Default height
+    age: 24,
   }),
-  // Initialize schedule from storage or fallback to default
-  weeklySchedule: loadFromStorage("gym_schedule", weeklySchedule),
-  activeWorkout: null, // { programId, startedAt, exercises: [ { exerciseId, sets: [{ weight, reps, done }] } ] }
-  restTimerTrigger: 0, // Timestamp when a set is marked done, triggering the timer
+  weeklySchedule: loadFromStorage("gym_schedule", defaultSchedule),
+  activeWorkout: null,
+  restTimerTrigger: 0,
   personalRecords: loadFromStorage("gym_prs", {}),
-  exercises, // Static data from file
-  showConfetti: false, // Trigger confetti on workout finish or PR
+  showConfetti: false,
+
+  // ── Dynamic Data (seeded from localStorage or defaults) ──
+  exercises: seedExercises(),
+  programs: seedPrograms(),
+
+  // ── Nutrition ──
+  nutritionTargets: loadFromStorage("gym_nutrition", defaultNutritionTargets),
 
   // ── Getters ──
-  getExerciseById: (id) => exercises.find((e) => e.id === id),
-  getAllExercises: () => exercises,
-  getPrograms: () => workoutPrograms,
+  getExerciseById: (id) => get().exercises.find((e) => e.id === id),
+  getAllExercises: () => get().exercises,
+  getPrograms: () => get().programs,
   getSchedule: () => get().weeklySchedule,
 
   getAchievements: () => {
@@ -59,7 +125,6 @@ const useWorkoutStore = create((set, get) => ({
       0,
     );
 
-    // Session milestones
     if (total >= 1)
       achievements.push({
         id: "first_workout",
@@ -145,7 +210,6 @@ const useWorkoutStore = create((set, get) => ({
         earned: false,
       });
 
-    // PR milestones
     if (prCount >= 1)
       achievements.push({
         id: "first_pr",
@@ -180,7 +244,6 @@ const useWorkoutStore = create((set, get) => ({
         earned: false,
       });
 
-    // Volume milestone
     if (totalSets >= 100)
       achievements.push({
         id: "100_sets",
@@ -239,10 +302,9 @@ const useWorkoutStore = create((set, get) => ({
   },
 
   getNextWorkout: () => {
-    // Re-implement logic using dynamic schedule from state
-    const { weeklySchedule } = get();
-    const today = new Date().getDay(); // 0=Sun
-    const scheduleMap = [6, 0, 1, 2, 3, 4, 5]; // Sun=6, Mon=0, Tue=1...
+    const { weeklySchedule, programs } = get();
+    const today = new Date().getDay();
+    const scheduleMap = [6, 0, 1, 2, 3, 4, 5];
 
     for (let offset = 0; offset < 7; offset++) {
       const jsDay = (today + offset) % 7;
@@ -250,18 +312,14 @@ const useWorkoutStore = create((set, get) => ({
       const programId = weeklySchedule[schedIdx];
 
       if (programId === "rest") {
-        return {
-          isRest: true,
-          daysUntil: offset,
-          dayIndex: schedIdx,
-        };
+        return { isRest: true, daysUntil: offset, dayIndex: schedIdx };
       }
 
       if (programId && programId !== "rest") {
         return {
-          program: workoutPrograms[programId],
+          program: programs[programId],
           daysUntil: offset,
-          dayIndex: schedIdx, // return index to allow editing
+          dayIndex: schedIdx,
         };
       }
     }
@@ -274,26 +332,20 @@ const useWorkoutStore = create((set, get) => ({
     return history[history.length - 1];
   },
 
-  // Ghost replay — get last session data for a specific exercise
   getGhostData: (exerciseId) => {
     const { history } = get();
-    // Search from most recent backwards
     for (let i = history.length - 1; i >= 0; i--) {
       const session = history[i];
       const exerciseData = session.exercises?.find(
         (e) => e.exerciseId === exerciseId,
       );
       if (exerciseData) {
-        return {
-          date: session.date,
-          sets: exerciseData.sets,
-        };
+        return { date: session.date, sets: exerciseData.sets };
       }
     }
     return null;
   },
 
-  // Heatmap data — returns map of date -> workout count for the year
   getHeatmapData: () => {
     const { history } = get();
     const map = {};
@@ -306,13 +358,264 @@ const useWorkoutStore = create((set, get) => ({
 
   getWaterGoal: () => {
     const { userProfile } = get();
-    // 33ml per kg
-    if (!userProfile.weight) return 8; // Default 8 glasses (approx 2L)
+    if (!userProfile.weight) return 8;
     const dailyMl = userProfile.weight * 33;
-    return Math.ceil(dailyMl / 250); // 250ml per glass
+    return Math.ceil(dailyMl / 250);
   },
 
+  // ── BMI & Calorie Calculations ──
+  getBMI: () => {
+    const { userProfile } = get();
+    if (!userProfile.weight || !userProfile.height) return null;
+    const heightM = userProfile.height / 100;
+    const value = parseFloat(
+      (userProfile.weight / (heightM * heightM)).toFixed(1),
+    );
+    let category = "Normal";
+    let color = "text-emerald-400";
+    if (value < 18.5) {
+      category = "Underweight";
+      color = "text-amber-400";
+    } else if (value >= 25 && value < 30) {
+      category = "Overweight";
+      color = "text-amber-400";
+    } else if (value >= 30) {
+      category = "Obese";
+      color = "text-red-400";
+    }
+    return { value, category, color };
+  },
+
+  getSuggestedCalories: () => {
+    const { userProfile } = get();
+    if (!userProfile.weight || !userProfile.height) return null;
+    const age = userProfile.age || 24;
+    // Mifflin-St Jeor (male) + muscle building surplus
+    const bmr =
+      10 * userProfile.weight + 6.25 * userProfile.height - 5 * age + 5;
+    const tdee = Math.round(bmr * 1.55); // moderate activity
+    const surplus = Math.round(tdee + 500); // bulk surplus
+    return { bmr: Math.round(bmr), tdee, surplus };
+  },
+
+  // ══════════════════════════════════════════
+  // ── CRUD: Exercises ──
+  // ══════════════════════════════════════════
+  addExercise: (exercise) => {
+    set((state) => {
+      const newExercise = {
+        id: generateId(),
+        name: exercise.name || "New Exercise",
+        muscle: exercise.muscle || "Chest",
+        image: exercise.image || null,
+        tips: exercise.tips || "",
+        default_sets: exercise.default_sets || 3,
+        default_reps: exercise.default_reps || 10,
+        isCustom: true,
+      };
+      const updated = [...state.exercises, newExercise];
+      saveToStorage("gym_exercises", updated);
+      return { exercises: updated };
+    });
+  },
+
+  updateExercise: (id, updates) => {
+    set((state) => {
+      const updated = state.exercises.map((ex) =>
+        ex.id === id ? { ...ex, ...updates } : ex,
+      );
+      saveToStorage("gym_exercises", updated);
+      return { exercises: updated };
+    });
+  },
+
+  deleteExercise: (id) => {
+    set((state) => {
+      const updated = state.exercises.filter((ex) => ex.id !== id);
+      // Also remove from all programs
+      const updatedPrograms = { ...state.programs };
+      Object.keys(updatedPrograms).forEach((key) => {
+        updatedPrograms[key] = {
+          ...updatedPrograms[key],
+          exercises: updatedPrograms[key].exercises.filter(
+            (exId) => exId !== id,
+          ),
+        };
+      });
+      saveToStorage("gym_exercises", updated);
+      saveToStorage("gym_programs", updatedPrograms);
+      return { exercises: updated, programs: updatedPrograms };
+    });
+  },
+
+  // ══════════════════════════════════════════
+  // ── CRUD: Programs ──
+  // ══════════════════════════════════════════
+  addProgram: (program) => {
+    const id = generateId();
+    set((state) => {
+      const newProgram = {
+        id,
+        name: program.name || "New Program",
+        muscles: program.muscles || [],
+        exercises: program.exercises || [],
+        isCustom: true,
+      };
+      const updated = { ...state.programs, [id]: newProgram };
+      saveToStorage("gym_programs", updated);
+      return { programs: updated };
+    });
+    return id;
+  },
+
+  updateProgram: (id, updates) => {
+    set((state) => {
+      const updated = {
+        ...state.programs,
+        [id]: { ...state.programs[id], ...updates },
+      };
+      saveToStorage("gym_programs", updated);
+      return { programs: updated };
+    });
+  },
+
+  deleteProgram: (id) => {
+    set((state) => {
+      const updated = { ...state.programs };
+      delete updated[id];
+      // Remove from schedule if referenced
+      const updatedSchedule = { ...state.weeklySchedule };
+      Object.keys(updatedSchedule).forEach((day) => {
+        if (updatedSchedule[day] === id) updatedSchedule[day] = null;
+      });
+      saveToStorage("gym_programs", updated);
+      saveToStorage("gym_schedule", updatedSchedule);
+      return { programs: updated, weeklySchedule: updatedSchedule };
+    });
+  },
+
+  // ══════════════════════════════════════════
+  // ── Swap & Reorder ──
+  // ══════════════════════════════════════════
+  swapExercise: (exerciseIndex, newExerciseId, permanent = false) => {
+    set((state) => {
+      if (!state.activeWorkout) return state;
+
+      const exercises = [...state.activeWorkout.exercises];
+      const oldExerciseId = exercises[exerciseIndex].exerciseId;
+      const newExercise = state.exercises.find((e) => e.id === newExerciseId);
+      if (!newExercise) return state;
+
+      // Replace in active workout with fresh sets
+      exercises[exerciseIndex] = {
+        exerciseId: newExerciseId,
+        sets: Array.from({ length: newExercise.default_sets || 3 }, () => ({
+          weight: "",
+          reps: "",
+          done: false,
+        })),
+      };
+
+      const result = {
+        activeWorkout: { ...state.activeWorkout, exercises },
+      };
+
+      // Permanent swap: update the program definition
+      if (permanent && state.activeWorkout.programId) {
+        const updatedPrograms = { ...state.programs };
+        const program = updatedPrograms[state.activeWorkout.programId];
+        if (program) {
+          const updatedExercises = program.exercises.map((exId) =>
+            exId === oldExerciseId ? newExerciseId : exId,
+          );
+          updatedPrograms[state.activeWorkout.programId] = {
+            ...program,
+            exercises: updatedExercises,
+          };
+          saveToStorage("gym_programs", updatedPrograms);
+          result.programs = updatedPrograms;
+        }
+      }
+
+      return result;
+    });
+  },
+
+  reorderExerciseInWorkout: (fromIndex, toIndex) => {
+    set((state) => {
+      if (!state.activeWorkout) return state;
+      const exercises = [...state.activeWorkout.exercises];
+      const [moved] = exercises.splice(fromIndex, 1);
+      exercises.splice(toIndex, 0, moved);
+      return {
+        activeWorkout: { ...state.activeWorkout, exercises },
+      };
+    });
+  },
+
+  reorderExerciseInProgram: (programId, fromIndex, toIndex) => {
+    set((state) => {
+      const program = state.programs[programId];
+      if (!program) return state;
+      const exercises = [...program.exercises];
+      const [moved] = exercises.splice(fromIndex, 1);
+      exercises.splice(toIndex, 0, moved);
+      const updatedPrograms = {
+        ...state.programs,
+        [programId]: { ...program, exercises },
+      };
+      saveToStorage("gym_programs", updatedPrograms);
+      return { programs: updatedPrograms };
+    });
+  },
+
+  // ══════════════════════════════════════════
+  // ── Reset to Defaults ──
+  // ══════════════════════════════════════════
+  resetToDefaults: () => {
+    saveToStorage("gym_exercises", defaultExercises);
+    saveToStorage("gym_programs", defaultPrograms);
+    saveToStorage("gym_schedule", defaultSchedule);
+    set({
+      exercises: defaultExercises,
+      programs: { ...defaultPrograms },
+      weeklySchedule: { ...defaultSchedule },
+    });
+  },
+
+  // ══════════════════════════════════════════
+  // ── Nutrition ──
+  // ══════════════════════════════════════════
+  updateNutritionTargets: (targets) => {
+    set((state) => {
+      const updated = { ...state.nutritionTargets, ...targets };
+      saveToStorage("gym_nutrition", updated);
+      return { nutritionTargets: updated };
+    });
+  },
+
+  updateCaloriesConsumed: (calories) => {
+    set((state) => {
+      const updated = { ...state.dailyChecklist, caloriesConsumed: calories };
+      saveToStorage("gym_checklist_" + todayKey(), updated);
+      return { dailyChecklist: updated };
+    });
+  },
+
+  toggleMealPlan: () => {
+    set((state) => {
+      const updated = {
+        ...state.dailyChecklist,
+        mealPlanFollowed: !state.dailyChecklist.mealPlanFollowed,
+      };
+      saveToStorage("gym_checklist_" + todayKey(), updated);
+      return { dailyChecklist: updated };
+    });
+  },
+
+  // ══════════════════════════════════════════
   // ── Actions: Daily Checklist ──
+  // ══════════════════════════════════════════
   toggleChecklistItem: (item) => {
     set((state) => {
       const updated = {
@@ -348,9 +651,17 @@ const useWorkoutStore = create((set, get) => ({
 
   updateUserProfile: (profile) => {
     set((state) => {
-      const updated = { ...state.userProfile, ...profile };
-      saveToStorage("gym_profile", updated);
-      return { userProfile: updated };
+      const updatedProfile = { ...state.userProfile, ...profile };
+      saveToStorage("gym_profile", updatedProfile);
+
+      // Auto-update nutrition targets based on new profile
+      if (updatedProfile.weight && updatedProfile.height) {
+        const newTargets = calculateMacros(updatedProfile);
+        saveToStorage("gym_nutrition", newTargets);
+        return { userProfile: updatedProfile, nutritionTargets: newTargets };
+      }
+
+      return { userProfile: updatedProfile };
     });
   },
 
@@ -362,9 +673,12 @@ const useWorkoutStore = create((set, get) => ({
     });
   },
 
+  // ══════════════════════════════════════════
   // ── Actions: Active Workout ──
+  // ══════════════════════════════════════════
   startWorkout: (programId) => {
-    const program = workoutPrograms[programId];
+    const { programs, exercises } = get();
+    const program = programs[programId];
     if (!program) return;
 
     const workoutExercises = program.exercises.map((exId) => {
@@ -405,10 +719,8 @@ const useWorkoutStore = create((set, get) => ({
       if (!state.activeWorkout) return state;
       const exercises = [...state.activeWorkout.exercises];
       const sets = [...exercises[exerciseIndex].sets];
-
       const newDoneState = !sets[setIndex].done;
       sets[setIndex] = { ...sets[setIndex], done: newDoneState };
-
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
       return {
         activeWorkout: { ...state.activeWorkout, exercises },
@@ -439,7 +751,7 @@ const useWorkoutStore = create((set, get) => ({
       const sets = exercises[exerciseIndex].sets.filter(
         (_, i) => i !== setIndex,
       );
-      if (sets.length === 0) return state; // keep at least 1 set
+      if (sets.length === 0) return state;
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
       return {
         activeWorkout: { ...state.activeWorkout, exercises },
@@ -451,7 +763,6 @@ const useWorkoutStore = create((set, get) => ({
     const { activeWorkout, history, personalRecords } = get();
     if (!activeWorkout) return;
 
-    // Build completed session
     const session = {
       id: Date.now().toString(),
       date: todayKey(),
@@ -470,7 +781,6 @@ const useWorkoutStore = create((set, get) => ({
       })),
     };
 
-    // Update personal records
     const updatedPRs = { ...personalRecords };
     session.exercises.forEach((ex) => {
       ex.sets.forEach((s) => {
@@ -492,9 +802,7 @@ const useWorkoutStore = create((set, get) => ({
       showConfetti: true,
     });
 
-    // Auto-dismiss confetti after 4s
     setTimeout(() => set({ showConfetti: false }), 4000);
-
     return session;
   },
 
@@ -502,7 +810,6 @@ const useWorkoutStore = create((set, get) => ({
     set({ activeWorkout: null });
   },
 
-  // ── Actions: History Management ──
   clearHistory: () => {
     saveToStorage("gym_history", []);
     saveToStorage("gym_prs", {});

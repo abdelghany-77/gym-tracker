@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, X, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, X, Clock, ChevronUp, ChevronDown } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import ExerciseCard from "../components/ExerciseCard";
 import RestTimer from "../components/RestTimer";
@@ -10,6 +10,7 @@ export default function ActiveWorkout() {
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
   const finishWorkout = useWorkoutStore((s) => s.finishWorkout);
   const cancelWorkout = useWorkoutStore((s) => s.cancelWorkout);
+  const reorderExerciseInWorkout = useWorkoutStore((s) => s.reorderExerciseInWorkout);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
 
@@ -34,7 +35,7 @@ export default function ActiveWorkout() {
     if (!activeWorkout) return 0;
     const start = new Date(activeWorkout.startedAt);
     const now = new Date();
-    const diff = Math.floor((now - start) / 60000); // minutes
+    const diff = Math.floor((now - start) / 60000);
     return diff;
   }, [activeWorkout]);
 
@@ -61,6 +62,15 @@ export default function ActiveWorkout() {
   const handleCancel = () => {
     cancelWorkout();
     navigate("/workout", { replace: true });
+  };
+
+  const handleMoveUp = (index) => {
+    if (index > 0) reorderExerciseInWorkout(index, index - 1);
+  };
+
+  const handleMoveDown = (index) => {
+    if (index < activeWorkout.exercises.length - 1)
+      reorderExerciseInWorkout(index, index + 1);
   };
 
   return (
@@ -109,14 +119,38 @@ export default function ActiveWorkout() {
         </div>
       </div>
 
-      {/* Exercise Cards */}
+      {/* Exercise Cards with Reorder */}
       <div className="space-y-4">
         {activeWorkout.exercises.map((exerciseData, index) => (
-          <ExerciseCard
-            key={exerciseData.exerciseId}
-            exerciseIndex={index}
-            exerciseData={exerciseData}
-          />
+          <div key={`${exerciseData.exerciseId}-${index}`} className="relative">
+            {/* Reorder controls */}
+            <div className="absolute -left-1 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-0.5">
+              <button
+                onClick={() => handleMoveUp(index)}
+                disabled={index === 0}
+                className="w-6 h-6 rounded-md bg-slate-800/90 border border-slate-700 flex items-center justify-center text-slate-500 hover:text-neon-blue hover:border-neon-blue/30 disabled:opacity-20 disabled:hover:text-slate-500 transition-all active:scale-90"
+                aria-label="Move exercise up"
+              >
+                <ChevronUp size={12} />
+              </button>
+              <button
+                onClick={() => handleMoveDown(index)}
+                disabled={index === activeWorkout.exercises.length - 1}
+                className="w-6 h-6 rounded-md bg-slate-800/90 border border-slate-700 flex items-center justify-center text-slate-500 hover:text-neon-blue hover:border-neon-blue/30 disabled:opacity-20 disabled:hover:text-slate-500 transition-all active:scale-90"
+                aria-label="Move exercise down"
+              >
+                <ChevronDown size={12} />
+              </button>
+            </div>
+
+            {/* The card itself */}
+            <div className="ml-6">
+              <ExerciseCard
+                exerciseIndex={index}
+                exerciseData={exerciseData}
+              />
+            </div>
+          </div>
         ))}
       </div>
 

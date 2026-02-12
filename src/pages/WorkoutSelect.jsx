@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { Play, ChevronRight, Activity, Clock } from "lucide-react";
+import { Play, ChevronRight, Activity, Clock, Dumbbell } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import { workoutPrograms } from "../data/exercises";
 import { getImageUrl } from "../utils/imageUtil";
-import exercises from "../data/exercises";
 
 const muscleColors = {
   Chest: "bg-red-500/15 text-red-400 border-red-500/30",
@@ -33,7 +31,9 @@ export default function WorkoutSelect() {
   const navigate = useNavigate();
   const startWorkout = useWorkoutStore((s) => s.startWorkout);
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
-  const programs = Object.values(workoutPrograms);
+  const programs = useWorkoutStore((s) => s.programs);
+  const exercises = useWorkoutStore((s) => s.exercises);
+  const programList = Object.values(programs);
 
   const handleStartWorkout = (programId) => {
     startWorkout(programId);
@@ -44,7 +44,7 @@ export default function WorkoutSelect() {
   const getExerciseThumbnails = (program) => {
     return program.exercises.slice(0, 3).map((exId) => {
       const ex = exercises.find((e) => e.id === exId);
-      return ex ? ex.image : null;
+      return ex?.image || null;
     }).filter(Boolean);
   };
 
@@ -93,10 +93,10 @@ export default function WorkoutSelect() {
 
       {/* Program list */}
       <div className="space-y-3">
-        {programs.map((program) => {
+        {programList.map((program) => {
           const thumbnails = getExerciseThumbnails(program);
           const duration = estimateDuration(program);
-          const mainMuscle = program.muscles[0];
+          const mainMuscle = program.muscles?.[0];
           return (
             <button
               key={program.id}
@@ -113,7 +113,7 @@ export default function WorkoutSelect() {
                     {program.name}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    {program.muscles.map((muscle) => (
+                    {(program.muscles || []).map((muscle) => (
                       <span
                         key={muscle}
                         className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
@@ -124,6 +124,11 @@ export default function WorkoutSelect() {
                         {muscle}
                       </span>
                     ))}
+                    {program.isCustom && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-neon-green/10 text-neon-green border-neon-green/20">
+                        Custom
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <p className="text-[11px] text-slate-500 flex items-center gap-1">
@@ -140,6 +145,11 @@ export default function WorkoutSelect() {
                         <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     ))}
+                    {thumbnails.length === 0 && (
+                      <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-600">
+                        <Dumbbell size={12} />
+                      </div>
+                    )}
                     {program.exercises.length > 3 && (
                       <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 font-medium">
                         +{program.exercises.length - 3}
