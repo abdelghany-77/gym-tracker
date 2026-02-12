@@ -124,7 +124,7 @@ export default function ExerciseLibrary() {
       {/* Exercise Detail Modal */}
       {selectedExercise && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
           onClick={() => setSelectedExercise(null)}
         >
           <div

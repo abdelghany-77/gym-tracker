@@ -57,7 +57,15 @@ const useWorkoutStore = create((set, get) => ({
       const schedIdx = scheduleMap[jsDay];
       const programId = weeklySchedule[schedIdx];
 
-      if (programId) {
+      if (programId === "rest") {
+        return {
+          isRest: true,
+          daysUntil: offset,
+          dayIndex: schedIdx,
+        };
+      }
+
+      if (programId && programId !== "rest") {
         return {
           program: workoutPrograms[programId],
           daysUntil: offset,
