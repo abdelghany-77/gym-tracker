@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dumbbell,
@@ -9,15 +9,20 @@ import {
   Zap,
   ChevronRight,
   Flame,
+  Edit2,
+  X
 } from "lucide-react";
 import Heatmap from "../components/Heatmap";
 import useWorkoutStore from "../store/workoutStore";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [editingSchedule, setEditingSchedule] = useState(false);
   const history = useWorkoutStore((s) => s.history);
+  const weeklySchedule = useWorkoutStore((s) => s.weeklySchedule); // Subscribe to schedule changes allows re-render on edit
   const heatmapData = useMemo(() => useWorkoutStore.getState().getHeatmapData(), [history]);
-  const nextWorkout = useMemo(() => useWorkoutStore.getState().getNextWorkout(), [history]);
+  // Re-calculate next workout when history or schedule changes
+  const nextWorkout = useMemo(() => useWorkoutStore.getState().getNextWorkout(), [history, weeklySchedule]);
   const lastSession = useWorkoutStore((s) => s.getLastSession());
   const dailyChecklist = useWorkoutStore((s) => s.dailyChecklist);
   const toggleChecklistItem = useWorkoutStore((s) => s.toggleChecklistItem);
@@ -57,10 +62,12 @@ export default function Dashboard() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Gym<span className="text-neon-blue">Tracker</span>
-          </h1>
+        <div className="flex items-center gap-3">
+          <img src="/gym-tracker/icon.png" alt="Logo" className="w-10 h-10 object-contain" />
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              Gym<span className="text-neon-blue">Tracker</span>
+            </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
@@ -68,6 +75,7 @@ export default function Dashboard() {
               day: "numeric",
             })}
           </p>
+          </div>
         </div>
         <div className="flex items-center gap-1 bg-slate-900 rounded-full px-3 py-1.5 border border-slate-800">
           <Flame size={14} className="text-orange-400" />
@@ -116,12 +124,9 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Next Workout Card */}
+        {/* Next Workout Card */}
       {nextWorkout && (
-        <button
-          onClick={() => navigate("/workout")}
-          className="w-full bg-linear-to-r from-neon-blue/10 to-neon-purple/10 rounded-2xl p-4 border border-neon-blue/20 hover:border-neon-blue/40 transition-all active:scale-[0.98] text-left"
-        >
+        <div className="w-full bg-linear-to-r from-neon-blue/10 to-neon-purple/10 rounded-2xl p-4 border border-neon-blue/20 hover:border-neon-blue/40 transition-all text-left group relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-neon-blue/15 flex items-center justify-center">
@@ -149,9 +154,95 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-            <ChevronRight size={20} className="text-slate-600" />
+            
+            {nextWorkout.daysUntil === 0 ? (
+               <div className="flex items-center gap-2">
+                 <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Simple prompt for now, could be a better modal
+                    // For a better UI, we should add a state for "isEditingSchedule"
+                    // and show a proper modal. Let's do that.
+                    setEditingSchedule(true);
+                  }}
+                  className="w-8 h-8 rounded-lg bg-slate-800/50 flex items-center justify-center hover:bg-slate-700 transition-colors text-slate-400 hover:text-white"
+                 >
+                   <Edit2 size={14} />
+                 </button>
+                 <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    useWorkoutStore.getState().startWorkout(nextWorkout.program.id);
+                    navigate("/workout/active");
+                  }}
+                  className="bg-neon-blue text-slate-900 px-4 py-2 rounded-lg text-xs font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20"
+                >
+                  Start
+                </button>
+               </div>
+            ) : (
+              <button 
+                onClick={() => navigate("/workout")}
+                className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors"
+                >
+                <ChevronRight size={18} className="text-slate-400" />
+              </button>
+            )}
           </div>
-        </button>
+        </div>
+      )}
+
+      {/* Edit Schedule Modal */}
+      {editingSchedule && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setEditingSchedule(false)}
+        >
+          <div 
+            className="bg-slate-900 rounded-2xl w-full max-w-sm border border-slate-700 overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+              <h3 className="font-semibold text-white">Change Today's Workout</h3>
+              <button onClick={() => setEditingSchedule(false)} className="text-slate-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-2 space-y-1 max-h-[60vh] overflow-y-auto">
+               {Object.values(useWorkoutStore.getState().getPrograms()).map(program => (
+                 <button
+                   key={program.id}
+                   onClick={() => {
+                     // We need the day index. getNextWorkout returns it now.
+                     // But we didn't update the component to receive it yet.
+                     // We need to re-fetch nextWorkout to get dayIndex.
+                     const dayIndex = nextWorkout.dayIndex;
+                     if (dayIndex !== undefined) {
+                        useWorkoutStore.getState().setSchedule(dayIndex, program.id);
+                        setEditingSchedule(false);
+                     }
+                   }}
+                   className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                     nextWorkout.program.id === program.id 
+                       ? "bg-neon-blue/10 text-neon-blue" 
+                       : "hover:bg-slate-800 text-slate-300"
+                   }`}
+                 >
+                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      nextWorkout.program.id === program.id ? "bg-neon-blue/20" : "bg-slate-800"
+                   }`}>
+                      <Dumbbell size={14} />
+                   </div>
+                   <div className="text-left">
+                     <p className="text-sm font-medium">{program.name}</p>
+                     <p className="text-[10px] text-slate-500">{program.muscles.join(", ")}</p>
+                   </div>
+                   {nextWorkout.program.id === program.id && <div className="ml-auto text-xs font-bold">Current</div>}
+                 </button>
+               ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Last Session */}
@@ -236,8 +327,8 @@ export default function Dashboard() {
             <Droplets size={18} className="text-blue-400" />
             <div>
               <p className="text-sm text-white">Water</p>
-              <p className="text-[10px] text-slate-500">
-                {dailyChecklist.water} / {waterGoal} glasses
+              <p className="text-[10px] text-slate-500 font-mono">
+                {(dailyChecklist.water * 0.25).toFixed(2)}L <span className="text-slate-600">/</span> {(waterGoal * 0.25).toFixed(2)}L
               </p>
             </div>
           </div>

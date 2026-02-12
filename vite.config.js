@@ -21,12 +21,12 @@ export default defineConfig({
         display: "standalone",
         icons: [
           {
-            src: "pwa-192x192.png",
-            sizes: "192x192",
+            src: "icon.png",
+            sizes: "192x192", // We really should resize this, but for now pointing to main icon
             type: "image/png",
           },
           {
-            src: "pwa-512x512.png",
+            src: "icon.png",
             sizes: "512x512",
             type: "image/png",
           },

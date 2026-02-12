@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import { Search, ChevronDown, Info, X } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 
+import { getImageUrl } from "../utils/imageUtil";
+
 const muscleFilters = ["All", "Chest", "Back", "Shoulders", "Legs", "Arms"];
 
 const muscleColorMap = {
@@ -77,7 +79,7 @@ export default function ExerciseLibrary() {
             <div className="flex items-center gap-3 p-3">
               <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800 shrink-0">
                 <img
-                  src={exercise.image}
+                  src={getImageUrl(exercise.image)}
                   alt={exercise.name}
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -145,7 +147,7 @@ export default function ExerciseLibrary() {
             {/* Image */}
             <div className="w-full aspect-video rounded-xl overflow-hidden bg-slate-800">
               <img
-                src={selectedExercise.image}
+                src={getImageUrl(selectedExercise.image)}
                 alt={selectedExercise.name}
                 className="w-full h-full object-cover"
               />

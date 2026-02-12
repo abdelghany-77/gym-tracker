@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Play, Pause, RotateCcw, Plus, Minus } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 
@@ -30,6 +30,39 @@ export default function RestTimer() {
     }
   }, [restTimerTrigger, totalTime]);
 
+  // Audio Context Ref
+  const audioContextRef = useRef(null);
+
+  const playBeep = useCallback(() => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+      
+      const ctx = audioContextRef.current;
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(880, ctx.currentTime); // A5
+      oscillator.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5); // Drop to A4
+
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.error("Audio playback failed", e);
+    }
+  }, []);
+
   // Timer Logic
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -38,6 +71,7 @@ export default function RestTimer() {
           if (t <= 1) {
             setIsRunning(false);
             if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            playBeep();
             return 0;
           }
           return t - 1;
@@ -45,7 +79,7 @@ export default function RestTimer() {
       }, 1000);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, timeLeft]);
+  }, [isRunning, timeLeft, playBeep]);
 
   // Progress Offset
   const progress = timeLeft / totalTime;

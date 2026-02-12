@@ -1,11 +1,8 @@
 import { memo } from "react";
 import { Ghost, Check, Plus, Minus, Info } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
+import { getImageUrl } from "../utils/imageUtil";
 
-/**
- * ExerciseCard — renders inside ActiveWorkout.
- * Shows exercise info, ghost data from last session, and editable sets.
- */
 function ExerciseCard({ exerciseIndex, exerciseData }) {
   const { exerciseId, sets } = exerciseData;
   const exercise = useWorkoutStore((s) => s.getExerciseById(exerciseId));
@@ -26,7 +23,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
       <div className="flex items-center gap-3 p-4 border-b border-slate-800">
         <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 shrink-0">
           <img
-            src={exercise.image}
+            src={getImageUrl(exercise.image)}
             alt={exercise.name}
             className="w-full h-full object-cover"
             loading="lazy"

@@ -22,25 +22,6 @@ const saveToStorage = (key, value) => {
 // ── Helpers ──
 const todayKey = () => new Date().toISOString().split("T")[0]; // "2026-02-12"
 
-const getNextWorkout = () => {
-  const today = new Date().getDay(); // 0=Sun
-  // Map JS day (0=Sun) to schedule index (0=Mon)
-  const scheduleMap = [6, 0, 1, 2, 3, 4, 5]; // Sun=6, Mon=0, Tue=1...
-
-  for (let offset = 0; offset < 7; offset++) {
-    const jsDay = (today + offset) % 7;
-    const schedIdx = scheduleMap[jsDay];
-    const programId = weeklySchedule[schedIdx];
-    if (programId) {
-      return {
-        program: workoutPrograms[programId],
-        daysUntil: offset,
-      };
-    }
-  }
-  return null;
-};
-
 // ── Zustand Store ──
 const useWorkoutStore = create((set, get) => ({
   // ── State ──
@@ -53,6 +34,8 @@ const useWorkoutStore = create((set, get) => ({
     weight: 0,
     height: 0,
   }),
+  // Initialize schedule from storage or fallback to default
+  weeklySchedule: loadFromStorage("gym_schedule", weeklySchedule),
   activeWorkout: null, // { programId, startedAt, exercises: [ { exerciseId, sets: [{ weight, reps, done }] } ] }
   restTimerTrigger: 0, // Timestamp when a set is marked done, triggering the timer
   personalRecords: loadFromStorage("gym_prs", {}),
@@ -61,11 +44,28 @@ const useWorkoutStore = create((set, get) => ({
   getExerciseById: (id) => exercises.find((e) => e.id === id),
   getAllExercises: () => exercises,
   getPrograms: () => workoutPrograms,
-  getSchedule: () => weeklySchedule,
+  getSchedule: () => get().weeklySchedule,
 
   getNextWorkout: () => {
-    const { history } = get();
-    return getNextWorkout(history);
+    // Re-implement logic using dynamic schedule from state
+    const { weeklySchedule } = get();
+    const today = new Date().getDay(); // 0=Sun
+    const scheduleMap = [6, 0, 1, 2, 3, 4, 5]; // Sun=6, Mon=0, Tue=1...
+
+    for (let offset = 0; offset < 7; offset++) {
+      const jsDay = (today + offset) % 7;
+      const schedIdx = scheduleMap[jsDay];
+      const programId = weeklySchedule[schedIdx];
+
+      if (programId) {
+        return {
+          program: workoutPrograms[programId],
+          daysUntil: offset,
+          dayIndex: schedIdx, // return index to allow editing
+        };
+      }
+    }
+    return null;
   },
 
   getLastSession: () => {
@@ -151,6 +151,14 @@ const useWorkoutStore = create((set, get) => ({
       const updated = { ...state.userProfile, ...profile };
       saveToStorage("gym_profile", updated);
       return { userProfile: updated };
+    });
+  },
+
+  setSchedule: (dayIndex, programId) => {
+    set((state) => {
+      const updated = { ...state.weeklySchedule, [dayIndex]: programId };
+      saveToStorage("gym_schedule", updated);
+      return { weeklySchedule: updated };
     });
   },
 

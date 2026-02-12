@@ -77,6 +77,7 @@ export default function Profile() {
             </label>
             <input
               type="number"
+              inputMode="decimal"
               value={userProfile.weight || ""}
               onChange={(e) =>
                 updateUserProfile({ weight: Number(e.target.value) })
@@ -91,6 +92,7 @@ export default function Profile() {
             </label>
             <input
               type="number"
+              inputMode="decimal"
               value={userProfile.height || ""}
               onChange={(e) =>
                 updateUserProfile({ height: Number(e.target.value) })
