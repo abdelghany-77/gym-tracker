@@ -23,6 +23,7 @@ export default function Dashboard() {
   const toggleChecklistItem = useWorkoutStore((s) => s.toggleChecklistItem);
   const incrementWater = useWorkoutStore((s) => s.incrementWater);
   const decrementWater = useWorkoutStore((s) => s.decrementWater);
+  const waterGoal = useWorkoutStore((s) => s.getWaterGoal());
 
   const stats = useMemo(() => {
     const totalSessions = history.length;
@@ -51,8 +52,6 @@ export default function Dashboard() {
 
     return { totalSessions, thisWeek, streak };
   }, [history, heatmapData]);
-
-  const waterGoal = 8; // glasses
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
@@ -229,30 +228,7 @@ export default function Dashboard() {
           )}
         </button>
 
-        {/* Creatine */}
-        <button
-          onClick={() => toggleChecklistItem("creatine")}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] ${
-            dailyChecklist.creatine
-              ? "bg-emerald-500/10 border-emerald-500/30"
-              : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
-          }`}
-        >
-          <Zap
-            size={18}
-            className={
-              dailyChecklist.creatine ? "text-emerald-400" : "text-slate-500"
-            }
-          />
-          <span
-            className={`text-sm ${dailyChecklist.creatine ? "text-emerald-400 line-through" : "text-white"}`}
-          >
-            Creatine (5g)
-          </span>
-          {dailyChecklist.creatine && (
-            <span className="ml-auto text-emerald-400 text-xs">✓</span>
-          )}
-        </button>
+
 
         {/* Water Counter */}
         <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700">
@@ -261,7 +237,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm text-white">Water</p>
               <p className="text-[10px] text-slate-500">
-                {dailyChecklist.water}/{waterGoal} glasses
+                {dailyChecklist.water} / {waterGoal} glasses
               </p>
             </div>
           </div>

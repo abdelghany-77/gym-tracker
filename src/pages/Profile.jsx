@@ -7,6 +7,8 @@ export default function Profile() {
   const personalRecords = useWorkoutStore((s) => s.personalRecords);
   const clearHistory = useWorkoutStore((s) => s.clearHistory);
   const getExerciseById = useWorkoutStore((s) => s.getExerciseById);
+  const userProfile = useWorkoutStore((s) => s.userProfile);
+  const updateUserProfile = useWorkoutStore((s) => s.updateUserProfile);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   // Export data as JSON
@@ -14,6 +16,7 @@ export default function Profile() {
     const data = {
       history,
       personalRecords,
+      userProfile,
       exportedAt: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -41,6 +44,9 @@ export default function Profile() {
         if (data.personalRecords) {
           localStorage.setItem("gym_prs", JSON.stringify(data.personalRecords));
         }
+        if (data.userProfile) {
+          localStorage.setItem("gym_profile", JSON.stringify(data.userProfile));
+        }
         window.location.reload();
       } catch {
         alert("Invalid backup file.");
@@ -60,6 +66,41 @@ export default function Profile() {
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
       <h1 className="text-2xl font-bold text-white">Profile</h1>
+
+      {/* User Stats */}
+      <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4">
+        <h2 className="text-sm font-semibold text-white">Your Stats</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-slate-500 mb-1 block">
+              Weight (kg)
+            </label>
+            <input
+              type="number"
+              value={userProfile.weight || ""}
+              onChange={(e) =>
+                updateUserProfile({ weight: Number(e.target.value) })
+              }
+              placeholder="0"
+              className="w-full bg-slate-800 text-white rounded-xl px-3 py-2 border border-slate-700 focus:border-neon-blue focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 mb-1 block">
+              Height (cm)
+            </label>
+            <input
+              type="number"
+              value={userProfile.height || ""}
+              onChange={(e) =>
+                updateUserProfile({ height: Number(e.target.value) })
+              }
+              placeholder="0"
+              className="w-full bg-slate-800 text-white rounded-xl px-3 py-2 border border-slate-700 focus:border-neon-green focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Stats summary */}
       <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">

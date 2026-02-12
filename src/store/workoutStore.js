@@ -47,8 +47,11 @@ const useWorkoutStore = create((set, get) => ({
   history: loadFromStorage("gym_history", []),
   dailyChecklist: loadFromStorage("gym_checklist_" + todayKey(), {
     vitamin: false,
-    creatine: false,
     water: 0,
+  }),
+  userProfile: loadFromStorage("gym_profile", {
+    weight: 0,
+    height: 0,
   }),
   activeWorkout: null, // { programId, startedAt, exercises: [ { exerciseId, sets: [{ weight, reps, done }] } ] }
   restTimerTrigger: 0, // Timestamp when a set is marked done, triggering the timer
@@ -101,6 +104,14 @@ const useWorkoutStore = create((set, get) => ({
     return map;
   },
 
+  getWaterGoal: () => {
+    const { userProfile } = get();
+    // 33ml per kg
+    if (!userProfile.weight) return 8; // Default 8 glasses (approx 2L)
+    const dailyMl = userProfile.weight * 33;
+    return Math.ceil(dailyMl / 250); // 250ml per glass
+  },
+
   // ── Actions: Daily Checklist ──
   toggleChecklistItem: (item) => {
     set((state) => {
@@ -132,6 +143,14 @@ const useWorkoutStore = create((set, get) => ({
       };
       saveToStorage("gym_checklist_" + todayKey(), updated);
       return { dailyChecklist: updated };
+    });
+  },
+
+  updateUserProfile: (profile) => {
+    set((state) => {
+      const updated = { ...state.userProfile, ...profile };
+      saveToStorage("gym_profile", updated);
+      return { userProfile: updated };
     });
   },
 
