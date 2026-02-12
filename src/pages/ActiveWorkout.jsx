@@ -69,10 +69,10 @@ export default function ActiveWorkout() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate("/workout")}
-          className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"
+          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
+          aria-label="Go back to workout selection"
         >
-          <ArrowLeft size={18} />
-        </button>
+          <ArrowLeft size={18} /></button>
         <div className="text-center">
           <p className="text-sm font-semibold text-white">
             {activeWorkout.programName}
@@ -84,7 +84,8 @@ export default function ActiveWorkout() {
         </div>
         <button
           onClick={() => setShowConfirmCancel(true)}
-          className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition-all"
+          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
+          aria-label="Cancel workout"
         >
           <X size={18} />
         </button>
@@ -122,7 +123,8 @@ export default function ActiveWorkout() {
       {/* Finish Workout Button */}
       <button
         onClick={() => setShowConfirmFinish(true)}
-        className="w-full bg-linear-to-r from-neon-green/20 to-emerald-500/20 text-neon-green font-semibold py-4 rounded-2xl border border-neon-green/30 hover:border-neon-green/50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        className="w-full bg-linear-to-r from-neon-green/20 to-emerald-500/20 text-neon-green font-semibold py-4 rounded-2xl border border-neon-green/30 hover:border-neon-green/50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-neon-green/50 focus-visible:outline-none"
+        aria-label={`Finish workout, ${progress.percent}% completed`}
       >
         <CheckCircle2 size={20} />
         Finish Workout ({progress.percent}% done)

@@ -1,5 +1,6 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Home, Dumbbell, Library, User } from "lucide-react";
+import Confetti from "./Confetti";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -9,15 +10,22 @@ const navItems = [
 ];
 
 export default function Layout() {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+      {/* Confetti overlay */}
+      <Confetti />
+
       {/* Main content area — scrollable, with bottom padding for nav */}
       <main className="flex-1 overflow-y-auto pb-20">
-        <Outlet />
+        <div key={location.pathname} className="animate-fadeIn">
+          <Outlet />
+        </div>
       </main>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800">
+      <nav className="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800" aria-label="Main navigation">
         <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
           {navItems.map((item) => (
             <NavLink
@@ -31,13 +39,14 @@ export default function Layout() {
                     : "text-slate-500 hover:text-slate-300 active:scale-95"
                 }`
               }
+              aria-label={item.label}
             >
               {({ isActive }) => {
                 const Icon = item.icon;
                 return (
                   <>
                     <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-                    <span className="text-[10px] font-medium">{item.label}</span>
+                    <span className="text-[11px] font-medium">{item.label}</span>
                   </>
                 );
               }}

@@ -31,6 +31,7 @@ const useWorkoutStore = create((set, get) => ({
     water: 0,
   }),
   userProfile: loadFromStorage("gym_profile", {
+    name: "",
     weight: 0,
     height: 0,
   }),
@@ -39,12 +40,203 @@ const useWorkoutStore = create((set, get) => ({
   activeWorkout: null, // { programId, startedAt, exercises: [ { exerciseId, sets: [{ weight, reps, done }] } ] }
   restTimerTrigger: 0, // Timestamp when a set is marked done, triggering the timer
   personalRecords: loadFromStorage("gym_prs", {}),
+  exercises, // Static data from file
+  showConfetti: false, // Trigger confetti on workout finish or PR
 
   // ── Getters ──
   getExerciseById: (id) => exercises.find((e) => e.id === id),
   getAllExercises: () => exercises,
   getPrograms: () => workoutPrograms,
   getSchedule: () => get().weeklySchedule,
+
+  getAchievements: () => {
+    const { history, personalRecords } = get();
+    const achievements = [];
+    const total = history.length;
+    const prCount = Object.keys(personalRecords).length;
+    const totalSets = history.reduce(
+      (acc, s) => acc + s.exercises.reduce((a, e) => a + e.sets.length, 0),
+      0,
+    );
+
+    // Session milestones
+    if (total >= 1)
+      achievements.push({
+        id: "first_workout",
+        label: "First Step",
+        desc: "Completed your first workout",
+        icon: "flag",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "first_workout",
+        label: "First Step",
+        desc: "Complete your first workout",
+        icon: "flag",
+        earned: false,
+      });
+
+    if (total >= 10)
+      achievements.push({
+        id: "ten_workouts",
+        label: "Dedicated",
+        desc: "Completed 10 workouts",
+        icon: "dumbbell",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "ten_workouts",
+        label: "Dedicated",
+        desc: `Complete 10 workouts (${total}/10)`,
+        icon: "dumbbell",
+        earned: false,
+      });
+
+    if (total >= 25)
+      achievements.push({
+        id: "25_workouts",
+        label: "Consistent",
+        desc: "Completed 25 workouts",
+        icon: "flame",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "25_workouts",
+        label: "Consistent",
+        desc: `Complete 25 workouts (${total}/25)`,
+        icon: "flame",
+        earned: false,
+      });
+
+    if (total >= 50)
+      achievements.push({
+        id: "50_workouts",
+        label: "Iron Will",
+        desc: "Completed 50 workouts",
+        icon: "zap",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "50_workouts",
+        label: "Iron Will",
+        desc: `Complete 50 workouts (${total}/50)`,
+        icon: "zap",
+        earned: false,
+      });
+
+    if (total >= 100)
+      achievements.push({
+        id: "100_workouts",
+        label: "Legend",
+        desc: "Completed 100 workouts",
+        icon: "crown",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "100_workouts",
+        label: "Legend",
+        desc: `Complete 100 workouts (${total}/100)`,
+        icon: "crown",
+        earned: false,
+      });
+
+    // PR milestones
+    if (prCount >= 1)
+      achievements.push({
+        id: "first_pr",
+        label: "Record Breaker",
+        desc: "Set your first personal record",
+        icon: "trophy",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "first_pr",
+        label: "Record Breaker",
+        desc: "Set your first personal record",
+        icon: "trophy",
+        earned: false,
+      });
+
+    if (prCount >= 10)
+      achievements.push({
+        id: "ten_prs",
+        label: "PR Machine",
+        desc: "Set 10 personal records",
+        icon: "target",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "ten_prs",
+        label: "PR Machine",
+        desc: `Set 10 personal records (${prCount}/10)`,
+        icon: "target",
+        earned: false,
+      });
+
+    // Volume milestone
+    if (totalSets >= 100)
+      achievements.push({
+        id: "100_sets",
+        label: "Volume King",
+        desc: "Completed 100 total sets",
+        icon: "bar-chart",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "100_sets",
+        label: "Volume King",
+        desc: `Complete 100 sets (${totalSets}/100)`,
+        icon: "bar-chart",
+        earned: false,
+      });
+
+    if (totalSets >= 500)
+      achievements.push({
+        id: "500_sets",
+        label: "Unstoppable",
+        desc: "Completed 500 total sets",
+        icon: "rocket",
+        earned: true,
+      });
+    else
+      achievements.push({
+        id: "500_sets",
+        label: "Unstoppable",
+        desc: `Complete 500 sets (${totalSets}/500)`,
+        icon: "rocket",
+        earned: false,
+      });
+
+    return achievements;
+  },
+
+  getWeeklyTrend: () => {
+    const { history } = get();
+    const weeks = [];
+    const now = new Date();
+    for (let w = 7; w >= 0; w--) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay() + 1 - w * 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+      const count = history.filter((s) => {
+        const d = new Date(s.date);
+        return d >= weekStart && d < weekEnd;
+      }).length;
+      const label = w === 0 ? "This" : w === 1 ? "Last" : `${w}w`;
+      weeks.push({ label, count });
+    }
+    return weeks;
+  },
 
   getNextWorkout: () => {
     // Re-implement logic using dynamic schedule from state
@@ -297,7 +489,11 @@ const useWorkoutStore = create((set, get) => ({
       history: updatedHistory,
       personalRecords: updatedPRs,
       activeWorkout: null,
+      showConfetti: true,
     });
+
+    // Auto-dismiss confetti after 4s
+    setTimeout(() => set({ showConfetti: false }), 4000);
 
     return session;
   },

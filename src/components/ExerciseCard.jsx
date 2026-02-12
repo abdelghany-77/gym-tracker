@@ -33,7 +33,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           <h3 className="font-semibold text-white truncate">{exercise.name}</h3>
           <p className="text-xs text-slate-500">{exercise.muscle}</p>
           {pr && (
-            <p className="text-[10px] text-amber-400 font-medium mt-0.5">
+            <p className="text-[11px] text-amber-400 font-medium mt-0.5">
               PR: {pr} kg
             </p>
           )}
@@ -72,7 +72,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
       {/* Sets Table */}
       <div className="p-4 space-y-2">
         {/* Table header */}
-        <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 text-[10px] text-slate-500 uppercase tracking-wider font-medium px-1">
+        <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 text-[11px] text-slate-500 uppercase tracking-wider font-medium px-1">
           <span>Set</span>
           <span>KG</span>
           <span>Reps</span>
@@ -103,7 +103,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                 disabled={set.done}
               />
               {ghostData?.sets[si] && (
-                <span className="text-[10px] text-slate-500 pl-1 truncate">
+                <span className="text-[11px] text-slate-500 pl-1 truncate">
                   {ghostData.sets[si].weight}kg
                 </span>
               )}
@@ -121,18 +121,19 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                 disabled={set.done}
               />
               {ghostData?.sets[si] && (
-                <span className="text-[10px] text-slate-500 pl-1 truncate">
+                <span className="text-[11px] text-slate-500 pl-1 truncate">
                   {ghostData.sets[si].reps} reps
                 </span>
               )}
             </div>
             <button
               onClick={() => toggleSetDone(exerciseIndex, si)}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 ${
+              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90 focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none ${
                 set.done
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
                   : "bg-slate-800 text-slate-500 border border-slate-700 hover:border-slate-600"
               }`}
+              aria-label={set.done ? `Mark set ${si + 1} as incomplete` : `Mark set ${si + 1} as complete`}
             >
               <Check size={16} strokeWidth={set.done ? 3 : 2} />
             </button>
@@ -143,14 +144,16 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           <div className="flex items-center justify-center gap-3 pt-2">
             <button
               onClick={() => removeSet(exerciseIndex, sets.length - 1)}
-              className="text-xs text-slate-500 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30"
+              className="text-xs text-slate-500 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
               disabled={sets.length <= 1}
+              aria-label="Remove last set"
             >
               <Minus size={14} /> Remove
             </button>
             <button
               onClick={() => addSet(exerciseIndex)}
-              className="text-xs text-neon-blue hover:text-neon-blue/80 flex items-center gap-1 transition-colors"
+              className="text-xs text-neon-blue hover:text-neon-blue/80 flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
+              aria-label="Add a set"
             >
               <Plus size={14} /> Add Set
             </button>

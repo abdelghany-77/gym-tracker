@@ -73,3 +73,53 @@ input[type="number"] {
 .animate-pulse-neon {
   animation: pulse-neon 1.5s ease-in-out infinite;
 }
+
+/* ── Water wave animation ── */
+@keyframes wave {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.animate-wave {
+  animation: wave 3s linear infinite;
+}
+
+/* ── Page transition (fadeIn) ── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ── Scrollbar utilities ── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+
+/* ── Accessibility global ── */
+:focus-visible {
+  outline: none;
+}
