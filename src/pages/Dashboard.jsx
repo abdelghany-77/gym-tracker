@@ -400,7 +400,7 @@ export default function Dashboard() {
                <Droplets size={20} className="text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Hydration</p>
+              <p className="text-sm font-semibold text-white">Water</p>
               <p className="text-[10px] text-slate-500 font-medium">
                 {(dailyChecklist.water * 0.25).toFixed(2)}L / {(waterGoal * 0.25).toFixed(2)}L Goal
               </p>
