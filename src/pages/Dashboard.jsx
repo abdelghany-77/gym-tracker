@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Heatmap from "../components/Heatmap";
 import useWorkoutStore from "../store/workoutStore";
+import { getImageUrl } from "../utils/imageUtil";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/gym-tracker/icon.png" alt="Logo" className="w-10 h-10 object-contain" />
+          <img src={getImageUrl("icon.png")} alt="Logo" className="w-10 h-10 object-contain" />
           <div>
             <h1 className="text-2xl font-bold text-white">
               Gym<span className="text-neon-blue">Tracker</span>
