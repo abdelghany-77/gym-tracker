@@ -1,5 +1,14 @@
 import { memo, useState } from "react";
-import { Ghost, Check, Plus, Minus, Info, ArrowLeftRight } from "lucide-react";
+import { createPortal } from "react-dom";
+import {
+  Ghost,
+  Check,
+  Plus,
+  Minus,
+  Info,
+  ArrowLeftRight,
+  X,
+} from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 import SwapExerciseModal from "./SwapExerciseModal";
@@ -14,6 +23,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
   const removeSet = useWorkoutStore((s) => s.removeSet);
   const personalRecords = useWorkoutStore((s) => s.personalRecords);
   const [showSwap, setShowSwap] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   if (!exercise) return null;
 
@@ -24,7 +34,12 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
       <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
         {/* Exercise Header */}
         <div className="flex items-center gap-3 p-4 border-b border-slate-800">
-          <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 shrink-0">
+          <button
+            onClick={() => exercise.image && setShowImageModal(true)}
+            className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue/50 transition-transform active:scale-95"
+            aria-label={`View ${exercise.name} details`}
+            title="Click to view details"
+          >
             {exercise.image ? (
               <img
                 src={getImageUrl(exercise.image)}
@@ -37,9 +52,11 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                 <ArrowLeftRight size={18} />
               </div>
             )}
-          </div>
+          </button>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-white truncate">{exercise.name}</h3>
+            <h3 className="font-semibold text-white truncate">
+              {exercise.name}
+            </h3>
             <p className="text-xs text-slate-500">{exercise.muscle}</p>
             {pr && (
               <p className="text-[11px] text-amber-400 font-medium mt-0.5">
@@ -151,7 +168,11 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
                     : "bg-slate-800 text-slate-500 border border-slate-700 hover:border-slate-600"
                 }`}
-                aria-label={set.done ? `Mark set ${si + 1} as incomplete` : `Mark set ${si + 1} as complete`}
+                aria-label={
+                  set.done
+                    ? `Mark set ${si + 1} as incomplete`
+                    : `Mark set ${si + 1} as complete`
+                }
               >
                 <Check size={16} strokeWidth={set.done ? 3 : 2} />
               </button>
@@ -178,6 +199,59 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           </div>
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      {showImageModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowImageModal(false)}
+          >
+            <div
+              className="relative bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl w-full max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+
+              {/* Large image */}
+              <div className="w-full aspect-square bg-slate-800">
+                <img
+                  src={getImageUrl(exercise.image)}
+                  alt={exercise.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Info */}
+              <div className="p-4">
+                <h3 className="font-semibold text-white text-lg">
+                  {exercise.name}
+                </h3>
+                <p className="text-xs text-slate-500 mb-3">{exercise.muscle}</p>
+                <div className="flex items-start gap-2">
+                  <Info size={14} className="text-neon-blue mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-neon-blue font-medium mb-1">
+                      How to perform
+                    </p>
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                      {exercise.tips}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* Swap Modal */}
       <SwapExerciseModal
