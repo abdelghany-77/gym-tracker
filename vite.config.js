@@ -36,7 +36,7 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg}"],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith("/Gym/images/"),
+            urlPattern: ({ url }) => url.pathname.startsWith("/gym-tracker/"),
             handler: "CacheFirst",
             options: {
               cacheName: "gym-images-cache",

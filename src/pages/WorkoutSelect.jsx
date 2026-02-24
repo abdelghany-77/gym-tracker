@@ -92,6 +92,23 @@ export default function WorkoutSelect() {
       )}
 
       {/* Program list */}
+      {programList.length === 0 && (
+        <div className="text-center py-16 px-4 rounded-2xl bg-slate-800/20 border border-dashed border-slate-700/50 space-y-3">
+          <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-600">
+            <Dumbbell size={24} />
+          </div>
+          <p className="text-slate-400 font-medium">No programs yet</p>
+          <p className="text-xs text-slate-500">
+            Head to the Exercise Library to create your first program.
+          </p>
+          <button
+            onClick={() => navigate("/exercises/manage")}
+            className="mt-2 px-5 py-2.5 bg-neon-blue/10 text-neon-blue text-sm font-medium rounded-xl border border-neon-blue/20 hover:bg-neon-blue/20 transition-colors"
+          >
+            Manage Exercises
+          </button>
+        </div>
+      )}
       <div className="space-y-3">
         {programList.map((program) => {
           const thumbnails = getExerciseThumbnails(program);

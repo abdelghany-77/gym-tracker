@@ -99,7 +99,8 @@ export default function RestTimer() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 z-50 w-12 h-12 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center shadow-lg shadow-black/50 active:scale-90 transition-all text-neon-blue"
+        className="fixed bottom-24 right-6 z-50 w-12 h-12 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center shadow-lg shadow-black/50 btn-press transition-all text-neon-blue"
+        aria-label={isRunning ? `Rest timer: ${timeLeft} seconds left` : "Open rest timer"}
       >
         <div className="absolute inset-0 rounded-full border-2 border-neon-blue/20" />
         {isRunning ? (
@@ -140,7 +141,8 @@ export default function RestTimer() {
                  if (isRunning) setTimeLeft(l => l + 10);
                  else setTimeLeft(newTime);
               }}
-              className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white active:scale-95 transition-all"
+              className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
+              aria-label="Add 10 seconds"
             >
               <Plus size={18} />
             </button>
@@ -151,7 +153,8 @@ export default function RestTimer() {
                  if (isRunning) setTimeLeft(l => Math.max(0, l - 10));
                  else setTimeLeft(newTime);
               }}
-              className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white active:scale-95 transition-all"
+              className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
+              aria-label="Subtract 10 seconds"
             >
               <Minus size={18} />
             </button>
@@ -179,12 +182,15 @@ export default function RestTimer() {
             </svg>
             
             {/* Time Text */}
-            <div className="relative z-10 text-center">
+            <div className="relative z-10 text-center" role="timer" aria-live="assertive" aria-atomic="true">
                <span className="text-3xl font-bold font-mono text-white block leading-none">
                  {timeLeft}
                </span>
                <span className="text-[10px] text-slate-500 font-medium uppercase mt-1">
                  Seconds
+               </span>
+               <span className="sr-only">
+                 {timeLeft === 0 ? "Rest timer complete" : `${timeLeft} seconds remaining`}
                </span>
             </div>
           </div>
@@ -193,9 +199,10 @@ export default function RestTimer() {
           <div className="flex flex-col gap-2">
              <button 
               onClick={() => setIsRunning(!isRunning)}
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-95 ${
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all btn-press ${
                 isRunning ? 'bg-amber-500/10 text-amber-500' : 'bg-neon-blue/10 text-neon-blue'
               }`}
+              aria-label={isRunning ? "Pause rest timer" : "Start rest timer"}
             >
               {isRunning ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
             </button>
@@ -204,7 +211,8 @@ export default function RestTimer() {
                  setIsRunning(false);
                  setTimeLeft(totalTime);
                }}
-               className="w-14 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center transition-all active:scale-95 hover:text-white"
+               className="w-14 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center transition-all btn-press hover:text-white"
+               aria-label="Reset rest timer"
              >
                <RotateCcw size={18} />
              </button>

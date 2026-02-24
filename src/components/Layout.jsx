@@ -1,10 +1,11 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Home, Dumbbell, Library, User } from "lucide-react";
+import { Home, Dumbbell, Library, User, Apple } from "lucide-react";
 import Confetti from "./Confetti";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/workout", icon: Dumbbell, label: "Workout" },
+  { to: "/nutrition", icon: Apple, label: "Nutrition" },
   { to: "/exercises", icon: Library, label: "Exercises" },
   { to: "/profile", icon: User, label: "Profile" },
 ];

@@ -122,4 +122,91 @@ input[type="number"] {
 /* ── Accessibility global ── */
 :focus-visible {
   outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.5);
+  border-radius: 8px;
+}
+
+/* ── Micro-animations ── */
+
+/* Set complete bounce */
+@keyframes set-complete {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.15); }
+  60% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.animate-set-complete {
+  animation: set-complete 0.35s ease-out;
+}
+
+/* PR celebration glow */
+@keyframes pr-celebration {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), 0 0 40px rgba(251, 191, 36, 0.3);
+  }
+}
+.animate-pr-celebration {
+  animation: pr-celebration 1s ease-in-out 2;
+}
+
+/* Button press tactile feedback */
+.btn-press {
+  transition: transform 0.1s ease;
+}
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/* Slide up for modal sheets */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slideUp {
+  animation: slideUp 0.25s ease-out;
+}
+
+/* Card entrance stagger helper */
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-cardIn {
+  animation: cardIn 0.3s ease-out both;
+}
+
+/* Progress fill animation */
+@keyframes fillProgress {
+  from { width: 0; }
+}
+.animate-fillProgress {
+  animation: fillProgress 0.8s ease-out;
+}
+
+/* ── Screen reader only utility ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

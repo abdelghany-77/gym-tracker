@@ -1,6 +1,32 @@
-import { useState, useMemo } from "react";
-import { Trash2, Download, Upload, Trophy, RotateCcw, User, Activity, Flag, Dumbbell, Flame, Zap, Crown, Target, BarChart2, Rocket, Award, RefreshCw } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Trash2, Download, Upload, Trophy, User, Activity, Flag, Dumbbell, Flame, Zap, Crown, Target, BarChart2, Rocket, Award, RefreshCw } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
+import { ConfirmDialog } from "../components/Modal";
+import { z } from "zod";
+
+// Zod schema for import validation
+const importSchema = z.object({
+  history: z.array(z.object({
+    id: z.string(),
+    date: z.string(),
+    programId: z.string(),
+    programName: z.string(),
+    exercises: z.array(z.object({
+      exerciseId: z.string(),
+      sets: z.array(z.object({
+        weight: z.number(),
+        reps: z.number(),
+      })),
+    })),
+  })).optional(),
+  personalRecords: z.record(z.number()).optional(),
+  userProfile: z.object({
+    name: z.string().optional(),
+    weight: z.number().optional(),
+    height: z.number().optional(),
+    age: z.number().optional(),
+  }).optional(),
+});
 
 export default function Profile() {
   const history = useWorkoutStore((s) => s.history);
@@ -10,19 +36,15 @@ export default function Profile() {
   const getExerciseById = useWorkoutStore((s) => s.getExerciseById);
   const userProfile = useWorkoutStore((s) => s.userProfile);
   const updateUserProfile = useWorkoutStore((s) => s.updateUserProfile);
+  const getAchievements = useWorkoutStore((s) => s.getAchievements);
+  const getWeeklyTrend = useWorkoutStore((s) => s.getWeeklyTrend);
+  const getBMI = useWorkoutStore((s) => s.getBMI);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [importError, setImportError] = useState(null);
 
-  const achievements = useMemo(() => {
-    const state = useWorkoutStore.getState();
-    return state.getAchievements();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history, personalRecords]);
-  const weeklyTrend = useMemo(() => {
-    const state = useWorkoutStore.getState();
-    return state.getWeeklyTrend();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history]);
+  const achievements = useMemo(() => getAchievements(), [getAchievements, history, personalRecords]);
+  const weeklyTrend = useMemo(() => getWeeklyTrend(), [getWeeklyTrend, history]);
 
   // Icon map for achievements
   const achievementIcons = {
@@ -38,10 +60,7 @@ export default function Profile() {
   };
   
   // BMI calculation from store
-  const bmi = useMemo(() => {
-    return useWorkoutStore.getState().getBMI();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfile.weight, userProfile.height]);
+  const bmi = useMemo(() => getBMI(), [getBMI, userProfile.weight, userProfile.height]);
 
   // Export data as JSON
   const handleExport = () => {
@@ -62,14 +81,21 @@ export default function Profile() {
     URL.revokeObjectURL(url);
   };
 
-  // Import data from JSON
-  const handleImport = (e) => {
+  // Import data from JSON with Zod validation
+  const handleImport = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setImportError(null);
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const data = JSON.parse(event.target.result);
+        const raw = JSON.parse(event.target.result);
+        const result = importSchema.safeParse(raw);
+        if (!result.success) {
+          setImportError(result.error.issues.map((i) => i.message).join(", "));
+          return;
+        }
+        const data = result.data;
         if (data.history) {
           localStorage.setItem("gym_history", JSON.stringify(data.history));
         }
@@ -81,11 +107,11 @@ export default function Profile() {
         }
         window.location.reload();
       } catch {
-        alert("Invalid backup file.");
+        setImportError("Invalid JSON file. Please select a valid backup.");
       }
     };
     reader.readAsText(file);
-  };
+  }, []);
 
   const prEntries = Object.entries(personalRecords)
     .map(([exerciseId, weight]) => ({
@@ -272,12 +298,12 @@ export default function Profile() {
       </div>
 
       {/* Personal Records */}
-      {prEntries.length > 0 && (
-        <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-            <Trophy size={14} className="text-amber-400" />
-            Personal Records
-          </h2>
+      <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
+        <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <Trophy size={14} className="text-amber-400" />
+          Personal Records
+        </h2>
+        {prEntries.length > 0 ? (
           <div className="space-y-2">
             {prEntries.map(({ exercise, weight }) => (
               <div
@@ -293,11 +319,18 @@ export default function Profile() {
                 <span className="text-sm font-bold text-amber-400">
                   {weight} kg
                 </span>
-                </div>
+              </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-6">
+            <Dumbbell size={20} className="mx-auto text-slate-600 mb-2" />
+            <p className="text-xs text-slate-500">
+              Complete workouts to track PRs
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Data Management */}
       <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
@@ -333,6 +366,13 @@ export default function Profile() {
           />
         </label>
 
+        {importError && (
+          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+            <p className="font-medium mb-0.5">Import failed</p>
+            <p className="text-red-400/70">{importError}</p>
+          </div>
+        )}
+
         <button
           onClick={() => setShowConfirmReset(true)}
           className="w-full flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 transition-colors active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:outline-none"
@@ -363,63 +403,35 @@ export default function Profile() {
         
       </p>
 
-      {/* Confirm Clear Modal */}
-      {showConfirmClear && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700 w-full max-w-sm space-y-4">
-            <h3 className="text-lg font-semibold text-white">
-              Clear All Data?
-            </h3>
-            <p className="text-sm text-slate-400">
-              This will permanently delete your workout history, personal
-              records, and all saved data.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmClear(false)}
-                className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  clearHistory();
-                  setShowConfirmClear(false);
-                }}
-                className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-medium border border-red-500/30 hover:bg-red-500/30 transition-colors focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:outline-none"
-              >
-                Delete Everything
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirm Clear */}
+      <ConfirmDialog
+        isOpen={showConfirmClear}
+        onClose={() => setShowConfirmClear(false)}
+        onConfirm={() => {
+          clearHistory();
+          setShowConfirmClear(false);
+        }}
+        title="Clear All Data?"
+        message="This will permanently delete your workout history, personal records, and all saved data."
+        confirmText="Delete Everything"
+        cancelText="Cancel"
+        variant="danger"
+      />
 
-      {/* Confirm Reset Modal */}
-      {showConfirmReset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700 w-full max-w-sm space-y-4">
-            <h3 className="text-lg font-semibold text-white">Reset to Defaults?</h3>
-            <p className="text-sm text-slate-400">
-              This will restore all exercises and programs to the original defaults. Custom exercises will be lost. Your workout history and PRs will NOT be affected.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmReset(false)}
-                className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => { resetToDefaults(); setShowConfirmReset(false); }}
-                className="flex-1 py-3 rounded-xl bg-amber-500/20 text-amber-400 font-medium border border-amber-500/30 hover:bg-amber-500/30 transition-colors"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirm Reset */}
+      <ConfirmDialog
+        isOpen={showConfirmReset}
+        onClose={() => setShowConfirmReset(false)}
+        onConfirm={() => {
+          resetToDefaults();
+          setShowConfirmReset(false);
+        }}
+        title="Reset to Defaults?"
+        message="This will restore all exercises and programs to the original defaults. Custom exercises will be lost. Your workout history and PRs will NOT be affected."
+        confirmText="Reset"
+        cancelText="Cancel"
+        variant="warning"
+      />
     </div>
   );
 }

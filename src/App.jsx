@@ -6,6 +6,7 @@ import ActiveWorkout from "./pages/ActiveWorkout";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
 import ManageExercises from "./pages/ManageExercises";
 import Profile from "./pages/Profile";
+import Nutrition from "./pages/Nutrition";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/workout/active" element={<ActiveWorkout />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/exercises/manage" element={<ManageExercises />} />
+          <Route path="/nutrition" element={<Nutrition />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
       </Routes>

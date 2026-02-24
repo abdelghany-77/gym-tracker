@@ -108,10 +108,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
         <div className="p-4 space-y-2">
           {/* Table header */}
           <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 text-[11px] text-slate-500 uppercase tracking-wider font-medium px-1">
-            <span>Set</span>
-            <span>KG</span>
-            <span>Reps</span>
-            <span className="text-center">✓</span>
+            <span id={`set-header-${exerciseId}`}>Set</span>
+            <span id={`kg-header-${exerciseId}`}>KG</span>
+            <span id={`reps-header-${exerciseId}`}>Reps</span>
+            <span className="text-center" id={`done-header-${exerciseId}`}>✓</span>
           </div>
 
           {/* Set rows */}
@@ -134,8 +134,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   onChange={(e) =>
                     updateSet(exerciseIndex, si, "weight", e.target.value)
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
                   disabled={set.done}
+                  aria-label={`Set ${si + 1} weight in kg`}
+                  aria-describedby={`kg-header-${exerciseId}`}
                 />
                 {ghostData?.sets[si] && (
                   <span className="text-[11px] text-slate-500 pl-1 truncate">
@@ -152,8 +154,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   onChange={(e) =>
                     updateSet(exerciseIndex, si, "reps", e.target.value)
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
                   disabled={set.done}
+                  aria-label={`Set ${si + 1} reps`}
+                  aria-describedby={`reps-header-${exerciseId}`}
                 />
                 {ghostData?.sets[si] && (
                   <span className="text-[11px] text-slate-500 pl-1 truncate">
@@ -163,7 +167,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               </div>
               <button
                 onClick={() => toggleSetDone(exerciseIndex, si)}
-                className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90 focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none ${
+                className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none ${
+                  set.done ? "animate-set-complete " : ""
+                }${
                   set.done
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
                     : "bg-slate-800 text-slate-500 border border-slate-700 hover:border-slate-600"
