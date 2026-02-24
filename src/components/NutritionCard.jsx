@@ -123,10 +123,6 @@ export default function NutritionCard({ compact = false }) {
           );
         })}
       </div>
-
-      <p className="text-[10px] text-slate-600 text-center">
-        Muscle Building Targets · {nutritionTargets.age || 24}y
-      </p>
     </div>
   );
 }
