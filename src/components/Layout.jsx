@@ -26,7 +26,10 @@ export default function Layout() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800" aria-label="Main navigation">
+      <nav
+        className="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800"
+        aria-label="Main navigation"
+      >
         <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
           {navItems.map((item) => (
             <NavLink
@@ -47,7 +50,9 @@ export default function Layout() {
                 return (
                   <>
                     <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-                    <span className="text-[11px] font-medium">{item.label}</span>
+                    <span className="text-[11px] font-medium">
+                      {item.label}
+                    </span>
                   </>
                 );
               }}

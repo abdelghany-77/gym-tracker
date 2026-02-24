@@ -111,7 +111,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
             <span id={`set-header-${exerciseId}`}>Set</span>
             <span id={`kg-header-${exerciseId}`}>KG</span>
             <span id={`reps-header-${exerciseId}`}>Reps</span>
-            <span className="text-center" id={`done-header-${exerciseId}`}>✓</span>
+            <span className="text-center" id={`done-header-${exerciseId}`}>
+              ✓
+            </span>
           </div>
 
           {/* Set rows */}

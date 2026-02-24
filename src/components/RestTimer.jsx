@@ -10,7 +10,7 @@ export default function RestTimer() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [totalTime, setTotalTime] = useState(60); // Default 60s
   const [isRunning, setIsRunning] = useState(false);
-  
+
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
   const restTimerTrigger = useWorkoutStore((s) => s.restTimerTrigger);
   const previousTriggerRef = useRef(0);
@@ -36,12 +36,14 @@ export default function RestTimer() {
   const playBeep = useCallback(() => {
     try {
       if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        audioContextRef.current = new (
+          window.AudioContext || window.webkitAudioContext
+        )();
       }
-      if (audioContextRef.current.state === 'suspended') {
+      if (audioContextRef.current.state === "suspended") {
         audioContextRef.current.resume();
       }
-      
+
       const ctx = audioContextRef.current;
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
@@ -51,7 +53,10 @@ export default function RestTimer() {
 
       oscillator.type = "sine";
       oscillator.frequency.setValueAtTime(880, ctx.currentTime); // A5
-      oscillator.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5); // Drop to A4
+      oscillator.frequency.exponentialRampToValueAtTime(
+        440,
+        ctx.currentTime + 0.5,
+      ); // Drop to A4
 
       gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
@@ -84,7 +89,7 @@ export default function RestTimer() {
   // Progress Offset
   const progress = timeLeft / totalTime;
   const dashOffset = CIRCUMFERENCE * (1 - progress);
-  
+
   // Dynamic Color
   const getColor = () => {
     if (timeLeft === 0) return "stroke-emerald-500";
@@ -100,13 +105,15 @@ export default function RestTimer() {
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-24 right-6 z-50 w-12 h-12 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center shadow-lg shadow-black/50 btn-press transition-all text-neon-blue"
-        aria-label={isRunning ? `Rest timer: ${timeLeft} seconds left` : "Open rest timer"}
+        aria-label={
+          isRunning ? `Rest timer: ${timeLeft} seconds left` : "Open rest timer"
+        }
       >
         <div className="absolute inset-0 rounded-full border-2 border-neon-blue/20" />
         {isRunning ? (
           <span className="text-xs font-bold font-mono">{timeLeft}</span>
         ) : (
-           <Play size={18} className="ml-0.5" />
+          <Play size={18} className="ml-0.5" />
         )}
       </button>
     );
@@ -115,13 +122,17 @@ export default function RestTimer() {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center pointer-events-none pb-24 px-4">
       <div className="w-full max-w-sm bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 p-4 rounded-3xl shadow-2xl pointer-events-auto animate-in slide-in-from-bottom-5 fade-in duration-300">
-        
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rest Timer</span>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            Rest Timer
+          </span>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => { setIsOpen(false); setIsRunning(false); }}
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                setIsRunning(false);
+              }}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-400"
             >
               <X size={18} />
@@ -131,27 +142,26 @@ export default function RestTimer() {
 
         {/* Circular Timer & Controls */}
         <div className="flex items-center justify-between gap-6">
-          
           {/* Adjustment Buttons */}
           <div className="flex flex-col gap-2">
-            <button 
+            <button
               onClick={() => {
-                 const newTime = totalTime + 10;
-                 setTotalTime(newTime);
-                 if (isRunning) setTimeLeft(l => l + 10);
-                 else setTimeLeft(newTime);
+                const newTime = totalTime + 10;
+                setTotalTime(newTime);
+                if (isRunning) setTimeLeft((l) => l + 10);
+                else setTimeLeft(newTime);
               }}
               className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
               aria-label="Add 10 seconds"
             >
               <Plus size={18} />
             </button>
-             <button 
+            <button
               onClick={() => {
-                 const newTime = Math.max(10, totalTime - 10);
-                 setTotalTime(newTime);
-                 if (isRunning) setTimeLeft(l => Math.max(0, l - 10));
-                 else setTimeLeft(newTime);
+                const newTime = Math.max(10, totalTime - 10);
+                setTotalTime(newTime);
+                if (isRunning) setTimeLeft((l) => Math.max(0, l - 10));
+                else setTimeLeft(newTime);
               }}
               className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
               aria-label="Subtract 10 seconds"
@@ -165,13 +175,17 @@ export default function RestTimer() {
             {/* SVG Circle */}
             <svg className="absolute inset-0 w-full h-full -rotate-90">
               <circle
-                cx="50%" cy="50%" r={RADIUS}
+                cx="50%"
+                cy="50%"
+                r={RADIUS}
                 className="stroke-slate-800"
                 strokeWidth="6"
                 fill="none"
               />
               <circle
-                cx="50%" cy="50%" r={RADIUS}
+                cx="50%"
+                cy="50%"
+                r={RADIUS}
                 className={`transition-all duration-1000 ease-linear ${getColor()}`}
                 strokeWidth="6"
                 fill="none"
@@ -180,44 +194,56 @@ export default function RestTimer() {
                 strokeDashoffset={dashOffset}
               />
             </svg>
-            
+
             {/* Time Text */}
-            <div className="relative z-10 text-center" role="timer" aria-live="assertive" aria-atomic="true">
-               <span className="text-3xl font-bold font-mono text-white block leading-none">
-                 {timeLeft}
-               </span>
-               <span className="text-[10px] text-slate-500 font-medium uppercase mt-1">
-                 Seconds
-               </span>
-               <span className="sr-only">
-                 {timeLeft === 0 ? "Rest timer complete" : `${timeLeft} seconds remaining`}
-               </span>
+            <div
+              className="relative z-10 text-center"
+              role="timer"
+              aria-live="assertive"
+              aria-atomic="true"
+            >
+              <span className="text-3xl font-bold font-mono text-white block leading-none">
+                {timeLeft}
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium uppercase mt-1">
+                Seconds
+              </span>
+              <span className="sr-only">
+                {timeLeft === 0
+                  ? "Rest timer complete"
+                  : `${timeLeft} seconds remaining`}
+              </span>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2">
-             <button 
+            <button
               onClick={() => setIsRunning(!isRunning)}
               className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all btn-press ${
-                isRunning ? 'bg-amber-500/10 text-amber-500' : 'bg-neon-blue/10 text-neon-blue'
+                isRunning
+                  ? "bg-amber-500/10 text-amber-500"
+                  : "bg-neon-blue/10 text-neon-blue"
               }`}
               aria-label={isRunning ? "Pause rest timer" : "Start rest timer"}
             >
-              {isRunning ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+              {isRunning ? (
+                <Pause size={24} fill="currentColor" />
+              ) : (
+                <Play size={24} fill="currentColor" />
+              )}
             </button>
-             <button 
-               onClick={() => {
-                 setIsRunning(false);
-                 setTimeLeft(totalTime);
-               }}
-               className="w-14 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center transition-all btn-press hover:text-white"
-               aria-label="Reset rest timer"
-             >
-               <RotateCcw size={18} />
-             </button>
+            <button
+              onClick={() => {
+                setIsRunning(false);
+                setTimeLeft(totalTime);
+              }}
+              className="w-14 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center transition-all btn-press hover:text-white"
+              aria-label="Reset rest timer"
+            >
+              <RotateCcw size={18} />
+            </button>
           </div>
-
         </div>
       </div>
     </div>

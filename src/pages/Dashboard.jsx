@@ -88,9 +88,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md rounded-full px-4 py-1.5 border border-slate-800 shadow-sm">
           <Flame size={14} className="text-orange-500 fill-orange-500/20" />
           <span className="text-sm font-bold text-white">{stats.streak}</span>
-          <span className="text-[11px] text-slate-500 font-medium">
-            STREAK
-          </span>
+          <span className="text-[11px] text-slate-500 font-medium">STREAK</span>
         </div>
       </div>
 
@@ -166,8 +164,7 @@ export default function Dashboard() {
               className="bg-neon-blue text-slate-950 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20 inline-flex items-center gap-2 btn-press"
               aria-label="Start your first workout"
             >
-              Start First Workout{" "}
-              <ChevronRight size={14} strokeWidth={3} />
+              Start First Workout <ChevronRight size={14} strokeWidth={3} />
             </button>
           </div>
         </div>
@@ -234,9 +231,7 @@ export default function Dashboard() {
                   )}
                 </p>
                 <p className="text-lg font-bold text-white">
-                  {nextWorkout.isRest
-                    ? "Rest Day"
-                    : nextWorkout.program?.name}
+                  {nextWorkout.isRest ? "Rest Day" : nextWorkout.program?.name}
                 </p>
                 <p className="text-[11px] text-slate-500 font-medium">
                   {nextWorkout.isRest
@@ -344,9 +339,7 @@ export default function Dashboard() {
                   >
                     Rest Day
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Recover & Sleep
-                  </p>
+                  <p className="text-[11px] text-slate-500">Recover & Sleep</p>
                 </div>
                 {nextWorkout.isRest && (
                   <div className="ml-auto text-xs font-bold text-slate-500/20">

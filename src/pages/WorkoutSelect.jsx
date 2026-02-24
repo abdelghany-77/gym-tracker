@@ -42,10 +42,13 @@ export default function WorkoutSelect() {
 
   // Get first 3 exercise images for a program
   const getExerciseThumbnails = (program) => {
-    return program.exercises.slice(0, 3).map((exId) => {
-      const ex = exercises.find((e) => e.id === exId);
-      return ex?.image || null;
-    }).filter(Boolean);
+    return program.exercises
+      .slice(0, 3)
+      .map((exId) => {
+        const ex = exercises.find((e) => e.id === exId);
+        return ex?.image || null;
+      })
+      .filter(Boolean);
   };
 
   // Estimate duration: ~4 min per exercise
@@ -122,8 +125,10 @@ export default function WorkoutSelect() {
               aria-label={`Start ${program.name} — ${program.exercises.length} exercises, approximately ${duration} minutes`}
             >
               {/* Subtle gradient accent */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${muscleAccent[mainMuscle] || "from-slate-800/20"} to-transparent opacity-30 pointer-events-none`} />
-              
+              <div
+                className={`absolute inset-0 bg-gradient-to-r ${muscleAccent[mainMuscle] || "from-slate-800/20"} to-transparent opacity-30 pointer-events-none`}
+              />
+
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex-1">
                   <p className="text-base font-semibold text-white group-hover:text-neon-blue transition-colors">
@@ -158,8 +163,16 @@ export default function WorkoutSelect() {
                   {/* Exercise thumbnails */}
                   <div className="flex items-center gap-1 mt-2.5">
                     {thumbnails.map((img, i) => (
-                      <div key={i} className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 border border-slate-700">
-                        <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      <div
+                        key={i}
+                        className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 border border-slate-700"
+                      >
+                        <img
+                          src={getImageUrl(img)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
                       </div>
                     ))}
                     {thumbnails.length === 0 && (

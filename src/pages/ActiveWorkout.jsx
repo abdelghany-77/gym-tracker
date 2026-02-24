@@ -68,9 +68,7 @@ export default function ActiveWorkout() {
         <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-800 flex items-center justify-center">
           <Dumbbell size={28} className="text-slate-600" />
         </div>
-        <p className="text-slate-400 font-medium">
-          No active workout session.
-        </p>
+        <p className="text-slate-400 font-medium">No active workout session.</p>
         <button
           onClick={() => navigate("/workout")}
           className="text-neon-blue hover:underline text-sm font-medium"

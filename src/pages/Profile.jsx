@@ -1,31 +1,58 @@
 import { useState, useMemo, useCallback } from "react";
-import { Trash2, Download, Upload, Trophy, User, Activity, Flag, Dumbbell, Flame, Zap, Crown, Target, BarChart2, Rocket, Award, RefreshCw } from "lucide-react";
+import {
+  Trash2,
+  Download,
+  Upload,
+  Trophy,
+  User,
+  Activity,
+  Flag,
+  Dumbbell,
+  Flame,
+  Zap,
+  Crown,
+  Target,
+  BarChart2,
+  Rocket,
+  Award,
+  RefreshCw,
+} from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { ConfirmDialog } from "../components/Modal";
 import { z } from "zod";
 
 // Zod schema for import validation
 const importSchema = z.object({
-  history: z.array(z.object({
-    id: z.string(),
-    date: z.string(),
-    programId: z.string(),
-    programName: z.string(),
-    exercises: z.array(z.object({
-      exerciseId: z.string(),
-      sets: z.array(z.object({
-        weight: z.number(),
-        reps: z.number(),
-      })),
-    })),
-  })).optional(),
+  history: z
+    .array(
+      z.object({
+        id: z.string(),
+        date: z.string(),
+        programId: z.string(),
+        programName: z.string(),
+        exercises: z.array(
+          z.object({
+            exerciseId: z.string(),
+            sets: z.array(
+              z.object({
+                weight: z.number(),
+                reps: z.number(),
+              }),
+            ),
+          }),
+        ),
+      }),
+    )
+    .optional(),
   personalRecords: z.record(z.number()).optional(),
-  userProfile: z.object({
-    name: z.string().optional(),
-    weight: z.number().optional(),
-    height: z.number().optional(),
-    age: z.number().optional(),
-  }).optional(),
+  userProfile: z
+    .object({
+      name: z.string().optional(),
+      weight: z.number().optional(),
+      height: z.number().optional(),
+      age: z.number().optional(),
+    })
+    .optional(),
 });
 
 export default function Profile() {
@@ -43,24 +70,33 @@ export default function Profile() {
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [importError, setImportError] = useState(null);
 
-  const achievements = useMemo(() => getAchievements(), [getAchievements, history, personalRecords]);
-  const weeklyTrend = useMemo(() => getWeeklyTrend(), [getWeeklyTrend, history]);
+  const achievements = useMemo(
+    () => getAchievements(),
+    [getAchievements, history, personalRecords],
+  );
+  const weeklyTrend = useMemo(
+    () => getWeeklyTrend(),
+    [getWeeklyTrend, history],
+  );
 
   // Icon map for achievements
   const achievementIcons = {
-    "flag": Flag,
-    "dumbbell": Dumbbell,
-    "flame": Flame,
-    "zap": Zap,
-    "crown": Crown,
-    "trophy": Trophy,
-    "target": Target,
+    flag: Flag,
+    dumbbell: Dumbbell,
+    flame: Flame,
+    zap: Zap,
+    crown: Crown,
+    trophy: Trophy,
+    target: Target,
     "bar-chart": BarChart2,
-    "rocket": Rocket
+    rocket: Rocket,
   };
-  
+
   // BMI calculation from store
-  const bmi = useMemo(() => getBMI(), [getBMI, userProfile.weight, userProfile.height]);
+  const bmi = useMemo(
+    () => getBMI(),
+    [getBMI, userProfile.weight, userProfile.height],
+  );
 
   // Export data as JSON
   const handleExport = () => {
@@ -128,7 +164,11 @@ export default function Profile() {
       {/* User Avatar & Greeting */}
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 border border-slate-700 flex items-center justify-center text-2xl font-bold text-neon-blue shrink-0">
-          {userProfile.name ? userProfile.name.charAt(0).toUpperCase() : <User size={28} className="text-slate-500" />}
+          {userProfile.name ? (
+            userProfile.name.charAt(0).toUpperCase()
+          ) : (
+            <User size={28} className="text-slate-500" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <input
@@ -139,7 +179,8 @@ export default function Profile() {
             className="text-xl font-bold text-white bg-transparent border-none outline-none placeholder-slate-600 w-full focus:placeholder-slate-500"
           />
           <p className="text-[11px] text-slate-500 mt-0.5">
-            {history.length} workouts • {Object.keys(personalRecords).length} PRs
+            {history.length} workouts • {Object.keys(personalRecords).length}{" "}
+            PRs
           </p>
         </div>
       </div>
@@ -149,23 +190,31 @@ export default function Profile() {
         <h2 className="text-sm font-semibold text-white">Your Stats</h2>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-[11px] text-slate-500 mb-1 block">Weight (kg)</label>
+            <label className="text-[11px] text-slate-500 mb-1 block">
+              Weight (kg)
+            </label>
             <input
               type="number"
               inputMode="decimal"
               value={userProfile.weight || ""}
-              onChange={(e) => updateUserProfile({ weight: Number(e.target.value) })}
+              onChange={(e) =>
+                updateUserProfile({ weight: Number(e.target.value) })
+              }
               placeholder="0"
               className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
             />
           </div>
           <div>
-            <label className="text-[11px] text-slate-500 mb-1 block">Height (cm)</label>
+            <label className="text-[11px] text-slate-500 mb-1 block">
+              Height (cm)
+            </label>
             <input
               type="number"
               inputMode="decimal"
               value={userProfile.height || ""}
-              onChange={(e) => updateUserProfile({ height: Number(e.target.value) })}
+              onChange={(e) =>
+                updateUserProfile({ height: Number(e.target.value) })
+              }
               placeholder="0"
               className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-green focus:outline-none focus:ring-1 focus:ring-neon-green/30 transition-colors"
             />
@@ -176,22 +225,28 @@ export default function Profile() {
               type="number"
               inputMode="numeric"
               value={userProfile.age || ""}
-              onChange={(e) => updateUserProfile({ age: Number(e.target.value) })}
+              onChange={(e) =>
+                updateUserProfile({ age: Number(e.target.value) })
+              }
               placeholder="24"
               className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-purple focus:outline-none focus:ring-1 focus:ring-neon-purple/30 transition-colors"
             />
           </div>
         </div>
-        
+
         {/* BMI Row */}
         {bmi && (
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center justify-between bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 col-span-2">
               <div>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">BMI</p>
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+                  BMI
+                </p>
                 <p className={`text-lg font-bold ${bmi.color}`}>{bmi.value}</p>
               </div>
-              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${bmi.color} bg-white/5`}>
+              <span
+                className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${bmi.color} bg-white/5`}
+              >
                 {bmi.category}
               </span>
             </div>
@@ -208,7 +263,10 @@ export default function Profile() {
         <div className="flex items-end justify-between gap-2 h-24">
           {weeklyTrend.map((week, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full flex items-end justify-center" style={{ height: "72px" }}>
+              <div
+                className="w-full flex items-end justify-center"
+                style={{ height: "72px" }}
+              >
                 <div
                   className={`w-full max-w-[28px] rounded-t-md transition-all duration-500 ${
                     week.count > 0
@@ -220,9 +278,13 @@ export default function Profile() {
                   }}
                 />
               </div>
-              <span className="text-[10px] text-slate-500 font-medium">{week.label}</span>
+              <span className="text-[10px] text-slate-500 font-medium">
+                {week.label}
+              </span>
               {week.count > 0 && (
-                <span className="text-[10px] text-neon-blue font-bold">{week.count}</span>
+                <span className="text-[10px] text-neon-blue font-bold">
+                  {week.count}
+                </span>
               )}
             </div>
           ))}
@@ -257,7 +319,9 @@ export default function Profile() {
                   <IconComponent size={20} />
                 </div>
                 <div className="space-y-0.5">
-                  <p className={`text-[10px] font-semibold leading-tight ${a.earned ? "text-white" : "text-slate-500"}`}>
+                  <p
+                    className={`text-[10px] font-semibold leading-tight ${a.earned ? "text-white" : "text-slate-500"}`}
+                  >
                     {a.label}
                   </p>
                 </div>
@@ -381,7 +445,9 @@ export default function Profile() {
           <RefreshCw size={16} className="text-amber-400" />
           <div className="text-left">
             <p className="text-sm text-amber-400">Reset to Defaults</p>
-            <p className="text-[11px] text-amber-400/50">Restore original exercises & programs</p>
+            <p className="text-[11px] text-amber-400/50">
+              Restore original exercises & programs
+            </p>
           </div>
         </button>
 
@@ -399,9 +465,7 @@ export default function Profile() {
       </div>
 
       {/* App info */}
-      <p className="text-center text-[11px] text-slate-600 pt-2">
-        
-      </p>
+      <p className="text-center text-[11px] text-slate-600 pt-2"></p>
 
       {/* Confirm Clear */}
       <ConfirmDialog

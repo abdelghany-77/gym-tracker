@@ -32,7 +32,10 @@ export default function Nutrition() {
   const mealPlanFollowed = dailyChecklist?.mealPlanFollowed || false;
   const mealsEaten = dailyChecklist?.mealsEaten || [];
   const calorieTarget = nutritionTargets.calories || 3500;
-  const caloriePercent = Math.min(100, Math.round((caloriesConsumed / calorieTarget) * 100));
+  const caloriePercent = Math.min(
+    100,
+    Math.round((caloriesConsumed / calorieTarget) * 100),
+  );
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6 animate-fadeIn">

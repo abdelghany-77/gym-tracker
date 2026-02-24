@@ -1,6 +1,14 @@
 import { useState, useMemo } from "react";
 import {
-  Search, Plus, Pencil, Trash2, X, Check, Dumbbell, ArrowLeft, ChevronDown,
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Check,
+  Dumbbell,
+  ArrowLeft,
+  ChevronDown,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
@@ -56,7 +64,13 @@ export default function ManageExercises() {
   }, [filteredExercises]);
 
   const resetForm = () => {
-    setForm({ name: "", muscle: "Chest", tips: "", default_sets: 3, default_reps: 10 });
+    setForm({
+      name: "",
+      muscle: "Chest",
+      tips: "",
+      default_sets: 3,
+      default_reps: 10,
+    });
     setShowAddForm(false);
     setEditingId(null);
   };
@@ -108,7 +122,10 @@ export default function ManageExercises() {
           </p>
         </div>
         <button
-          onClick={() => { resetForm(); setShowAddForm(true); }}
+          onClick={() => {
+            resetForm();
+            setShowAddForm(true);
+          }}
           className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-neon-blue/10 text-neon-blue text-xs font-semibold border border-neon-blue/20 hover:bg-neon-blue/20 transition-all active:scale-95"
         >
           <Plus size={14} />
@@ -119,7 +136,10 @@ export default function ManageExercises() {
       {/* Search & Filter */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+          />
           <input
             type="text"
             placeholder="Search..."
@@ -137,10 +157,15 @@ export default function ManageExercises() {
           >
             <option value="All">All</option>
             {muscleGroups.map((m) => (
-              <option key={m} value={m}>{m}</option>
+              <option key={m} value={m}>
+                {m}
+              </option>
             ))}
           </select>
-          <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+          <ChevronDown
+            size={14}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+          />
         </div>
       </div>
 
@@ -170,7 +195,9 @@ export default function ManageExercises() {
 
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-1">
-              <label className="text-[10px] text-slate-500 mb-1 block">Muscle</label>
+              <label className="text-[10px] text-slate-500 mb-1 block">
+                Muscle
+              </label>
               <select
                 value={form.muscle}
                 onChange={(e) => setForm({ ...form, muscle: e.target.value })}
@@ -178,25 +205,41 @@ export default function ManageExercises() {
                 title="Select muscle group"
               >
                 {muscleGroups.map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-slate-500 mb-1 block">Sets</label>
+              <label className="text-[10px] text-slate-500 mb-1 block">
+                Sets
+              </label>
               <input
                 type="number"
                 value={form.default_sets}
-                onChange={(e) => setForm({ ...form, default_sets: Number(e.target.value) || 3 })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    default_sets: Number(e.target.value) || 3,
+                  })
+                }
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
               />
             </div>
             <div>
-              <label className="text-[10px] text-slate-500 mb-1 block">Reps</label>
+              <label className="text-[10px] text-slate-500 mb-1 block">
+                Reps
+              </label>
               <input
                 type="number"
                 value={form.default_reps}
-                onChange={(e) => setForm({ ...form, default_reps: Number(e.target.value) || 10 })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    default_reps: Number(e.target.value) || 10,
+                  })
+                }
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
               />
             </div>
@@ -261,7 +304,8 @@ export default function ManageExercises() {
                   <div className="flex items-center gap-2 mt-0.5">
                     <span
                       className={`text-[9px] px-1.5 py-0.5 rounded-full border ${
-                        muscleColors[ex.muscle] || "bg-slate-700 text-slate-400 border-slate-600"
+                        muscleColors[ex.muscle] ||
+                        "bg-slate-700 text-slate-400 border-slate-600"
                       }`}
                     >
                       {ex.muscle}
