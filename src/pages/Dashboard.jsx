@@ -17,6 +17,7 @@ import ActivityChart from "../components/ActivityChart";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 import { ConfirmDialog } from "../components/Modal";
+import ReminderWidget from "../components/ReminderWidget";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -145,6 +146,9 @@ export default function Dashboard() {
           );
         })}
       </div>
+
+      {/* Water & Vitamin Reminders */}
+      <ReminderWidget />
 
       {/* Empty State CTA — when no workouts yet */}
       {stats.totalSessions === 0 && (

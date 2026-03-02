@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Home, Dumbbell, Library, User, Apple } from "lucide-react";
 import Confetti from "./Confetti";
+import NotificationManager from "./NotificationManager";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -17,6 +18,8 @@ export default function Layout() {
     <div className="min-h-screen bg-slate-950 text-white flex flex-col">
       {/* Confetti overlay */}
       <Confetti />
+      {/* Notification manager (background reminders) */}
+      <NotificationManager />
 
       {/* Main content area — scrollable, with bottom padding for nav */}
       <main className="flex-1 overflow-y-auto pb-20">
