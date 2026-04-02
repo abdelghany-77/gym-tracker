@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, RotateCcw, Dumbbell } from "lucide-react";
+import { AlertTriangle, RotateCcw, Trash2, Dumbbell } from "lucide-react";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -16,6 +16,24 @@ class ErrorBoundary extends React.Component {
     this.setState({ errorInfo });
   }
 
+  handleClearAndReload = () => {
+    try {
+      // Clear all gym-tracker localStorage keys
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("gym_")) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
+    } catch {
+      // If even this fails, clear everything
+      localStorage.clear();
+    }
+    window.location.reload();
+  };
+
   render() {
     if (this.state.hasError) {
       return (
@@ -31,7 +49,8 @@ class ErrorBoundary extends React.Component {
                 Something Went Wrong
               </h1>
               <p className="text-sm text-slate-400 leading-relaxed">
-                An unexpected error occurred. Don't worry — your workout data is safely stored.
+                An unexpected error occurred. Don&apos;t worry — your workout
+                data is safely stored.
               </p>
             </div>
 
@@ -45,13 +64,26 @@ class ErrorBoundary extends React.Component {
               </pre>
             </details>
 
-            <button
-              onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-2 bg-neon-blue text-slate-950 px-6 py-3 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20"
-            >
-              <RotateCcw size={16} />
-              Reload App
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full inline-flex items-center justify-center gap-2 bg-neon-blue text-slate-950 px-6 py-3 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20"
+              >
+                <RotateCcw size={16} />
+                Reload App
+              </button>
+
+              <button
+                onClick={this.handleClearAndReload}
+                className="w-full inline-flex items-center justify-center gap-2 bg-red-500/10 text-red-400 px-6 py-3 rounded-xl text-sm font-semibold border border-red-500/20 hover:bg-red-500/20 active:scale-95 transition-all"
+              >
+                <Trash2 size={16} />
+                Clear Data &amp; Reload
+              </button>
+              <p className="text-[10px] text-slate-600">
+                Use this if the error keeps happening after reload
+              </p>
+            </div>
 
             <p className="text-[11px] text-slate-600 flex items-center justify-center gap-1">
               <Dumbbell size={10} />

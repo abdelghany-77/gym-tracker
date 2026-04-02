@@ -1,34 +1,55 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { X, Play, Pause, RotateCcw, Plus, Minus } from "lucide-react";
+import { X, Play, Pause, RotateCcw, Plus, Minus, Settings } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 
 const RADIUS = 36;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+// Preset rest times in seconds
+const PRESETS = [30, 45, 60, 90, 120, 180];
+
 export default function RestTimer() {
   const [isOpen, setIsOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [totalTime, setTotalTime] = useState(60); // Default 60s
+  const [totalTime, setTotalTime] = useState(60);
   const [isRunning, setIsRunning] = useState(false);
+  const [showPresets, setShowPresets] = useState(false);
 
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
   const restTimerTrigger = useWorkoutStore((s) => s.restTimerTrigger);
+  const exerciseRestTimes = useWorkoutStore((s) => s.exerciseRestTimes);
+  const setExerciseRestTime = useWorkoutStore((s) => s.setExerciseRestTime);
   const previousTriggerRef = useRef(0);
   const intervalRef = useRef(null);
 
-  // Auto-start timer when a set is marked as done (trigger updates)
+  // Auto-start timer when a set is marked as done
   useEffect(() => {
     if (restTimerTrigger && restTimerTrigger > previousTriggerRef.current) {
-      // Use setTimeout to avoid synchronous state update warning
+      // Determine which exercise was just completed to get its rest time
+      let restDuration = totalTime;
+      if (activeWorkout?.exercises) {
+        // Find the current exercise being worked on (last one with a done set)
+        for (let i = activeWorkout.exercises.length - 1; i >= 0; i--) {
+          const ex = activeWorkout.exercises[i];
+          const hasDoneSet = ex.sets.some((s) => s.done);
+          if (hasDoneSet) {
+            const exerciseRest = exerciseRestTimes[ex.exerciseId];
+            if (exerciseRest) restDuration = exerciseRest;
+            break;
+          }
+        }
+      }
+
       const timerId = setTimeout(() => {
+        setTotalTime(restDuration);
         setIsOpen(true);
-        setTimeLeft(totalTime);
+        setTimeLeft(restDuration);
         setIsRunning(true);
       }, 0);
       previousTriggerRef.current = restTimerTrigger;
       return () => clearTimeout(timerId);
     }
-  }, [restTimerTrigger, totalTime]);
+  }, [restTimerTrigger, totalTime, activeWorkout, exerciseRestTimes]);
 
   // Audio Context Ref
   const audioContextRef = useRef(null);
@@ -168,6 +189,14 @@ export default function RestTimer() {
             >
               <Minus size={18} />
             </button>
+            {/* Preset selector (item 6) */}
+            <button
+              onClick={() => setShowPresets(!showPresets)}
+              className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 btn-press transition-all hover:text-white"
+              aria-label="Rest time presets"
+            >
+              <Settings size={14} />
+            </button>
           </div>
 
           {/* Circle */}
@@ -245,6 +274,42 @@ export default function RestTimer() {
             </button>
           </div>
         </div>
+
+        {/* Preset buttons (item 6) */}
+        {showPresets && (
+          <div className="mt-3 pt-3 border-t border-slate-800">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 text-center">Quick Set</p>
+            <div className="flex flex-wrap gap-1.5 justify-center">
+              {PRESETS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => {
+                    setTotalTime(s);
+                    setTimeLeft(s);
+                    setIsRunning(false);
+                    // Save for current exercise if one is active
+                    if (activeWorkout?.exercises) {
+                      for (let i = activeWorkout.exercises.length - 1; i >= 0; i--) {
+                        if (activeWorkout.exercises[i].sets.some((st) => st.done)) {
+                          setExerciseRestTime(activeWorkout.exercises[i].exerciseId, s);
+                          break;
+                        }
+                      }
+                    }
+                    setShowPresets(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    totalTime === s
+                      ? "bg-neon-blue text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  {s >= 60 ? `${s / 60}m` : `${s}s`}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

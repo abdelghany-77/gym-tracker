@@ -34,7 +34,10 @@ export default function Dashboard() {
     () => useWorkoutStore.getState().getNextWorkout(),
     [history, weeklySchedule],
   );
-  const lastSession = useWorkoutStore((s) => s.getLastSession());
+  const lastSession = useMemo(() => {
+    if (history.length === 0) return null;
+    return history[history.length - 1];
+  }, [history]);
 
   const stats = useMemo(() => {
     const totalSessions = history.length;

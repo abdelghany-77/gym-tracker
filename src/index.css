@@ -258,3 +258,50 @@ input[type="number"] {
 .animate-slideDown {
   animation: slideDown 0.35s ease-out;
 }
+
+/* ── Light Theme (item 13) ── */
+[data-theme="light"] {
+  --color-surface: #f1f5f9;
+  --color-surface-light: #e2e8f0;
+  --color-surface-lighter: #cbd5e1;
+}
+
+[data-theme="light"] body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+[data-theme="light"] .bg-slate-950 { background-color: #f8fafc; }
+[data-theme="light"] .bg-slate-900 { background-color: #f1f5f9; }
+[data-theme="light"] .bg-slate-800 { background-color: #e2e8f0; }
+[data-theme="light"] .text-white { color: #0f172a; }
+[data-theme="light"] .text-slate-400,
+[data-theme="light"] .text-slate-500 { color: #64748b; }
+[data-theme="light"] .border-slate-800,
+[data-theme="light"] .border-slate-700 { border-color: #cbd5e1; }
+
+/* ── Reduced Motion (item 18) ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fadeIn,
+  .animate-slideUp,
+  .animate-slideDown,
+  .animate-cardIn,
+  .animate-set-complete,
+  .animate-pr-celebration,
+  .animate-vitamin-check,
+  .animate-wave,
+  .animate-fillProgress,
+  .animate-pulse-neon {
+    animation: none !important;
+  }
+}
+

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { X, Droplets, Pill } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 
@@ -66,7 +66,11 @@ export default function NotificationManager() {
   const soundEnabled = useWorkoutStore((s) => s.soundEnabled);
   const waterIntervalMinutes = useWorkoutStore((s) => s.waterIntervalMinutes);
   const dailyChecklist = useWorkoutStore((s) => s.dailyChecklist);
-  const waterGoal = useWorkoutStore((s) => s.getWaterGoal());
+  const userWeight = useWorkoutStore((s) => s.userProfile?.weight);
+  const waterGoal = useMemo(() => {
+    if (!userWeight) return 8;
+    return Math.ceil((userWeight * 33) / 250);
+  }, [userWeight]);
   const lastWaterReminderTime = useWorkoutStore(
     (s) => s.lastWaterReminderTime,
   );
@@ -112,7 +116,7 @@ export default function NotificationManager() {
       }
 
       // Always show in-app toast
-      const id = Date.now() + Math.random();
+      const id = crypto.randomUUID();
       setToasts((prev) => [...prev, { id, message: body, icon, color }]);
     },
     [soundEnabled],

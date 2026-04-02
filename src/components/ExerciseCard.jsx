@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   Ghost,
@@ -8,22 +8,34 @@ import {
   Info,
   ArrowLeftRight,
   X,
+  TrendingUp,
+  TrendingDown,
+  ExternalLink,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 import SwapExerciseModal from "./SwapExerciseModal";
+import { haptics } from "../utils/haptics";
 
 function ExerciseCard({ exerciseIndex, exerciseData }) {
   const { exerciseId, sets } = exerciseData;
-  const exercise = useWorkoutStore((s) => s.getExerciseById(exerciseId));
-  const ghostData = useWorkoutStore((s) => s.getGhostData(exerciseId));
+  // Select functions as references, not called in selector (item 1 ESLint rule)
+  const getExerciseById = useWorkoutStore((s) => s.getExerciseById);
+  const getGhostData = useWorkoutStore((s) => s.getGhostData);
   const updateSet = useWorkoutStore((s) => s.updateSet);
   const toggleSetDone = useWorkoutStore((s) => s.toggleSetDone);
   const addSet = useWorkoutStore((s) => s.addSet);
   const removeSet = useWorkoutStore((s) => s.removeSet);
   const personalRecords = useWorkoutStore((s) => s.personalRecords);
+  const history = useWorkoutStore((s) => s.history);
+  const exercises = useWorkoutStore((s) => s.exercises);
   const [showSwap, setShowSwap] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- exercises/history trigger re-computation
+  const exercise = useMemo(() => getExerciseById(exerciseId), [getExerciseById, exerciseId, exercises]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const ghostData = useMemo(() => getGhostData(exerciseId), [getGhostData, exerciseId, history]);
 
   if (!exercise) return null;
 
@@ -93,15 +105,28 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           </div>
         )}
 
-        {/* Tips */}
+        {/* Tips + Video Link (item 15) */}
         <details className="border-b border-slate-800/50 group">
           <summary className="px-4 py-2 text-xs text-slate-500 cursor-pointer hover:text-slate-300 flex items-center gap-1.5 select-none">
             <Info size={12} />
             How to perform
           </summary>
-          <p className="px-4 pb-3 text-xs text-slate-400 leading-relaxed">
-            {exercise.tips}
-          </p>
+          <div className="px-4 pb-3 space-y-2">
+            <p className="text-xs text-slate-400 leading-relaxed">
+              {exercise.tips}
+            </p>
+            {exercise.video && (
+              <a
+                href={exercise.video}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] text-neon-blue hover:text-neon-blue/80 transition-colors font-medium"
+              >
+                <ExternalLink size={10} />
+                Watch demo video
+              </a>
+            )}
+          </div>
         </details>
 
         {/* Sets Table */}
@@ -120,7 +145,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           {sets.map((set, si) => (
             <div
               key={si}
-              className={`grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 items-center transition-all ${
+              className={`grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 items-center transition-all relative ${
                 set.done ? "opacity-60" : ""
               }`}
             >
@@ -168,7 +193,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                 )}
               </div>
               <button
-                onClick={() => toggleSetDone(exerciseIndex, si)}
+                onClick={() => {
+                  toggleSetDone(exerciseIndex, si);
+                  if (!set.done) haptics.light();
+                }}
                 className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none ${
                   set.done ? "animate-set-complete " : ""
                 }${
@@ -184,6 +212,16 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               >
                 <Check size={16} strokeWidth={set.done ? 3 : 2} />
               </button>
+              {/* Progressive Overload Indicator (item 7) */}
+              {ghostData?.sets[si] && set.weight && (
+                <div className="absolute -right-1 -top-1" aria-hidden="true">
+                  {Number(set.weight) > ghostData.sets[si].weight ? (
+                    <TrendingUp size={10} className="text-neon-green" />
+                  ) : Number(set.weight) < ghostData.sets[si].weight ? (
+                    <TrendingDown size={10} className="text-red-400" />
+                  ) : null}
+                </div>
+              )}
             </div>
           ))}
 

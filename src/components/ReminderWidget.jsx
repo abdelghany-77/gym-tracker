@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Droplets,
   Plus,
@@ -7,12 +7,17 @@ import {
   Sparkles,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
+import { haptics } from "../utils/haptics";
 
 export default function ReminderWidget() {
   const dailyChecklist = useWorkoutStore((s) => s.dailyChecklist);
   const incrementWater = useWorkoutStore((s) => s.incrementWater);
   const decrementWater = useWorkoutStore((s) => s.decrementWater);
-  const waterGoal = useWorkoutStore((s) => s.getWaterGoal());
+  const userWeight = useWorkoutStore((s) => s.userProfile?.weight);
+  const waterGoal = useMemo(() => {
+    if (!userWeight) return 8;
+    return Math.ceil((userWeight * 33) / 250);
+  }, [userWeight]);
   const toggleChecklistItem = useWorkoutStore((s) => s.toggleChecklistItem);
   const [animatingCup, setAnimatingCup] = useState(false);
 
@@ -23,6 +28,7 @@ export default function ReminderWidget() {
 
   const handleAddCup = () => {
     incrementWater();
+    haptics.medium();
     setAnimatingCup(true);
     setTimeout(() => setAnimatingCup(false), 500);
   };

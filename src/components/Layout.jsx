@@ -1,13 +1,14 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Home, Dumbbell, Library, User, Apple } from "lucide-react";
+import { Home, Dumbbell, Library, User, Apple, History } from "lucide-react";
 import Confetti from "./Confetti";
 import NotificationManager from "./NotificationManager";
+import OfflineIndicator from "./OfflineIndicator";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/workout", icon: Dumbbell, label: "Workout" },
   { to: "/nutrition", icon: Apple, label: "Nutrition" },
-  { to: "/exercises", icon: Library, label: "Exercises" },
+  { to: "/history", icon: History, label: "History" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 
@@ -16,13 +17,15 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+      {/* Offline indicator (item 14) */}
+      <OfflineIndicator />
       {/* Confetti overlay */}
       <Confetti />
       {/* Notification manager (background reminders) */}
       <NotificationManager />
 
       {/* Main content area — scrollable, with bottom padding for nav */}
-      <main className="flex-1 overflow-y-auto pb-20">
+      <main className="flex-1 overflow-y-auto pb-20" role="main">
         <div key={location.pathname} className="animate-fadeIn">
           <Outlet />
         </div>
@@ -32,6 +35,7 @@ export default function Layout() {
       <nav
         className="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800"
         aria-label="Main navigation"
+        role="navigation"
       >
         <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
           {navItems.map((item) => (
