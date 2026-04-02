@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Play, ChevronRight, Activity, Clock, Dumbbell } from "lucide-react";
+import { Play, ChevronRight, Activity, Clock, Dumbbell, Library } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 
@@ -58,11 +58,20 @@ export default function WorkoutSelect() {
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5 animate-fadeIn">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Start Workout</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Choose your program for today
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Start Workout</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Choose your program for today
+          </p>
+        </div>
+        <button 
+          onClick={() => navigate("/exercises")}
+          className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all shadow-sm"
+          aria-label="Exercise Library"
+        >
+          <Library size={18} />
+        </button>
       </div>
 
       {/* Resume active workout */}
