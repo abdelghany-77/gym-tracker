@@ -1,5 +1,6 @@
 import { Trophy, Dumbbell } from "lucide-react";
 import useWorkoutStore from "../../store/workoutStore";
+import OneRepMaxChart from "./OneRepMaxChart";
 
 export default function PersonalRecordsTab() {
   const personalRecords = useWorkoutStore((s) => s.personalRecords);
@@ -42,6 +43,10 @@ export default function PersonalRecordsTab() {
           <p className="text-xs text-slate-500">Complete workouts to track PRs</p>
         </div>
       )}
+      
+      <div className="pt-4">
+        <OneRepMaxChart />
+      </div>
     </div>
   );
 }

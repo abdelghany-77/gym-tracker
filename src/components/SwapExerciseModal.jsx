@@ -34,8 +34,8 @@ export default function SwapExerciseModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 rounded-2xl border border-slate-700 w-full max-w-md max-h-[80vh] flex flex-col animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-sm">
+      <div className="bg-slate-900 w-full max-w-md h-full flex flex-col animate-fadeIn">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <div className="flex items-center gap-2">

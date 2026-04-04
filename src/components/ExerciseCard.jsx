@@ -43,9 +43,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
 
   return (
     <>
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800/80 overflow-hidden shadow-lg shadow-black/20">
         {/* Exercise Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-slate-800">
+        <div className="flex items-center gap-3 p-4 border-b border-slate-800/60">
           <button
             onClick={() => exercise.image && setShowImageModal(true)}
             className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue/50 transition-transform active:scale-95"
@@ -130,9 +130,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
         </details>
 
         {/* Sets Table */}
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-2.5">
           {/* Table header */}
-          <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 text-[11px] text-slate-500 uppercase tracking-wider font-medium px-1">
+          <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2.5 text-[11px] text-slate-500 uppercase tracking-wider font-medium px-1 pb-1 border-b border-slate-800/40">
             <span id={`set-header-${exerciseId}`}>Set</span>
             <span id={`kg-header-${exerciseId}`}>KG</span>
             <span id={`reps-header-${exerciseId}`}>Reps</span>
@@ -145,8 +145,8 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           {sets.map((set, si) => (
             <div
               key={si}
-              className={`grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 items-center transition-all relative ${
-                set.done ? "opacity-60" : ""
+              className={`grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2.5 items-center transition-all relative py-0.5 ${
+                set.done ? "opacity-50" : ""
               }`}
             >
               <span className="text-xs text-slate-500 font-mono pl-1">
@@ -226,7 +226,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           ))}
 
           {/* Add/Remove set buttons */}
-          <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex items-center justify-center gap-4 pt-3 border-t border-slate-800/40 mt-1">
             <button
               onClick={() => removeSet(exerciseIndex, sets.length - 1)}
               className="text-xs text-slate-500 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
