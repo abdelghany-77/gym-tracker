@@ -411,6 +411,7 @@ export const createWorkoutSlice = (set, get) => ({
       date: todayKey(),
       programId: activeWorkout.programId,
       programName: activeWorkout.programName,
+      trainingPlan: get().activeProgram || "ppl_upper",
       startedAt: activeWorkout.startedAt,
       finishedAt: new Date().toISOString(),
       exercises: activeWorkout.exercises.map((ex) => ({

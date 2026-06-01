@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { Play, ChevronRight, Activity, Clock, Dumbbell, Library } from "lucide-react";
+import { Play, ChevronRight, Activity, Clock, Dumbbell, Library, Zap, Crown } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
+import { trainingPlans } from "../data/exercises";
 
 const muscleColors = {
   Chest: "bg-red-500/15 text-red-400 border-red-500/30",
@@ -9,6 +10,7 @@ const muscleColors = {
   Shoulders: "bg-amber-500/15 text-amber-400 border-amber-500/30",
   Arms: "bg-purple-500/15 text-purple-400 border-purple-500/30",
   Legs: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  Core: "bg-orange-500/15 text-orange-400 border-orange-500/30",
 };
 
 const muscleAccent = {
@@ -17,6 +19,7 @@ const muscleAccent = {
   Shoulders: "from-amber-500/20",
   Arms: "from-purple-500/20",
   Legs: "from-emerald-500/20",
+  Core: "from-orange-500/20",
 };
 
 const muscleBorder = {
@@ -25,6 +28,7 @@ const muscleBorder = {
   Shoulders: "border-l-amber-500/40",
   Arms: "border-l-purple-500/40",
   Legs: "border-l-emerald-500/40",
+  Core: "border-l-orange-500/40",
 };
 
 export default function WorkoutSelect() {
@@ -33,6 +37,8 @@ export default function WorkoutSelect() {
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
   const programs = useWorkoutStore((s) => s.programs);
   const exercises = useWorkoutStore((s) => s.exercises);
+  const activeProgram = useWorkoutStore((s) => s.activeProgram);
+  const activePlan = trainingPlans[activeProgram] || trainingPlans.ppl_upper;
   const programList = Object.values(programs);
 
   const handleStartWorkout = (programId) => {
@@ -61,9 +67,18 @@ export default function WorkoutSelect() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Start Workout</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Choose your program for today
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-slate-500">
+              Choose your program for today
+            </p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+              activeProgram === 'ppl_upper'
+                ? 'bg-neon-blue/10 text-neon-blue border-neon-blue/20'
+                : 'bg-neon-purple/10 text-neon-purple border-neon-purple/20'
+            }`}>
+              {activeProgram === 'ppl_upper' ? '⚡' : '💪'} {activePlan.name}
+            </span>
+          </div>
         </div>
         <button 
           onClick={() => navigate("/exercises")}

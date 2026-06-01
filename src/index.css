@@ -280,6 +280,40 @@ input[type="number"] {
 [data-theme="light"] .border-slate-800,
 [data-theme="light"] .border-slate-700 { border-color: #cbd5e1; }
 
+/* ── Program Selector Neon Glow ── */
+@keyframes neon-glow-blue {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.1), inset 0 0 10px rgba(0, 212, 255, 0.02);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(0, 212, 255, 0.2), inset 0 0 15px rgba(0, 212, 255, 0.03);
+  }
+}
+.animate-neon-glow-blue {
+  animation: neon-glow-blue 3s ease-in-out infinite;
+}
+
+@keyframes neon-glow-purple {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(179, 71, 217, 0.1), inset 0 0 10px rgba(179, 71, 217, 0.02);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(179, 71, 217, 0.2), inset 0 0 15px rgba(179, 71, 217, 0.03);
+  }
+}
+.animate-neon-glow-purple {
+  animation: neon-glow-purple 3s ease-in-out infinite;
+}
+
+@keyframes program-switch {
+  0% { transform: scale(0.97); opacity: 0.7; }
+  50% { transform: scale(1.01); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-program-switch {
+  animation: program-switch 0.4s ease-out;
+}
+
 /* ── Reduced Motion (item 18) ── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -300,7 +334,10 @@ input[type="number"] {
   .animate-vitamin-check,
   .animate-wave,
   .animate-fillProgress,
-  .animate-pulse-neon {
+  .animate-pulse-neon,
+  .animate-neon-glow-blue,
+  .animate-neon-glow-purple,
+  .animate-program-switch {
     animation: none !important;
   }
 }

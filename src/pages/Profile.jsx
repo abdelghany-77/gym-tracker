@@ -7,6 +7,7 @@ import AchievementsList from "../components/profile/AchievementsList";
 import PersonalRecordsTab from "../components/profile/PersonalRecordsTab";
 import DataManagement from "../components/profile/DataManagement";
 import BodyMeasurementsTab from "../components/profile/BodyMeasurementsTab";
+import ProgramSelector from "../components/ProgramSelector";
 
 export default function Profile() {
   const history = useWorkoutStore((s) => s.history);
@@ -184,6 +185,11 @@ export default function Profile() {
         {/* SETTINGS TAB */}
         {activeTab === "settings" && (
           <div className="space-y-5">
+            {/* Program Selector */}
+            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+              <ProgramSelector />
+            </div>
+
             {/* Theme Toggle */}
             <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800">
               <div className="flex items-center justify-between">

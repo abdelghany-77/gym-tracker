@@ -1,4 +1,5 @@
 import defaultExercises, {
+  trainingPlans,
   workoutPrograms as defaultPrograms,
   weeklySchedule as defaultSchedule,
 } from "../data/exercises";
@@ -15,9 +16,22 @@ const seedExercises = () => {
 const seedPrograms = () => {
   const stored = loadFromStorage("gym_programs", null);
   if (stored) return stored;
-  const programs = { ...defaultPrograms };
+  // Seed from the active program's plan
+  const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
+  const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
+  const programs = { ...plan.programs };
   saveToStorage("gym_programs", programs);
   return programs;
+};
+
+const seedSchedule = () => {
+  const stored = loadFromStorage("gym_schedule", null);
+  if (stored) return stored;
+  const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
+  const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
+  const schedule = { ...plan.defaultSchedule };
+  saveToStorage("gym_schedule", schedule);
+  return schedule;
 };
 
 // ── Exercise Slice ──
@@ -25,13 +39,36 @@ export const createExerciseSlice = (set, get) => ({
   // State
   exercises: seedExercises(),
   programs: seedPrograms(),
-  weeklySchedule: loadFromStorage("gym_schedule", defaultSchedule),
+  weeklySchedule: seedSchedule(),
+  activeProgram: loadFromStorage("gym_active_program", "ppl_upper"),
 
   // Getters
   getExerciseById: (id) => get().exercises.find((e) => e.id === id),
   getAllExercises: () => get().exercises,
   getPrograms: () => get().programs,
   getSchedule: () => get().weeklySchedule,
+  getActiveProgram: () => get().activeProgram,
+  getActivePlanData: () => trainingPlans[get().activeProgram] || trainingPlans.ppl_upper,
+
+  // ── Switch Training Program ──
+  setActiveProgram: (planId) => {
+    const plan = trainingPlans[planId];
+    if (!plan) return;
+
+    const newPrograms = { ...plan.programs };
+    const newSchedule = { ...plan.defaultSchedule };
+
+    saveToStorage("gym_active_program", planId);
+    saveToStorage("gym_programs", newPrograms);
+    saveToStorage("gym_schedule", newSchedule);
+
+    set({
+      activeProgram: planId,
+      programs: newPrograms,
+      weeklySchedule: newSchedule,
+      activeWorkout: null, // cancel any in-progress workout
+    });
+  },
 
   // CRUD: Exercises
   addExercise: (exercise) => {
@@ -149,15 +186,18 @@ export const createExerciseSlice = (set, get) => ({
     });
   },
 
-  // Reset to Defaults
+  // Reset to Defaults (respects active program)
   resetToDefaults: () => {
+    const activePlan = get().activeProgram || "ppl_upper";
+    const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
+
     saveToStorage("gym_exercises", defaultExercises);
-    saveToStorage("gym_programs", defaultPrograms);
-    saveToStorage("gym_schedule", defaultSchedule);
+    saveToStorage("gym_programs", plan.programs);
+    saveToStorage("gym_schedule", plan.defaultSchedule);
     set({
       exercises: defaultExercises,
-      programs: { ...defaultPrograms },
-      weeklySchedule: { ...defaultSchedule },
+      programs: { ...plan.programs },
+      weeklySchedule: { ...plan.defaultSchedule },
     });
   },
 });

@@ -12,12 +12,15 @@ import {
   Coffee,
   Moon,
   Target,
+  Zap,
+  Crown,
 } from "lucide-react";
 import ActivityChart from "../components/ActivityChart";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 import { ConfirmDialog } from "../components/Modal";
 import ReminderWidget from "../components/ReminderWidget";
+import { trainingPlans } from "../data/exercises";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 export default function Dashboard() {
@@ -28,6 +31,8 @@ export default function Dashboard() {
   const history = useWorkoutStore((s) => s.history);
   const globalExercises = useWorkoutStore((s) => s.exercises);
   const weeklySchedule = useWorkoutStore((s) => s.weeklySchedule);
+  const activeProgram = useWorkoutStore((s) => s.activeProgram);
+  const activePlan = trainingPlans[activeProgram] || trainingPlans.ppl_upper;
   const heatmapData = useMemo(
     () => useWorkoutStore.getState().getHeatmapData(),
     [history],
@@ -124,10 +129,19 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md rounded-full px-4 py-1.5 border border-slate-800 shadow-sm">
-          <Flame size={14} className="text-orange-500 fill-orange-500/20" />
-          <span className="text-sm font-bold text-white">{stats.streak}</span>
-          <span className="text-[11px] text-slate-500 font-medium">STREAK</span>
+        <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 border text-[10px] font-bold uppercase tracking-wider ${
+            activeProgram === 'ppl_upper'
+              ? 'bg-neon-blue/8 border-neon-blue/20 text-neon-blue'
+              : 'bg-neon-purple/8 border-neon-purple/20 text-neon-purple'
+          }`}>
+            {activeProgram === 'ppl_upper' ? <Zap size={10} /> : <Crown size={10} />}
+            {activePlan.name}
+          </div>
+          <div className="flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md rounded-full px-3 py-1.5 border border-slate-800 shadow-sm">
+            <Flame size={14} className="text-orange-500 fill-orange-500/20" />
+            <span className="text-sm font-bold text-white">{stats.streak}</span>
+          </div>
         </div>
       </div>
 
