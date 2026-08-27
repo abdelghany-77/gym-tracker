@@ -20,7 +20,7 @@ export default function SwapExerciseModal({
 
   const currentExercise = useMemo(() => {
     return isOpen ? getExerciseById(currentExerciseId) : null;
-  }, [isOpen, getExerciseById, currentExerciseId, exercises]);
+  }, [isOpen, getExerciseById, currentExerciseId]);
 
   const targetMuscle = currentExercise?.primaryMuscle || currentExercise?.muscle?.toLowerCase() || "";
   const targetAngle = currentExercise?.targetAngle || "";
@@ -99,18 +99,16 @@ export default function SwapExerciseModal({
             Replacing Target Exercise
           </p>
           <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-border-slate">
-            <div className="w-11 h-11 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700/50">
-              {currentExercise?.image ? (
-                <img
-                  src={getImageUrl(currentExercise.image)}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-500">
-                  <Dumbbell size={16} />
-                </div>
-              )}
+            <div className="w-11 h-11 rounded-lg overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] flex items-center justify-center p-1">
+              <img
+                src={getImageUrl(currentExercise?.image || (currentExercise?.id ? `/exercises/${currentExercise.id}.png` : "/exercises/default.png"))}
+                alt=""
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = getImageUrl("/icons/dumbbell.svg");
+                }}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">
@@ -191,19 +189,17 @@ export default function SwapExerciseModal({
                 onClick={() => handleSelect(ex.id)}
                 className="w-full flex items-center gap-3.5 p-3 rounded-2xl glass-card glass-card-hover text-left active:scale-[0.98] transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-slate-700/50">
-                  {ex.image ? (
-                    <img
-                      src={getImageUrl(ex.image)}
-                      alt={ex.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-500">
-                      <Dumbbell size={18} />
-                    </div>
-                  )}
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1 flex items-center justify-center">
+                  <img
+                    src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
+                    alt={ex.name}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = getImageUrl("/icons/dumbbell.svg");
+                    }}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate group-hover:text-neon-cyan transition-colors">

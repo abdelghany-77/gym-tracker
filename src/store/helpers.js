@@ -1,3 +1,17 @@
+// ── Schema Version ──
+export const DATABASE_VERSION = "3.0.0";
+
+// ── Helper: Deduplication & Sanitizer ──
+export const sanitizeExerciseList = (list) => {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list.filter((item) => {
+    if (!item || !item.id || seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+};
+
 // ── Helper: localStorage read/write ──
 export const loadFromStorage = (key, fallback) => {
   try {
@@ -21,3 +35,4 @@ export const todayKey = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM
 
 export const generateId = () =>
   `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+

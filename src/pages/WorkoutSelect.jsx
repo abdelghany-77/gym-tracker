@@ -194,8 +194,12 @@ export default function WorkoutSelect() {
                         <img
                           src={getImageUrl(img)}
                           alt=""
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-[#0B0F17] p-0.5"
                           loading="lazy"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = getImageUrl("/icons/dumbbell.svg");
+                          }}
                         />
                       </div>
                     ))}

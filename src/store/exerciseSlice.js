@@ -1,16 +1,54 @@
 import defaultExercises, {
   trainingPlans,
-  workoutPrograms as defaultPrograms,
-  weeklySchedule as defaultSchedule,
 } from "../data/exercises";
-import { loadFromStorage, saveToStorage, generateId } from "./helpers";
+import {
+  DATABASE_VERSION,
+  loadFromStorage,
+  saveToStorage,
+  generateId,
+  sanitizeExerciseList,
+} from "./helpers";
+
+// ── Database Version Check & Hard Reset ──
+export const purgeAndSyncDatabase = () => {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) return;
+    const currentVersion = localStorage.getItem("gym_db_version");
+    if (currentVersion !== DATABASE_VERSION) {
+      // Hard wipe of all exercise and program states
+      localStorage.removeItem("gym_exercises");
+      localStorage.removeItem("gym_programs");
+      localStorage.removeItem("gym_schedule");
+      localStorage.removeItem("gym_custom_program_overrides");
+
+      // Set pristine 72-exercise database and initial programs
+      const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
+      const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
+      const pristineExercises = sanitizeExerciseList(defaultExercises);
+      localStorage.setItem("gym_exercises", JSON.stringify(pristineExercises));
+      localStorage.setItem("gym_programs", JSON.stringify(plan.programs));
+      localStorage.setItem("gym_schedule", JSON.stringify(plan.defaultSchedule));
+      localStorage.setItem("gym_db_version", DATABASE_VERSION);
+    }
+  } catch (e) {
+    console.warn("Database purge & sync failed:", e);
+  }
+};
+
+// Execute version check immediately before store initialization
+purgeAndSyncDatabase();
 
 // ── Seed logic ──
 const seedExercises = () => {
   const stored = loadFromStorage("gym_exercises", null);
-  if (stored) return stored;
-  saveToStorage("gym_exercises", defaultExercises);
-  return defaultExercises;
+  if (stored) {
+    const sanitized = sanitizeExerciseList(stored);
+    saveToStorage("gym_exercises", sanitized);
+    return sanitized;
+  }
+  const initial = sanitizeExerciseList(defaultExercises);
+  saveToStorage("gym_exercises", initial);
+  return initial;
 };
 
 const seedPrograms = () => {
@@ -41,9 +79,38 @@ export const createExerciseSlice = (set, get) => ({
   programs: seedPrograms(),
   weeklySchedule: seedSchedule(),
   activeProgram: loadFromStorage("gym_active_program", "ppl_upper"),
+  purgeAndSyncDatabase,
 
   // Getters
-  getExerciseById: (id) => get().exercises.find((e) => e.id === id),
+  getExerciseById: (id) => {
+    if (!id) return null;
+    const found = get().exercises.find((e) => e.id === id);
+    if (found) return found;
+
+    // Graceful fallback for legacy unmatched exercise IDs in history/PRs
+    const fallbackName = String(id)
+      .replace(/^(chest_|back_|sh_|leg_|arm_|core_)/, "")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    return {
+      id,
+      name: fallbackName || "Exercise",
+      nameAr: "",
+      primaryMuscle: "chest",
+      muscle: "Other",
+      targetAngle: "mid_chest",
+      equipment: "dumbbell",
+      category: "compound",
+      defaultSets: 3,
+      defaultReps: 10,
+      default_sets: 3,
+      default_reps: 10,
+      image: `/exercises/${id}.png`,
+      tips: "",
+      isFallback: true,
+    };
+  },
   getAllExercises: () => get().exercises,
   getPrograms: () => get().programs,
   getSchedule: () => get().weeklySchedule,
@@ -83,7 +150,7 @@ export const createExerciseSlice = (set, get) => ({
         default_reps: exercise.default_reps || 10,
         isCustom: true,
       };
-      const updated = [...state.exercises, newExercise];
+      const updated = sanitizeExerciseList([...state.exercises, newExercise]);
       saveToStorage("gym_exercises", updated);
       return { exercises: updated };
     });
@@ -91,8 +158,10 @@ export const createExerciseSlice = (set, get) => ({
 
   updateExercise: (id, updates) => {
     set((state) => {
-      const updated = state.exercises.map((ex) =>
-        ex.id === id ? { ...ex, ...updates } : ex,
+      const updated = sanitizeExerciseList(
+        state.exercises.map((ex) =>
+          ex.id === id ? { ...ex, ...updates } : ex,
+        )
       );
       saveToStorage("gym_exercises", updated);
       return { exercises: updated };
@@ -101,7 +170,7 @@ export const createExerciseSlice = (set, get) => ({
 
   deleteExercise: (id) => {
     set((state) => {
-      const updated = state.exercises.filter((ex) => ex.id !== id);
+      const updated = sanitizeExerciseList(state.exercises.filter((ex) => ex.id !== id));
       const updatedPrograms = { ...state.programs };
       Object.keys(updatedPrograms).forEach((key) => {
         updatedPrograms[key] = {
@@ -191,11 +260,12 @@ export const createExerciseSlice = (set, get) => ({
     const activePlan = get().activeProgram || "ppl_upper";
     const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
 
-    saveToStorage("gym_exercises", defaultExercises);
+    const sanitizedDefaults = sanitizeExerciseList(defaultExercises);
+    saveToStorage("gym_exercises", sanitizedDefaults);
     saveToStorage("gym_programs", plan.programs);
     saveToStorage("gym_schedule", plan.defaultSchedule);
     set({
-      exercises: defaultExercises,
+      exercises: sanitizedDefaults,
       programs: { ...plan.programs },
       weeklySchedule: { ...plan.defaultSchedule },
     });

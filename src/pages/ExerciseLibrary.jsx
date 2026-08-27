@@ -191,12 +191,16 @@ export default function ExerciseLibrary() {
                       className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-800 border border-slate-700/50 hover:border-slate-600 transition-all active:scale-[0.98]"
                     >
                       <img
-                        src={getImageUrl(exercise.image)}
+                        src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
                         alt={exercise.name}
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                        className="w-full h-full object-contain p-2 opacity-85 group-hover:opacity-100 transition-opacity bg-[#0B0F17]"
                         loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = getImageUrl("/icons/dumbbell.svg");
+                        }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-3">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-3 pointer-events-none">
                         <div
                           className={`self-start text-[10px] px-2 py-0.5 rounded-full border mb-1.5 ${
                             muscleColors[exercise.muscle] ||
@@ -208,6 +212,11 @@ export default function ExerciseLibrary() {
                         <h3 className="font-semibold text-white text-sm leading-tight">
                           {exercise.name}
                         </h3>
+                        {exercise.nameAr && (
+                          <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                            {exercise.nameAr}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -220,18 +229,27 @@ export default function ExerciseLibrary() {
                       key={exercise.id}
                       className="flex items-center gap-4 bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50 hover:border-slate-600/80 transition-all active:scale-[0.99]"
                     >
-                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-700 shrink-0 border border-slate-600/30">
+                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1 flex items-center justify-center">
                         <img
-                          src={getImageUrl(exercise.image)}
+                          src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
                           alt={exercise.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                           loading="lazy"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = getImageUrl("/icons/dumbbell.svg");
+                          }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-white truncate text-sm">
                           {exercise.name}
                         </h3>
+                        {exercise.nameAr && (
+                          <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                            {exercise.nameAr}
+                          </p>
+                        )}
                         <div className="flex items-center gap-2 mt-1">
                           <span
                             className={`text-[10px] px-2 py-0.5 rounded-full border ${

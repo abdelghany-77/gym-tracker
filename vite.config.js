@@ -33,15 +33,16 @@ export default defineConfig({
         ],
       },
       workbox: {
+        cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg}"],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith("/gym-tracker/"),
             handler: "CacheFirst",
             options: {
-              cacheName: "gym-images-cache",
+              cacheName: "gym-cache-v3",
               expiration: {
-                maxEntries: 50,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
               },
             },

@@ -21,6 +21,20 @@ describe('WorkoutStore & Biomechanical Database', () => {
     expect(trainingPlans.bro_split).toBeDefined();
   });
 
+  it('verifies pristine 72-exercise catalog with exactly 12 exercises per muscle group and no duplicates', () => {
+    expect(exercises.length).toBe(72);
+
+    const ids = exercises.map(e => e.id);
+    const uniqueIds = new Set(ids);
+    expect(uniqueIds.size).toBe(72);
+
+    const muscleGroups = ['chest', 'back', 'shoulders', 'legs', 'arms', 'core'];
+    muscleGroups.forEach((m) => {
+      const count = exercises.filter(e => e.primaryMuscle === m).length;
+      expect(count, `Expected 12 exercises for ${m}, found ${count}`).toBe(12);
+    });
+  });
+
   it('verifies all exercises have biomechanical category, primaryMuscle, and targetAngle tags', () => {
     exercises.forEach((ex) => {
       expect(ex.id, `Exercise ${ex.id} missing ID`).toBeDefined();
@@ -33,13 +47,12 @@ describe('WorkoutStore & Biomechanical Database', () => {
     });
   });
 
-  it('verifies Chest has all 5 comprehensive biomechanical angles', () => {
+  it('verifies Chest has all essential biomechanical angles', () => {
     const chestAngles = new Set(exercises.filter(e => e.primaryMuscle === 'chest').map(e => e.targetAngle));
     expect(chestAngles.has('upper_chest')).toBe(true);
     expect(chestAngles.has('mid_chest')).toBe(true);
     expect(chestAngles.has('lower_chest')).toBe(true);
     expect(chestAngles.has('inner_chest')).toBe(true);
-    expect(chestAngles.has('machine_compound')).toBe(true);
   });
 
   it('verifies Back has all 6 comprehensive biomechanical angles', () => {
@@ -88,14 +101,14 @@ describe('WorkoutStore & Biomechanical Database', () => {
     const originalFirstExercise = active.exercises[0].exerciseId;
 
     // Swap to machine chest press permanently
-    store.swapExercise(0, 'chest_machine_press', true);
+    store.swapExercise(0, 'chest_machine_flat_press', true);
 
     active = useWorkoutStore.getState().activeWorkout;
-    expect(active.exercises[0].exerciseId).toBe('chest_machine_press');
+    expect(active.exercises[0].exerciseId).toBe('chest_machine_flat_press');
 
     const overrides = useWorkoutStore.getState().customProgramOverrides;
     expect(overrides['push_day']).toBeDefined();
-    expect(overrides['push_day'][originalFirstExercise]).toBe('chest_machine_press');
+    expect(overrides['push_day'][originalFirstExercise]).toBe('chest_machine_flat_press');
 
     // Base template remains pristine
     expect(trainingPlans.ppl_upper.programs.push_day.exercises[0]).toBe(originalFirstExercise);
@@ -110,5 +123,26 @@ describe('WorkoutStore & Biomechanical Database', () => {
     expect(useWorkoutStore.getState().dailyChecklist.vitamin).toBe(true);
     store.toggleChecklistItem('vitamin');
     expect(useWorkoutStore.getState().dailyChecklist.vitamin).toBe(false);
+  });
+
+  it('verifies purgeAndSyncDatabase forcefully wipes legacy data on schema version bump to 3.0.0', () => {
+    localStorage.setItem('gym_db_version', '1.0.0');
+    localStorage.setItem('gym_exercises', JSON.stringify([{ id: 'legacy_obsolete_id' }]));
+    localStorage.setItem('gym_programs', JSON.stringify({ old_prog: {} }));
+    localStorage.setItem('gym_custom_program_overrides', JSON.stringify({ foo: 'bar' }));
+
+    const { purgeAndSyncDatabase } = useWorkoutStore.getState();
+    if (typeof purgeAndSyncDatabase === 'function') {
+      purgeAndSyncDatabase();
+    } else {
+      // Direct call
+      import('../store/exerciseSlice').then(({ purgeAndSyncDatabase: sync }) => sync());
+    }
+
+    expect(localStorage.getItem('gym_db_version')).toBe('3.0.0');
+    const syncedExercises = JSON.parse(localStorage.getItem('gym_exercises'));
+    expect(syncedExercises.length).toBe(72);
+    expect(syncedExercises.some(e => e.id === 'chest_bb_flat_bench')).toBe(true);
+    expect(localStorage.getItem('gym_custom_program_overrides')).toBeNull();
   });
 });

@@ -30,7 +30,7 @@ export default function OneRepMaxChart() {
   }, [history, globalExercises]);
 
   const [selectedExercise, setSelectedExercise] = useState(() => {
-    if (exercisesWithData.some(e => e.id === "chest_barbell_bench")) return "chest_barbell_bench";
+    if (exercisesWithData.some(e => e.id === "chest_bb_flat_bench")) return "chest_bb_flat_bench";
     return exercisesWithData[0]?.id || "";
   });
 

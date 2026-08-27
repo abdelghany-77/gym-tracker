@@ -62,23 +62,21 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
         {/* Exercise Header */}
         <div className="flex items-center gap-3.5 p-4 border-b border-border-slate/60 bg-bg-surface/60">
           <button
-            onClick={() => exercise.image && setShowImageModal(true)}
-            className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-800 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 transition-transform active:scale-95 border border-slate-700/60 shadow-md"
+            onClick={() => setShowImageModal(true)}
+            className="w-14 h-14 rounded-2xl overflow-hidden bg-[#121824] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 transition-transform active:scale-95 border border-[#1E293B] shadow-md flex items-center justify-center"
             aria-label={`View ${exercise.name} details`}
             title="Click to view details"
           >
-            {exercise.image ? (
-              <img
-                src={getImageUrl(exercise.image)}
-                alt={exercise.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-500">
-                <ArrowLeftRight size={20} />
-              </div>
-            )}
+            <img
+              src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
+              alt={exercise.name}
+              className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1"
+              loading="lazy"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = getImageUrl("/icons/dumbbell.svg");
+              }}
+            />
           </button>
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-white truncate text-[15px] tracking-tight">
@@ -348,11 +346,15 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               </button>
 
               {/* Large image */}
-              <div className="w-full aspect-square bg-slate-950 flex items-center justify-center">
+              <div className="w-full aspect-square bg-[#121824] flex items-center justify-center p-4 border-b border-border-slate">
                 <img
-                  src={getImageUrl(exercise.image)}
+                  src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
                   alt={exercise.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = getImageUrl("/icons/dumbbell.svg");
+                  }}
                 />
               </div>
 

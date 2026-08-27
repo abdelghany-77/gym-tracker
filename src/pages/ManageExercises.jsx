@@ -15,8 +15,20 @@ import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../components/Modal";
+import AngleBadge from "../components/AngleBadge";
+import { angleLabels } from "../data/exercises";
+import { sanitizeExerciseList } from "../store/helpers";
 
 const muscleGroups = ["Chest", "Back", "Shoulders", "Arms", "Legs", "Core"];
+
+const equipmentOptions = [
+  { id: "all", label: "All" },
+  { id: "barbell", label: "Barbell" },
+  { id: "dumbbell", label: "Dumbbell" },
+  { id: "cable", label: "Cable" },
+  { id: "machine", label: "Machine" },
+  { id: "bodyweight", label: "Bodyweight" },
+];
 
 const muscleColors = {
   Chest: {
@@ -71,12 +83,15 @@ const muscleColors = {
 
 export default function ManageExercises() {
   const navigate = useNavigate();
-  const exercises = useWorkoutStore((s) => s.exercises);
+  const rawExercises = useWorkoutStore((s) => s.exercises);
   const programs = useWorkoutStore((s) => s.programs);
   const updateProgram = useWorkoutStore((s) => s.updateProgram);
   const addExercise = useWorkoutStore((s) => s.addExercise);
   const updateExercise = useWorkoutStore((s) => s.updateExercise);
   const deleteExercise = useWorkoutStore((s) => s.deleteExercise);
+
+  // Sanitize exercise list from store to avoid any duplicates
+  const exercises = useMemo(() => sanitizeExerciseList(rawExercises), [rawExercises]);
 
   // Which program is being edited
   const programList = useMemo(() => Object.values(programs), [programs]);
@@ -85,8 +100,9 @@ export default function ManageExercises() {
   );
   const selectedProgram = programs[selectedProgramId];
 
-  // UI state
+  // UI filter states
   const [search, setSearch] = useState("");
+  const [selectedEquipment, setSelectedEquipment] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -95,7 +111,10 @@ export default function ManageExercises() {
   // Form state for add/edit
   const [form, setForm] = useState({
     name: "",
+    nameAr: "",
     muscle: "Chest",
+    equipment: "barbell",
+    targetAngle: "mid_chest",
     tips: "",
     default_sets: 3,
     default_reps: 10,
@@ -104,37 +123,62 @@ export default function ManageExercises() {
   // Get the relevant muscle for the selected program
   const programMuscles = useMemo(() => selectedProgram?.muscles || [], [selectedProgram]);
 
+  // Multi-attribute search matching function
+  const matchExercise = (ex, query, equipment) => {
+    if (equipment !== "all" && ex.equipment !== equipment) {
+      return false;
+    }
+    if (!query) return true;
+    const q = query.toLowerCase().trim();
+    const nameEn = (ex.name || "").toLowerCase();
+    const nameAr = (ex.nameAr || "").toLowerCase();
+    const targetAngle = (ex.targetAngle || "").toLowerCase();
+    const muscle = (ex.muscle || ex.primaryMuscle || "").toLowerCase();
+    const equip = (ex.equipment || "").toLowerCase();
+    const angleObj = ex.targetAngle ? angleLabels[ex.targetAngle] : null;
+    const angleEn = (angleObj?.en || "").toLowerCase();
+    const angleAr = (angleObj?.ar || "").toLowerCase();
+
+    return (
+      nameEn.includes(q) ||
+      nameAr.includes(q) ||
+      targetAngle.includes(q) ||
+      muscle.includes(q) ||
+      equip.includes(q) ||
+      angleEn.includes(q) ||
+      angleAr.includes(q)
+    );
+  };
+
   // Filter exercises for the current program's muscle group
   const availableExercises = useMemo(() => {
     if (!selectedProgram) return [];
     return exercises.filter((ex) => {
       const matchMuscle =
         programMuscles.length === 0 || programMuscles.includes(ex.muscle);
-      const matchSearch = ex.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-      return matchMuscle && matchSearch;
+      return matchMuscle && matchExercise(ex, search, selectedEquipment);
     });
-  }, [exercises, selectedProgram, programMuscles, search]);
+  }, [exercises, selectedProgram, programMuscles, search, selectedEquipment]);
 
   // All exercises grouped by muscle (for "all" view)
   const allExercisesGrouped = useMemo(() => {
     const filtered = exercises.filter((ex) =>
-      ex.name.toLowerCase().includes(search.toLowerCase()),
+      matchExercise(ex, search, selectedEquipment),
     );
     return filtered.reduce((acc, ex) => {
-      if (!acc[ex.muscle]) acc[ex.muscle] = [];
-      acc[ex.muscle].push(ex);
+      const m = ex.muscle || "Chest";
+      if (!acc[m]) acc[m] = [];
+      acc[m].push(ex);
       return acc;
     }, {});
-  }, [exercises, search]);
+  }, [exercises, search, selectedEquipment]);
 
   // Check if exercise is in the selected program
   const isInProgram = (exerciseId) => {
     return selectedProgram?.exercises?.includes(exerciseId) || false;
   };
 
-  // Toggle exercise in program
+  // Toggle exercise in program (maintains unique list)
   const toggleExerciseInProgram = (exerciseId) => {
     if (!selectedProgram) return;
     const currentExercises = [...(selectedProgram.exercises || [])];
@@ -144,22 +188,34 @@ export default function ManageExercises() {
     } else {
       currentExercises.push(exerciseId);
     }
-    updateProgram(selectedProgramId, { exercises: currentExercises });
+    // Deduplicate array
+    const deduplicated = Array.from(new Set(currentExercises));
+    updateProgram(selectedProgramId, { exercises: deduplicated });
   };
 
-  // Get exercises currently in the program (ordered)
+  // Get exercises currently in the program (ordered & deduplicated)
   const programExercises = useMemo(() => {
     if (!selectedProgram) return [];
-    return (selectedProgram.exercises || [])
-      .map((id) => exercises.find((e) => e.id === id))
-      .filter(Boolean);
+    const seen = new Set();
+    const list = [];
+    for (const id of selectedProgram.exercises || []) {
+      if (!seen.has(id)) {
+        seen.add(id);
+        const ex = exercises.find((e) => e.id === id);
+        if (ex) list.push(ex);
+      }
+    }
+    return list;
   }, [selectedProgram, exercises]);
 
   // Form handlers
   const resetForm = () => {
     setForm({
       name: "",
+      nameAr: "",
       muscle: programMuscles[0] || "Chest",
+      equipment: "barbell",
+      targetAngle: "mid_chest",
       tips: "",
       default_sets: 3,
       default_reps: 10,
@@ -178,10 +234,13 @@ export default function ManageExercises() {
     setEditingId(ex.id);
     setForm({
       name: ex.name,
-      muscle: ex.muscle,
+      nameAr: ex.nameAr || "",
+      muscle: ex.muscle || "Chest",
+      equipment: ex.equipment || "barbell",
+      targetAngle: ex.targetAngle || "mid_chest",
       tips: ex.tips || "",
-      default_sets: ex.default_sets || 3,
-      default_reps: ex.default_reps || 10,
+      default_sets: ex.default_sets || ex.defaultSets || 3,
+      default_reps: ex.default_reps || ex.defaultReps || 10,
     });
     setShowAddForm(false);
   };
@@ -252,6 +311,26 @@ export default function ManageExercises() {
         </button>
       </div>
 
+      {/* Equipment Filter Pills */}
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
+        {equipmentOptions.map((opt) => {
+          const isSelected = selectedEquipment === opt.id;
+          return (
+            <button
+              key={opt.id}
+              onClick={() => setSelectedEquipment(opt.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-95 border ${
+                isSelected
+                  ? "bg-neon-blue/20 text-neon-blue border-neon-blue/40 shadow-sm"
+                  : "bg-slate-800/60 text-slate-400 border-slate-700/50 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* ═══ PROGRAM VIEW ═══ */}
       {view === "program" && (
         <>
@@ -299,7 +378,7 @@ export default function ManageExercises() {
             />
             <input
               type="text"
-              placeholder={`Search ${programMuscles.join(", ") || ""} exercises...`}
+              placeholder={`Search ${programMuscles.join(", ") || "all"} exercises (EN / عربي / Angle / Equipment)...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-800/80 border border-slate-700/50 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
@@ -364,35 +443,43 @@ export default function ManageExercises() {
                     <Check size={14} strokeWidth={3} />
                   </div>
 
-                  {/* Image */}
-                  <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-800 shrink-0">
-                    {ex.image ? (
-                      <img
-                        src={getImageUrl(ex.image)}
-                        alt={ex.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-600">
-                        <Dumbbell size={16} />
-                      </div>
-                    )}
-                  </div>
+                  {/* Image with fallback */}
+                  <img
+                    src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
+                    alt={ex.name}
+                    className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 shrink-0"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = getImageUrl("/icons/dumbbell.svg");
+                    }}
+                  />
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`text-sm font-medium truncate ${
-                        selected ? "text-white" : "text-slate-300"
+                      className={`text-sm font-semibold truncate ${
+                        selected ? "text-white" : "text-slate-200"
                       }`}
                     >
                       {ex.name}
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                      {ex.default_sets} sets × {ex.default_reps} reps
-                      {ex.isCustom && " • Custom"}
-                    </p>
+                    {ex.nameAr && (
+                      <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                        {ex.nameAr}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                      <span className="text-[9px] text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/50 uppercase font-medium">
+                        {ex.equipment || "barbell"}
+                      </span>
+                      {ex.targetAngle && (
+                        <AngleBadge angle={ex.targetAngle} size="xs" />
+                      )}
+                      <span className="text-[10px] text-slate-500">
+                        {ex.default_sets || ex.defaultSets || 3}×{ex.default_reps || ex.defaultReps || 10}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Order number if selected */}
@@ -409,7 +496,7 @@ export default function ManageExercises() {
 
             {availableExercises.length === 0 && (
               <div className="text-center py-10 text-slate-500 text-sm">
-                No exercises found
+                No exercises found matching current filters
               </div>
             )}
           </div>
@@ -427,7 +514,7 @@ export default function ManageExercises() {
             />
             <input
               type="text"
-              placeholder="Search all exercises..."
+              placeholder="Search all exercises (EN / عربي / Angle / Equipment)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-800/80 border border-slate-700/50 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
@@ -457,30 +544,38 @@ export default function ManageExercises() {
                       key={ex.id}
                       className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 hover:border-slate-700 transition-all group"
                     >
-                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-800 shrink-0">
-                        {ex.image ? (
-                          <img
-                            src={getImageUrl(ex.image)}
-                            alt={ex.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-600">
-                            <Dumbbell size={16} />
-                          </div>
-                        )}
-                      </div>
+                      {/* Image with fallback */}
+                      <img
+                        src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
+                        alt={ex.name}
+                        className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 shrink-0"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = getImageUrl("/icons/dumbbell.svg");
+                        }}
+                      />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-semibold text-white truncate">
                           {ex.name}
                         </p>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        {ex.nameAr && (
+                          <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                            {ex.nameAr}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                           <span
                             className={`text-[9px] px-1.5 py-0.5 rounded-full border ${colors.bg} ${colors.text} ${colors.border}`}
                           >
                             {ex.muscle}
                           </span>
+                          <span className="text-[9px] text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/50 uppercase font-medium">
+                            {ex.equipment || "barbell"}
+                          </span>
+                          {ex.targetAngle && (
+                            <AngleBadge angle={ex.targetAngle} size="xs" />
+                          )}
                           {ex.isCustom && (
                             <span className="text-[9px] text-neon-green bg-neon-green/10 px-1.5 py-0.5 rounded-full border border-neon-green/20">
                               Custom
@@ -514,7 +609,7 @@ export default function ManageExercises() {
 
             {Object.keys(allExercisesGrouped).length === 0 && (
               <div className="text-center py-12 text-slate-500 text-sm">
-                No exercises found
+                No exercises found matching current filters
               </div>
             )}
           </div>
@@ -540,17 +635,26 @@ export default function ManageExercises() {
 
             <input
               type="text"
-              placeholder="Exercise name"
+              placeholder="Exercise name (English)"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
               autoFocus
             />
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-1">
+            <input
+              type="text"
+              placeholder="Arabic name (e.g. بنش بار مستوي)"
+              value={form.nameAr}
+              dir="rtl"
+              onChange={(e) => setForm({ ...form, nameAr: e.target.value })}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+            />
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
                 <label className="text-[10px] text-slate-500 mb-1 block">
-                  Muscle
+                  Muscle Group
                 </label>
                 <div className="relative">
                   <select
@@ -573,6 +677,34 @@ export default function ManageExercises() {
                   />
                 </div>
               </div>
+              <div>
+                <label className="text-[10px] text-slate-500 mb-1 block">
+                  Equipment
+                </label>
+                <div className="relative">
+                  <select
+                    value={form.equipment}
+                    onChange={(e) =>
+                      setForm({ ...form, equipment: e.target.value })
+                    }
+                    className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                    title="Select equipment"
+                  >
+                    {equipmentOptions.filter(e => e.id !== 'all').map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={12}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[10px] text-slate-500 mb-1 block">
                   Sets
