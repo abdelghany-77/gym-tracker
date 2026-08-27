@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { X, ArrowLeftRight, Search, Dumbbell } from "lucide-react";
+import { useState, useMemo } from "react";
+import { X, ArrowLeftRight, Search, Dumbbell, Filter, ChevronDown, Check } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
+import { getAngleLabel } from "../utils/angleUtils";
+import AngleBadge from "./AngleBadge";
 
 export default function SwapExerciseModal({
   isOpen,
@@ -14,52 +16,90 @@ export default function SwapExerciseModal({
   const getExerciseById = useWorkoutStore((s) => s.getExerciseById);
   const [search, setSearch] = useState("");
   const [permanent, setPermanent] = useState(false);
+  const [showAllMuscle, setShowAllMuscle] = useState(false);
+
+  const currentExercise = useMemo(() => {
+    return isOpen ? getExerciseById(currentExerciseId) : null;
+  }, [isOpen, getExerciseById, currentExerciseId, exercises]);
+
+  const targetMuscle = currentExercise?.primaryMuscle || currentExercise?.muscle?.toLowerCase() || "";
+  const targetAngle = currentExercise?.targetAngle || "";
+
+  // Filter: by default only same primaryMuscle + same targetAngle
+  // Toggle: show all for the same primaryMuscle
+  const alternatives = useMemo(() => {
+    if (!isOpen) return [];
+    return exercises.filter((ex) => {
+      if (ex.id === currentExerciseId) return false;
+
+      const exMuscle = ex.primaryMuscle || ex.muscle?.toLowerCase() || "";
+      if (exMuscle !== targetMuscle) return false;
+
+      if (!showAllMuscle && targetAngle && ex.targetAngle !== targetAngle) return false;
+
+      if (search) {
+        const q = search.toLowerCase();
+        return (
+          ex.name.toLowerCase().includes(q) ||
+          (ex.nameAr && ex.nameAr.includes(q))
+        );
+      }
+      return true;
+    });
+  }, [exercises, currentExerciseId, targetMuscle, targetAngle, showAllMuscle, search, isOpen]);
 
   if (!isOpen) return null;
 
-  const currentExercise = getExerciseById(currentExerciseId);
-  const targetMuscle = currentExercise?.muscle || "";
-
-  // Filter by same muscle, exclude current
-  const alternatives = exercises.filter(
-    (ex) =>
-      ex.muscle === targetMuscle &&
-      ex.id !== currentExerciseId &&
-      ex.name.toLowerCase().includes(search.toLowerCase()),
-  );
-
   const handleSelect = (newExerciseId) => {
     swapExercise(exerciseIndex, newExerciseId, permanent);
+    setSearch("");
+    setShowAllMuscle(false);
     onClose();
   };
 
+  const angleLabel = getAngleLabel(targetAngle);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-slate-900 w-full max-w-md h-full flex flex-col animate-fadeIn">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <ArrowLeftRight size={16} className="text-neon-blue" />
-            <h3 className="text-base font-semibold text-white">
-              Swap Exercise
-            </h3>
+    <div 
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-200"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-bg-surface w-full max-w-lg max-h-[85vh] sm:max-h-[80vh] flex flex-col rounded-t-3xl sm:rounded-2xl border-t sm:border border-border-slate shadow-2xl shadow-black/80 animate-slideUp overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ═══ Drawer Drag Handle (Mobile) ═══ */}
+        <div className="w-12 h-1.5 bg-slate-700/80 rounded-full mx-auto mt-3 mb-1 sm:hidden shrink-0" />
+
+        {/* ═══ Header ═══ */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border-slate">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center">
+              <ArrowLeftRight size={18} className="text-neon-cyan" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white tracking-tight">
+                تبديل التمرين
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Smart Angle-Matched Swap</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors"
+            className="w-8 h-8 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
             aria-label="Close"
           >
             <X size={16} />
           </button>
         </div>
 
-        {/* Current exercise info */}
-        <div className="px-4 pt-3 pb-2">
-          <p className="text-[11px] text-slate-500 uppercase tracking-wider mb-1">
-            Replacing
+        {/* ═══ Current exercise info ═══ */}
+        <div className="px-5 pt-3 pb-2 bg-bg-deep/40">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">
+            Replacing Target Exercise
           </p>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-border-slate">
+            <div className="w-11 h-11 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700/50">
               {currentExercise?.image ? (
                 <img
                   src={getImageUrl(currentExercise.image)}
@@ -67,56 +107,96 @@ export default function SwapExerciseModal({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-600">
-                  <Dumbbell size={14} />
+                <div className="w-full h-full flex items-center justify-center text-slate-500">
+                  <Dumbbell size={16} />
                 </div>
               )}
             </div>
-            <span className="text-sm font-medium text-white">
-              {currentExercise?.name}
-            </span>
-            <span className="text-[10px] text-neon-blue bg-neon-blue/10 px-2 py-0.5 rounded-full border border-neon-blue/20">
-              {targetMuscle}
-            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">
+                {currentExercise?.name}
+              </p>
+              {currentExercise?.nameAr && (
+                <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                  {currentExercise.nameAr}
+                </p>
+              )}
+            </div>
+            {targetAngle && <AngleBadge angle={targetAngle} />}
           </div>
         </div>
 
-        {/* Search */}
-        <div className="px-4 py-2">
+        {/* ═══ Search & Angle Filter Controls ═══ */}
+        <div className="px-5 py-2.5 space-y-2.5">
           <div className="relative">
             <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              size={15}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
             />
             <input
               type="text"
-              placeholder="Search alternatives..."
+              placeholder="Search biomechanical alternatives..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+              className="w-full bg-bg-deep/80 border border-border-slate rounded-xl py-2.5 pl-10 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-cyan/40 focus:border-neon-cyan/30 placeholder:text-slate-500 transition-all"
             />
+          </div>
+
+          {/* Toggle: show all for muscle */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setShowAllMuscle(!showAllMuscle)}
+              className={`flex items-center gap-2 text-xs font-semibold transition-all px-3 py-1.5 rounded-lg border ${
+                showAllMuscle
+                  ? "text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30"
+                  : "text-slate-400 bg-slate-800/60 border-slate-700/60 hover:text-white"
+              }`}
+            >
+              <Filter size={12} />
+              {showAllMuscle
+                ? `Showing all ${targetMuscle.toUpperCase()} exercises`
+                : `Showing ${angleLabel.en} only`}
+              <ChevronDown
+                size={12}
+                className={`transition-transform ${showAllMuscle ? "rotate-180" : ""}`}
+              />
+            </button>
+            <span className="text-[11px] text-slate-500 font-mono">
+              {alternatives.length} match{alternatives.length === 1 ? "" : "es"}
+            </span>
           </div>
         </div>
 
-        {/* Alternatives list */}
-        <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-2 scrollbar-hide">
+        {/* ═══ Alternatives list ═══ */}
+        <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-2.5 custom-scrollbar min-h-[180px]">
           {alternatives.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 text-sm">
-              No alternatives found for {targetMuscle}
+            <div className="text-center py-10 space-y-2.5">
+              <Dumbbell size={32} className="mx-auto text-slate-700" />
+              <p className="text-sm text-slate-400 font-medium">
+                No direct alternatives found for this angle
+              </p>
+              {!showAllMuscle && (
+                <button
+                  onClick={() => setShowAllMuscle(true)}
+                  className="text-xs text-neon-cyan hover:underline font-semibold"
+                >
+                  Show all {targetMuscle} exercises →
+                </button>
+              )}
             </div>
           ) : (
             alternatives.map((ex) => (
               <button
                 key={ex.id}
                 onClick={() => handleSelect(ex.id)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-neon-blue/40 hover:bg-slate-800 transition-all text-left active:scale-[0.98]"
+                className="w-full flex items-center gap-3.5 p-3 rounded-2xl glass-card glass-card-hover text-left active:scale-[0.98] transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-slate-700/50">
                   {ex.image ? (
                     <img
                       src={getImageUrl(ex.image)}
                       alt={ex.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       loading="lazy"
                     />
                   ) : (
@@ -126,51 +206,52 @@ export default function SwapExerciseModal({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-semibold text-white truncate group-hover:text-neon-cyan transition-colors">
                     {ex.name}
                   </p>
+                  {ex.nameAr && (
+                    <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                      {ex.nameAr}
+                    </p>
+                  )}
                   {ex.tips && (
                     <p className="text-[10px] text-slate-500 truncate mt-0.5">
                       {ex.tips}
                     </p>
                   )}
                 </div>
-                <ArrowLeftRight size={14} className="text-slate-600 shrink-0" />
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  {ex.targetAngle && <AngleBadge angle={ex.targetAngle} size="sm" />}
+                  <span className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">
+                    {ex.category}
+                  </span>
+                </div>
               </button>
             ))
           )}
         </div>
 
-        {/* Footer with permanent toggle */}
-        <div className="p-4 border-t border-slate-800">
-          <label className="flex items-center gap-3 cursor-pointer group">
+        {/* ═══ Footer with permanent toggle ═══ */}
+        <div className="p-4 border-t border-border-slate bg-bg-deep/80 backdrop-blur-md">
+          <label className="flex items-center gap-3 cursor-pointer select-none group">
             <div
-              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+              className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
                 permanent
-                  ? "bg-neon-blue border-neon-blue"
-                  : "border-slate-600 group-hover:border-slate-400"
+                  ? "bg-neon-cyan border-neon-cyan text-bg-deep shadow-[0_0_8px_rgba(0,240,255,0.4)]"
+                  : "border-slate-600 bg-slate-800/80 group-hover:border-slate-400"
               }`}
               onClick={() => setPermanent(!permanent)}
             >
-              {permanent && (
-                <svg
-                  className="w-3 h-3 text-slate-950"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              )}
+              {permanent && <Check size={14} strokeWidth={3} />}
             </div>
-            <span className="text-xs text-slate-400">
-              Also update this routine permanently
-            </span>
+            <div className="text-xs">
+              <span className="text-slate-300 font-medium">
+                Save as permanent routine override
+              </span>
+              <p className="text-[10px] text-slate-500">
+                Preserves default split while updating future sessions
+              </p>
+            </div>
           </label>
         </div>
       </div>

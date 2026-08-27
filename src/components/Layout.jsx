@@ -16,7 +16,7 @@ export default function Layout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen bg-bg-deep text-white flex flex-col">
       {/* Offline indicator (item 14) */}
       <OfflineIndicator />
       {/* Confetti overlay */}
@@ -33,7 +33,7 @@ export default function Layout() {
 
       {/* Bottom Navigation Bar */}
       <nav
-        className="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800"
+        className="fixed bottom-0 inset-x-0 z-50 bg-bg-surface/95 backdrop-blur-xl border-t border-border-slate"
         aria-label="Main navigation"
         role="navigation"
       >
@@ -44,9 +44,9 @@ export default function Layout() {
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
+                `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 relative ${
                   isActive
-                    ? "text-neon-blue scale-105"
+                    ? "text-neon-cyan"
                     : "text-slate-500 hover:text-slate-300 active:scale-95"
                 }`
               }
@@ -56,6 +56,9 @@ export default function Layout() {
                 const Icon = item.icon;
                 return (
                   <>
+                    {isActive && (
+                      <div className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-neon-cyan rounded-full shadow-[0_0_8px_rgba(0,240,255,0.6)]" />
+                    )}
                     <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
                     <span className="text-[11px] font-medium">
                       {item.label}

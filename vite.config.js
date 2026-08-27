@@ -13,11 +13,11 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
       manifest: {
-        name: "Gym Tracker",
+        name: "Gym",
         short_name: "Gym",
-        description: "Track your workouts and progress",
-        theme_color: "#0f172a",
-        background_color: "#0f172a",
+        description: "Track your hypertrophy journey with biomechanically complete programs",
+        theme_color: "#0B0F17",
+        background_color: "#0B0F17",
         display: "standalone",
         icons: [
           {

@@ -8,6 +8,7 @@ export const createWorkoutSlice = (set, get) => ({
   restTimerTrigger: 0,
   personalRecords: loadFromStorage("gym_prs", {}),
   showConfetti: false,
+  customProgramOverrides: loadFromStorage("gym_custom_overrides", {}),
 
   // Getters
   getAchievements: () => {
@@ -25,166 +26,49 @@ export const createWorkoutSlice = (set, get) => ({
     };
 
     if (total >= 1)
-      addAchievement(
-        "first_workout",
-        "First Step",
-        "Completed your first workout",
-        "flag",
-        true,
-      );
+      addAchievement("first_workout", "First Step", "Completed your first workout", "flag", true);
     else
-      addAchievement(
-        "first_workout",
-        "First Step",
-        "Complete your first workout",
-        "flag",
-        false,
-        `${total}/1`,
-      );
+      addAchievement("first_workout", "First Step", "Complete your first workout", "flag", false, `${total}/1`);
 
     if (total >= 10)
-      addAchievement(
-        "ten_workouts",
-        "Dedicated",
-        "Completed 10 workouts",
-        "dumbbell",
-        true,
-      );
+      addAchievement("ten_workouts", "Dedicated", "Completed 10 workouts", "dumbbell", true);
     else
-      addAchievement(
-        "ten_workouts",
-        "Dedicated",
-        `Complete 10 workouts (${total}/10)`,
-        "dumbbell",
-        false,
-        `${total}/10`,
-      );
+      addAchievement("ten_workouts", "Dedicated", `Complete 10 workouts (${total}/10)`, "dumbbell", false, `${total}/10`);
 
     if (total >= 25)
-      addAchievement(
-        "25_workouts",
-        "Consistent",
-        "Completed 25 workouts",
-        "flame",
-        true,
-      );
+      addAchievement("25_workouts", "Consistent", "Completed 25 workouts", "flame", true);
     else
-      addAchievement(
-        "25_workouts",
-        "Consistent",
-        `Complete 25 workouts (${total}/25)`,
-        "flame",
-        false,
-        `${total}/25`,
-      );
+      addAchievement("25_workouts", "Consistent", `Complete 25 workouts (${total}/25)`, "flame", false, `${total}/25`);
 
     if (total >= 50)
-      addAchievement(
-        "50_workouts",
-        "Iron Will",
-        "Completed 50 workouts",
-        "zap",
-        true,
-      );
+      addAchievement("50_workouts", "Iron Will", "Completed 50 workouts", "zap", true);
     else
-      addAchievement(
-        "50_workouts",
-        "Iron Will",
-        `Complete 50 workouts (${total}/50)`,
-        "zap",
-        false,
-        `${total}/50`,
-      );
+      addAchievement("50_workouts", "Iron Will", `Complete 50 workouts (${total}/50)`, "zap", false, `${total}/50`);
 
     if (total >= 100)
-      addAchievement(
-        "100_workouts",
-        "Legend",
-        "Completed 100 workouts",
-        "crown",
-        true,
-      );
+      addAchievement("100_workouts", "Legend", "Completed 100 workouts", "crown", true);
     else
-      addAchievement(
-        "100_workouts",
-        "Legend",
-        `Complete 100 workouts (${total}/100)`,
-        "crown",
-        false,
-        `${total}/100`,
-      );
+      addAchievement("100_workouts", "Legend", `Complete 100 workouts (${total}/100)`, "crown", false, `${total}/100`);
 
     if (prCount >= 1)
-      addAchievement(
-        "first_pr",
-        "Record Breaker",
-        "Set your first personal record",
-        "trophy",
-        true,
-      );
+      addAchievement("first_pr", "Record Breaker", "Set your first personal record", "trophy", true);
     else
-      addAchievement(
-        "first_pr",
-        "Record Breaker",
-        "Set your first personal record",
-        "trophy",
-        false,
-        `${prCount}/1`,
-      );
+      addAchievement("first_pr", "Record Breaker", "Set your first personal record", "trophy", false, `${prCount}/1`);
 
     if (prCount >= 10)
-      addAchievement(
-        "ten_prs",
-        "PR Machine",
-        "Set 10 personal records",
-        "target",
-        true,
-      );
+      addAchievement("ten_prs", "PR Machine", "Set 10 personal records", "target", true);
     else
-      addAchievement(
-        "ten_prs",
-        "PR Machine",
-        `Set 10 personal records (${prCount}/10)`,
-        "target",
-        false,
-        `${prCount}/10`,
-      );
+      addAchievement("ten_prs", "PR Machine", `Set 10 personal records (${prCount}/10)`, "target", false, `${prCount}/10`);
 
     if (totalSets >= 100)
-      addAchievement(
-        "100_sets",
-        "Volume King",
-        "Completed 100 total sets",
-        "bar-chart",
-        true,
-      );
+      addAchievement("100_sets", "Volume King", "Completed 100 total sets", "bar-chart", true);
     else
-      addAchievement(
-        "100_sets",
-        "Volume King",
-        `Complete 100 sets (${totalSets}/100)`,
-        "bar-chart",
-        false,
-        `${totalSets}/100`,
-      );
+      addAchievement("100_sets", "Volume King", `Complete 100 sets (${totalSets}/100)`, "bar-chart", false, `${totalSets}/100`);
 
     if (totalSets >= 500)
-      addAchievement(
-        "500_sets",
-        "Unstoppable",
-        "Completed 500 total sets",
-        "rocket",
-        true,
-      );
+      addAchievement("500_sets", "Unstoppable", "Completed 500 total sets", "rocket", true);
     else
-      addAchievement(
-        "500_sets",
-        "Unstoppable",
-        `Complete 500 sets (${totalSets}/500)`,
-        "rocket",
-        false,
-        `${totalSets}/500`,
-      );
+      addAchievement("500_sets", "Unstoppable", `Complete 500 sets (${totalSets}/500)`, "rocket", false, `${totalSets}/500`);
 
     return achievements;
   },
@@ -264,13 +148,26 @@ export const createWorkoutSlice = (set, get) => ({
     return map;
   },
 
+  // ── Apply custom overrides to a program's exercise list ──
+  getResolvedExercises: (programId) => {
+    const { programs, customProgramOverrides } = get();
+    const program = programs[programId];
+    if (!program) return [];
+    const overrides = customProgramOverrides[programId] || {};
+    return program.exercises.map((exId) => overrides[exId] || exId);
+  },
+
   // Workout lifecycle
   startWorkout: (programId) => {
-    const { programs, exercises } = get();
+    const { programs, exercises, customProgramOverrides } = get();
     const program = programs[programId];
     if (!program) return;
 
-    const workoutExercises = program.exercises.map((exId) => {
+    // Apply any custom overrides to the exercise list
+    const overrides = customProgramOverrides[programId] || {};
+    const resolvedExerciseIds = program.exercises.map((exId) => overrides[exId] || exId);
+
+    const workoutExercises = resolvedExerciseIds.map((exId) => {
       const ex = exercises.find((e) => e.id === exId);
       const sets = Array.from({ length: ex?.default_sets || 3 }, () => ({
         weight: "",
@@ -370,20 +267,15 @@ export const createWorkoutSlice = (set, get) => ({
         activeWorkout: { ...state.activeWorkout, exercises },
       };
 
+      // Permanent swap: store in customProgramOverrides (not mutating base programs)
       if (permanent && state.activeWorkout.programId) {
-        const updatedPrograms = { ...state.programs };
-        const program = updatedPrograms[state.activeWorkout.programId];
-        if (program) {
-          const updatedExercises = program.exercises.map((exId) =>
-            exId === oldExerciseId ? newExerciseId : exId,
-          );
-          updatedPrograms[state.activeWorkout.programId] = {
-            ...program,
-            exercises: updatedExercises,
-          };
-          saveToStorage("gym_programs", updatedPrograms);
-          result.programs = updatedPrograms;
-        }
+        const programId = state.activeWorkout.programId;
+        const updatedOverrides = { ...state.customProgramOverrides };
+        const programOverrides = { ...(updatedOverrides[programId] || {}) };
+        programOverrides[oldExerciseId] = newExerciseId;
+        updatedOverrides[programId] = programOverrides;
+        saveToStorage("gym_custom_overrides", updatedOverrides);
+        result.customProgramOverrides = updatedOverrides;
       }
 
       return result;

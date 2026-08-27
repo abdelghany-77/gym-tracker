@@ -130,9 +130,9 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <div className="max-w-lg mx-auto flex flex-col h-[calc(100dvh-4rem)]">
+    <div className="max-w-lg mx-auto flex flex-col h-[calc(100dvh-4rem)] bg-bg-deep">
       {/* ═══ COMPACT HEADER ═══ */}
-      <div className="shrink-0 bg-slate-950 px-4 pt-3 pb-2 space-y-2">
+      <div className="shrink-0 bg-bg-deep px-4 pt-3 pb-2 space-y-2">
         {/* Top row: back, title, cancel */}
         <div className="flex items-center gap-3">
           <button
@@ -150,7 +150,7 @@ export default function ActiveWorkout() {
           </div>
 
           <div
-            className="flex items-center gap-1.5 text-xs text-neon-blue font-mono font-bold bg-neon-blue/8 px-2.5 py-1 rounded-lg border border-neon-blue/15"
+            className="flex items-center gap-1.5 text-xs text-neon-cyan font-mono font-bold bg-neon-cyan/8 px-2.5 py-1 rounded-lg border border-neon-cyan/15"
             aria-live="polite"
           >
             <Clock size={11} />
@@ -172,7 +172,7 @@ export default function ActiveWorkout() {
           <div className="flex-1 flex items-center gap-2">
             <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-neon-blue to-neon-green rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-gradient-to-r from-neon-cyan to-neon-green rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress.percent}%` }}
                 role="progressbar"
                 aria-valuenow={progress.percent}
@@ -198,7 +198,7 @@ export default function ActiveWorkout() {
                   }}
                   className={`h-1.5 rounded-full transition-all ${
                     i === currentIndex
-                      ? "w-5 bg-neon-blue"
+                      ? "w-5 bg-neon-cyan"
                       : allDone
                         ? "w-1.5 bg-neon-green/60"
                         : "w-1.5 bg-slate-700"
@@ -269,8 +269,8 @@ export default function ActiveWorkout() {
             className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900/50 border border-slate-800/50 hover:border-neon-blue/25 hover:bg-slate-900/70 transition-all active:scale-[0.98] btn-press"
             aria-label={`Next up: ${nextExercise.name}`}
           >
-            <div className="w-8 h-8 rounded-lg bg-neon-blue/8 flex items-center justify-center shrink-0">
-              <ChevronRight size={14} className="text-neon-blue" />
+            <div className="w-8 h-8 rounded-lg bg-neon-cyan/8 flex items-center justify-center shrink-0">
+              <ChevronRight size={14} className="text-neon-cyan" />
             </div>
             <div className="flex-1 text-left min-w-0">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
@@ -289,7 +289,7 @@ export default function ActiveWorkout() {
         {/* ─── Finish Workout Button ─── */}
         <button
           onClick={() => setShowConfirmFinish(true)}
-          className="w-full bg-gradient-to-r from-neon-green/12 to-emerald-500/12 text-neon-green font-semibold py-3.5 rounded-2xl border border-neon-green/20 hover:border-neon-green/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-press"
+          className="w-full bg-gradient-to-r from-neon-emerald/12 to-emerald-500/12 text-neon-emerald font-semibold py-3.5 rounded-2xl border border-neon-emerald/20 hover:border-neon-emerald/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-press"
           aria-label={`Finish workout, ${progress.percent}% completed`}
         >
           <CheckCircle2 size={18} />

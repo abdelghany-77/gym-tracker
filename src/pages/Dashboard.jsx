@@ -87,11 +87,11 @@ export default function Dashboard() {
     thisWeekSessions.forEach((session) => {
       session.exercises.forEach((ex) => {
         const exerciseDef = globalExercises.find((e) => e.id === ex.exerciseId);
-        if (exerciseDef && exerciseDef.muscles) {
+        if (exerciseDef) {
           const setsCount = ex.sets.length;
-          exerciseDef.muscles.forEach((m) => {
-            counts[m] = (counts[m] || 0) + setsCount;
-          });
+          // Use primaryMuscle if available, fall back to muscle field
+          const muscleKey = exerciseDef.primaryMuscle || exerciseDef.muscle || 'Other';
+          counts[muscleKey] = (counts[muscleKey] || 0) + setsCount;
         }
       });
     });
@@ -99,7 +99,7 @@ export default function Dashboard() {
     const data = Object.keys(counts).map((m) => ({ muscle: m, value: counts[m] }));
     if (data.length < 3) {
       // Pad to at least 3 points for a radar chart to look good
-      ["Chest", "Back", "Legs"].forEach(m => {
+      ["chest", "back", "legs"].forEach(m => {
         if (!counts[m]) data.push({ muscle: m, value: 0 });
       });
     }
@@ -107,7 +107,7 @@ export default function Dashboard() {
   }, [history, globalExercises]);
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6 animate-fadeIn">
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6 animate-fadeIn bg-bg-deep min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -117,8 +117,8 @@ export default function Dashboard() {
             className="w-12 h-12 object-contain drop-shadow-[0_0_15px_rgba(56,189,248,0.3)]"
           />
           <div>
-            <h1 className="text-xl font-semibold text-white tracking-tight">
-              Gym<span className="text-neon-blue">Tracker</span>
+            <h1 className="text-xl font-extrabold text-white tracking-tight">
+              G<span className="text-neon-cyan">y</span>m
             </h1>
             <p className="text-sm text-slate-500 mt-0.5 font-medium uppercase tracking-wide">
               {new Date().toLocaleDateString("en-US", {
@@ -132,8 +132,8 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 border text-[10px] font-bold uppercase tracking-wider ${
             activeProgram === 'ppl_upper'
-              ? 'bg-neon-blue/8 border-neon-blue/20 text-neon-blue'
-              : 'bg-neon-purple/8 border-neon-purple/20 text-neon-purple'
+              ? 'bg-neon-cyan/8 border-neon-cyan/20 text-neon-cyan'
+              : 'bg-vivid-purple/8 border-vivid-purple/20 text-vivid-purple'
           }`}>
             {activeProgram === 'ppl_upper' ? <Zap size={10} /> : <Crown size={10} />}
             {activePlan.name}
@@ -152,9 +152,9 @@ export default function Dashboard() {
             label: "This Week",
             value: stats.thisWeek,
             icon: Calendar,
-            color: "text-neon-blue",
-            bg: "bg-neon-blue/10",
-            border: "border-neon-blue/20",
+            color: "text-neon-cyan",
+            bg: "bg-neon-cyan/10",
+            border: "border-neon-cyan/20",
             glow: "shadow-neon-blue/5",
           },
           {
@@ -180,7 +180,7 @@ export default function Dashboard() {
           return (
             <div
               key={label}
-              className={`relative bg-slate-900/50 backdrop-blur-md rounded-2xl p-3 border border-slate-800 hover:border-slate-700 transition-all group overflow-hidden shadow-lg ${glow}`}
+              className={`relative glass-card p-3 hover:border-slate-700 transition-all group overflow-hidden shadow-lg ${glow}`}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
               <div
@@ -204,11 +204,11 @@ export default function Dashboard() {
 
       {/* Empty State CTA — when no workouts yet */}
       {stats.totalSessions === 0 && (
-        <div className="relative bg-gradient-to-br from-neon-blue/5 via-slate-900/80 to-neon-purple/5 rounded-2xl p-6 border border-neon-blue/20 overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-neon-blue/10 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none" />
+        <div className="relative bg-gradient-to-br from-neon-cyan/5 via-bg-surface/80 to-vivid-purple/5 rounded-2xl p-6 border border-neon-cyan/20 overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-neon-cyan/10 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none" />
           <div className="relative z-10 text-center space-y-3">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center">
-              <Target size={28} className="text-neon-blue" />
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center">
+              <Target size={28} className="text-neon-cyan" />
             </div>
             <h3 className="text-base font-bold text-white">Ready to Start?</h3>
             <p className="text-xs text-slate-400 max-w-[240px] mx-auto leading-relaxed">
@@ -217,7 +217,7 @@ export default function Dashboard() {
             </p>
             <button
               onClick={() => navigate("/workout")}
-              className="bg-neon-blue text-slate-950 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20 inline-flex items-center gap-2 btn-press"
+              className="bg-neon-cyan text-bg-deep px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-neon-cyan/90 active:scale-95 transition-all shadow-lg shadow-neon-cyan/20 inline-flex items-center gap-2 btn-press"
               aria-label="Start your first workout"
             >
               Start First Workout <ChevronRight size={14} strokeWidth={3} />
@@ -232,11 +232,11 @@ export default function Dashboard() {
           className={`w-full rounded-2xl p-5 border transition-all text-left relative overflow-hidden ${
             nextWorkout.isRest
               ? "bg-slate-900/80 border-slate-800"
-              : "bg-linear-to-br from-slate-900 via-slate-900 to-neon-blue/5 border-slate-800 hover:border-neon-blue/30"
+              : "bg-linear-to-br from-bg-surface via-bg-surface to-neon-cyan/5 border-border-slate hover:border-neon-cyan/30"
           }`}
         >
           {!nextWorkout.isRest && (
-            <div className="absolute top-0 right-0 w-32 h-32 bg-neon-blue/10 rounded-full blur-3xl -translate-y-10 translate-x-10 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-neon-cyan/10 rounded-full blur-3xl -translate-y-10 translate-x-10 pointer-events-none" />
           )}
 
           <div className="flex items-center justify-between relative z-10">
@@ -245,7 +245,7 @@ export default function Dashboard() {
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
                   nextWorkout.isRest
                     ? "bg-slate-800 text-slate-400"
-                    : "bg-neon-blue text-slate-950"
+                    : "bg-neon-cyan text-bg-deep"
                 }`}
               >
                 {nextWorkout.isRest ? (
@@ -263,14 +263,14 @@ export default function Dashboard() {
                         className={
                           nextWorkout.isRest
                             ? "text-slate-400"
-                            : "text-neon-blue"
+                            : "text-neon-cyan"
                         }
                       />
                       <span
                         className={
                           nextWorkout.isRest
                             ? "text-slate-200"
-                            : "text-neon-blue"
+                            : "text-neon-cyan"
                         }
                       >
                         Today
@@ -318,7 +318,7 @@ export default function Dashboard() {
                         .startWorkout(nextWorkout.program.id);
                       navigate("/workout/active");
                     }}
-                    className="bg-neon-blue text-slate-950 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20 flex items-center gap-2 btn-press focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
+                    className="bg-neon-cyan text-bg-deep px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-neon-cyan/90 active:scale-95 transition-all shadow-lg shadow-neon-cyan/20 flex items-center gap-2 btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none"
                     aria-label={`Start ${nextWorkout.program?.name} workout`}
                   >
                     Start <ChevronRight size={14} strokeWidth={3} />
@@ -425,14 +425,14 @@ export default function Dashboard() {
                       }}
                       className={`w-full flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
                         isCurrent
-                          ? "bg-neon-blue/5 border-neon-blue/20"
+                          ? "bg-neon-cyan/5 border-neon-cyan/20"
                           : "border-transparent hover:bg-slate-800/50"
                       }`}
                     >
                       <div
                         className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                           isCurrent
-                            ? "bg-neon-blue text-slate-950"
+                            ? "bg-neon-cyan text-bg-deep"
                             : "bg-slate-800 text-slate-500"
                         }`}
                       >
@@ -451,7 +451,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                       {isCurrent && (
-                        <div className="ml-auto text-xs font-bold text-neon-blue">
+                        <div className="ml-auto text-xs font-bold text-neon-cyan">
                           ACTIVE
                         </div>
                       )}
@@ -465,10 +465,10 @@ export default function Dashboard() {
       )}
 
       {/* Activity Chart */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800">
+      <div className="glass-card p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <TrendingUp size={16} className="text-neon-purple" />
+            <TrendingUp size={16} className="text-vivid-purple" />
             Activity
           </h2>
 
@@ -515,9 +515,9 @@ export default function Dashboard() {
       </div>
 
       {/* Muscle Heatmap */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800">
+      <div className="glass-card p-5">
         <h2 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
-          <Target size={16} className="text-emerald-400" />
+          <Target size={16} className="text-neon-emerald" />
           Muscles Targeted (This Week)
         </h2>
         {muscleData.every((d) => d.value === 0) ? (
@@ -545,7 +545,7 @@ export default function Dashboard() {
       </div>
 
       {/* Last Session */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800">
+      <div className="glass-card p-5">
         {lastSession ? (
           <>
             <div className="flex items-center justify-between mb-3">
