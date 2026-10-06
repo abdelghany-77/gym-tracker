@@ -55,6 +55,7 @@ export default function Profile() {
       <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800">
         {[
           { id: "overview", label: "Overview" },
+          { id: "inbody", label: "InBody" },
           { id: "progress", label: "Progress" },
           { id: "settings", label: "Settings" },
         ].map((tab) => (
@@ -169,6 +170,13 @@ export default function Profile() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* INBODY TAB */}
+        {activeTab === "inbody" && (
+          <div className="space-y-5">
+            <BodyMeasurementsTab />
           </div>
         )}
 
