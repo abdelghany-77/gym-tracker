@@ -1,66 +1,73 @@
 import { useState, useCallback } from "react";
-import { Download, Upload, Trash2, RefreshCw } from "lucide-react";
+import { Download, Upload, Trash2, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
 import useWorkoutStore from "../../store/workoutStore";
 import { ConfirmDialog } from "../Modal";
-import { z } from "zod";
-
-const importSchema = z.object({
-  history: z.array(z.any()).optional(),
-  personalRecords: z.record(z.number()).optional(),
-  userProfile: z.object({
-    name: z.string().optional(),
-    weight: z.number().optional(),
-    height: z.number().optional(),
-    age: z.number().optional(),
-  }).optional(),
-});
+import { exportUserData, importUserData } from "../../store/helpers";
 
 export default function DataManagement() {
-  const history = useWorkoutStore((s) => s.history);
-  const personalRecords = useWorkoutStore((s) => s.personalRecords);
-  const userProfile = useWorkoutStore((s) => s.userProfile);
   const clearHistory = useWorkoutStore((s) => s.clearHistory);
   const resetToDefaults = useWorkoutStore((s) => s.resetToDefaults);
+  const rehydrateFromStorage = useWorkoutStore((s) => s.rehydrateFromStorage);
 
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
-  const [importError, setImportError] = useState(null);
+  const [importStatus, setImportStatus] = useState(null); // { type: 'success' | 'error', message: string }
 
   const handleExport = () => {
-    const data = { history, personalRecords, userProfile, exportedAt: new Date().toISOString() };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `gym-tracker-backup-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      exportUserData();
+      setImportStatus({
+        type: "success",
+        message: "Backup downloaded successfully!",
+      });
+      setTimeout(() => setImportStatus(null), 4000);
+    } catch (err) {
+      setImportStatus({
+        type: "error",
+        message: err.message || "Failed to generate backup export.",
+      });
+    }
   };
 
   const handleImport = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setImportError(null);
+    setImportStatus(null);
+
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const raw = JSON.parse(event.target.result);
-        const result = importSchema.safeParse(raw);
-        if (!result.success) {
-          setImportError(result.error.issues.map((i) => i.message).join(", "));
-          return;
+        const text = event.target.result;
+        const result = importUserData(text, rehydrateFromStorage);
+        if (result.success) {
+          const count = result.count || {};
+          setImportStatus({
+            type: "success",
+            message: `Restored: ${count.history ?? 0} workouts, ${count.prs ?? 0} PRs, ${count.exercises ?? 0} exercises.`,
+          });
+        } else {
+          setImportStatus({
+            type: "error",
+            message: result.message || "Import failed. Please check the backup file.",
+          });
         }
-        const data = result.data;
-        if (data.history) localStorage.setItem("gym_history", JSON.stringify(data.history));
-        if (data.personalRecords) localStorage.setItem("gym_prs", JSON.stringify(data.personalRecords));
-        if (data.userProfile) localStorage.setItem("gym_profile", JSON.stringify(data.userProfile));
-        window.location.reload();
-      } catch {
-        setImportError("Invalid JSON file. Please select a valid backup.");
+      } catch (err) {
+        setImportStatus({
+          type: "error",
+          message: err.message || "Failed to process backup file.",
+        });
       }
     };
+    reader.onerror = () => {
+      setImportStatus({
+        type: "error",
+        message: "Could not read the uploaded file.",
+      });
+    };
     reader.readAsText(file);
-  }, []);
+    // Reset file input value so same file can be selected again if needed
+    e.target.value = "";
+  }, [rehydrateFromStorage]);
 
   return (
     <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
@@ -83,10 +90,25 @@ export default function DataManagement() {
         <input type="file" accept=".json" onChange={handleImport} className="hidden" />
       </label>
 
-      {importError && (
-        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">
-          <p className="font-medium mb-0.5">Import failed</p>
-          <p className="text-red-400/70">{importError}</p>
+      {importStatus && (
+        <div
+          className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
+            importStatus.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+              : "bg-red-500/10 border-red-500/20 text-red-400"
+          }`}
+        >
+          {importStatus.type === "success" ? (
+            <CheckCircle size={15} className="text-emerald-400 shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle size={15} className="text-red-400 shrink-0 mt-0.5" />
+          )}
+          <div>
+            <p className="font-semibold">
+              {importStatus.type === "success" ? "Success" : "Import Failed"}
+            </p>
+            <p className="opacity-80 mt-0.5">{importStatus.message}</p>
+          </div>
         </div>
       )}
 

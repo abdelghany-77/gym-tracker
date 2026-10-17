@@ -13,6 +13,7 @@ import useWorkoutStore from "../store/workoutStore";
 import ExerciseCard from "../components/ExerciseCard";
 import RestTimer from "../components/RestTimer";
 import { ConfirmDialog } from "../components/Modal";
+import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
 import { useState, useMemo, useEffect, useRef } from "react";
 
 export default function ActiveWorkout() {
@@ -21,8 +22,11 @@ export default function ActiveWorkout() {
   const finishWorkout = useWorkoutStore((s) => s.finishWorkout);
   const cancelWorkout = useWorkoutStore((s) => s.cancelWorkout);
   const exercises = useWorkoutStore((s) => s.exercises);
+  const personalRecords = useWorkoutStore((s) => s.personalRecords);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [completedSession, setCompletedSession] = useState(null);
+  const [previousPRsSnapshot, setPreviousPRsSnapshot] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [autoAdvancedTo, setAutoAdvancedTo] = useState(-1);
@@ -83,7 +87,24 @@ export default function ActiveWorkout() {
   };
 
   // Redirect if no active workout
+  // Redirect if no active workout
   if (!activeWorkout) {
+    if (completedSession) {
+      return (
+        <div className="min-h-screen bg-bg-deep">
+          <WorkoutReceiptModal
+            isOpen={true}
+            session={completedSession}
+            previousPRs={previousPRsSnapshot}
+            onClose={() => {
+              setCompletedSession(null);
+              navigate("/", { replace: true });
+            }}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="px-4 pt-20 text-center max-w-lg mx-auto space-y-4">
         <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-800 flex items-center justify-center">
@@ -111,8 +132,10 @@ export default function ActiveWorkout() {
     : null;
 
   const handleFinish = () => {
-    finishWorkout();
-    navigate("/", { replace: true });
+    setPreviousPRsSnapshot({ ...personalRecords });
+    const session = finishWorkout();
+    setShowConfirmFinish(false);
+    setCompletedSession(session);
   };
 
   const handleCancel = () => {
@@ -319,6 +342,19 @@ export default function ActiveWorkout() {
         cancelText="Go Back"
         variant="danger"
       />
+
+      {/* ═══ SHAREABLE CYBERPUNK WORKOUT RECEIPT ═══ */}
+      {completedSession && (
+        <WorkoutReceiptModal
+          isOpen={Boolean(completedSession)}
+          session={completedSession}
+          previousPRs={previousPRsSnapshot}
+          onClose={() => {
+            setCompletedSession(null);
+            navigate("/", { replace: true });
+          }}
+        />
+      )}
     </div>
   );
 }

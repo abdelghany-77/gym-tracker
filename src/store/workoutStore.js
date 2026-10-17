@@ -52,6 +52,22 @@ const useWorkoutStore = create((set, get) => ({
     const { exerciseRestTimes } = get();
     return exerciseRestTimes[exerciseId] || 60; // default 60s
   },
+
+  // ── Reactive Rehydration ──
+  rehydrateFromStorage: () => {
+    set({
+      history: loadFromStorage("gym_history", []),
+      personalRecords: loadFromStorage("gym_prs", {}),
+      exercises: loadFromStorage("gym_exercises", get().exercises),
+      programs: loadFromStorage("gym_programs", get().programs),
+      weeklySchedule: loadFromStorage("gym_schedule", get().weeklySchedule),
+      customProgramOverrides: loadFromStorage("gym_custom_program_overrides", {}),
+      activeProgram: loadFromStorage("gym_active_program", "ppl_upper"),
+      userProfile: loadFromStorage("gym_profile", get().userProfile),
+      measurements: loadFromStorage("gym_measurements", get().measurements || []),
+      theme: loadFromStorage("gym_theme", "dark"),
+    });
+  },
 }));
 
 export default useWorkoutStore;

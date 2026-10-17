@@ -1245,7 +1245,7 @@ export const trainingPlans = {
           "sh_seated_db_press",           // 4. Anterior Delt — Seated DB Shoulder Press
           "sh_db_lateral_raise",          // 5. Lateral Delt — Lateral Raises
           "arm_rope_pushdown",            // 6. Tricep Lateral/Medial — Rope Pushdown
-          "chest_dips",                   // 7. Lower Chest — Dips
+          "arm_overhead_cable_ext",       // 7. Tricep Long Head — Overhead Cable Ext
         ],
       },
       pull_day: {
@@ -1255,12 +1255,12 @@ export const trainingPlans = {
         muscles: ["Back", "Shoulders", "Arms"],
         exercises: [
           "back_wide_lat_pulldown",       // 1. Vertical Pull — Lat Pulldown
-          "back_seated_cable_row",        // 2. Horizontal Row — Seated Cable Row
-          "back_db_pullover",             // 3. Lat Isolation — Dumbbell Pullover
-          "sh_reverse_pec_deck",          // 4. Posterior Delt — Rear Delt Fly
-          "arm_bb_bicep_curl",            // 5. Bicep Short Head — Barbell Curl
-          "arm_db_hammer_curl",           // 6. Brachialis — Hammer Curls
-          "back_hyperextension",          // 7. Lower Back — Hyperextension
+          "back_bb_bent_over_row",        // 2. Horizontal Row — Bent-Over Row
+          "back_db_single_arm_row",       // 3. Unilateral Row — Single-Arm DB Row
+          "back_straight_arm_pulldown",   // 4. Lat Isolation — Straight-Arm Pulldown
+          "back_face_pulls",              // 5. Upper Back / Rear Delt — Face Pulls
+          "arm_db_incline_curl",          // 6. Bicep Long Head — Incline DB Curl
+          "arm_db_hammer_curl",           // 7. Brachialis — Hammer Curl
         ],
       },
       legs_day: {
@@ -1273,7 +1273,7 @@ export const trainingPlans = {
           "leg_45_press",                 // 2. Quad Compound — Leg Press
           "leg_extension",                // 3. Quad Isolation — Leg Extension
           "leg_bb_rdl",                   // 4. Hamstring Hinge — Romanian Deadlift
-          "leg_lying_curl",               // 5. Hamstring Curl — Leg Curl
+          "leg_seated_curl",              // 5. Hamstring Curl — Seated Curl
           "leg_standing_calf_raise",      // 6. Calves — Standing Calf Raise
           "core_hanging_leg_raise",       // 7. Core — Hanging Leg Raise
         ],
@@ -1284,13 +1284,15 @@ export const trainingPlans = {
         nameAr: "جزء علوي كامل - ضخ دم وعزل",
         muscles: ["Chest", "Back", "Shoulders", "Arms"],
         exercises: [
-          "chest_pec_deck_fly",           // 1. Inner Chest — Pec Deck Fly
-          "chest_machine_incline_press",  // 2. Machine Compound — Incline Machine Press
-          "back_straight_arm_pulldown",   // 3. Lat Isolation — Straight Arm Pulldown
-          "back_db_single_arm_row",       // 4. Unilateral Row — One-Arm DB Row
-          "back_face_pulls",              // 5. Upper Back/Rear Delt — Face Pulls
-          "arm_preacher_curl",            // 6. Bicep Short Head — Preacher Curl
-          "arm_ez_skull_crushers",        // 7. Tricep Long Head — Skull Crushers
+          "chest_machine_incline_press",  // 1. Upper Chest — Incline Machine Press
+          "chest_pec_deck_fly",           // 2. Inner Chest — Pec Deck Fly
+          "chest_dips",                   // 3. Lower Chest — Dips
+          "back_seated_cable_row",        // 4. Horizontal Row — Seated Cable Row
+          "back_hyperextension",          // 5. Lower Back — Hyperextension
+          "sh_reverse_pec_deck",          // 6. Posterior Delt — Rear Delt Fly
+          "sh_db_shrugs",                 // 7. Upper Traps — DB Shrugs
+          "arm_preacher_curl",            // 8. Bicep Short Head — Preacher Curl
+          "arm_ez_skull_crushers",        // 9. Tricep Long Head — Skull Crushers
         ],
       },
     },
@@ -1339,7 +1341,7 @@ export const trainingPlans = {
         exercises: [
           "back_wide_lat_pulldown",       // 1. Vertical Pull — Lat Pulldown
           "back_bb_bent_over_row",        // 2. Horizontal Row — Bent Over BB Row
-          "back_tbar_row",                // 3. Horizontal Row — T-Bar Row
+          "back_face_pulls",              // 3. Upper Back / Rear Delt — Face Pulls
           "back_db_single_arm_row",       // 4. Unilateral Row — Single Arm DB Row
           "back_straight_arm_pulldown",   // 5. Lat Isolation — Straight Arm Pulldown
           "back_hyperextension",          // 6. Lower Back — Hyperextension
@@ -1368,11 +1370,12 @@ export const trainingPlans = {
           "leg_bb_back_squat",            // 1. Quad Compound — Barbell Squat
           "leg_hack_squat",               // 2. Quad Compound — Hack Squat
           "leg_45_press",                 // 3. Quad Compound — Leg Press
-          "leg_bb_rdl",                   // 4. Hamstring Hinge — RDL
-          "leg_seated_curl",              // 5. Hamstring Curl — Seated Curl
-          "leg_standing_calf_raise",      // 6. Calves — Standing Calf Raise
-          "core_hanging_leg_raise",       // 7. Core — Hanging Leg Raise
-          "core_weighted_plank",          // 8. Core — Weighted Plank
+          "leg_extension",                // 4. Quad Isolation — Leg Extension
+          "leg_bb_rdl",                   // 5. Hamstring Hinge — RDL
+          "leg_seated_curl",              // 6. Hamstring Curl — Seated Curl
+          "leg_standing_calf_raise",      // 7. Calves — Standing Calf Raise
+          "core_hanging_leg_raise",       // 8. Core — Hanging Leg Raise
+          "core_weighted_plank",          // 9. Core — Weighted Plank
         ],
       },
       arm_day: {

@@ -21,7 +21,7 @@ import { getImageUrl } from "../utils/imageUtil";
 import { ConfirmDialog } from "../components/Modal";
 import ReminderWidget from "../components/ReminderWidget";
 import { trainingPlans } from "../data/exercises";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
+import AngleRadarChart from "../components/AngleRadarChart";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -29,16 +29,17 @@ export default function Dashboard() {
   const [activityDate, setActivityDate] = useState(new Date());
 
   const history = useWorkoutStore((s) => s.history);
-  const globalExercises = useWorkoutStore((s) => s.exercises);
   const weeklySchedule = useWorkoutStore((s) => s.weeklySchedule);
   const activeProgram = useWorkoutStore((s) => s.activeProgram);
   const activePlan = trainingPlans[activeProgram] || trainingPlans.ppl_upper;
   const heatmapData = useMemo(
     () => useWorkoutStore.getState().getHeatmapData(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [history],
   );
   const nextWorkout = useMemo(
     () => useWorkoutStore.getState().getNextWorkout(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [history, weeklySchedule],
   );
   const lastSession = useMemo(() => {
@@ -73,38 +74,6 @@ export default function Dashboard() {
     return { totalSessions, thisWeek, streak };
   }, [history, heatmapData]);
 
-  const muscleData = useMemo(() => {
-    const thisWeekSessions = history.filter((s) => {
-      const d = new Date(s.date);
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay() + 1);
-      weekStart.setHours(0, 0, 0, 0);
-      return d >= weekStart;
-    });
-
-    const counts = {};
-    thisWeekSessions.forEach((session) => {
-      session.exercises.forEach((ex) => {
-        const exerciseDef = globalExercises.find((e) => e.id === ex.exerciseId);
-        if (exerciseDef) {
-          const setsCount = ex.sets.length;
-          // Use primaryMuscle if available, fall back to muscle field
-          const muscleKey = exerciseDef.primaryMuscle || exerciseDef.muscle || 'Other';
-          counts[muscleKey] = (counts[muscleKey] || 0) + setsCount;
-        }
-      });
-    });
-
-    const data = Object.keys(counts).map((m) => ({ muscle: m, value: counts[m] }));
-    if (data.length < 3) {
-      // Pad to at least 3 points for a radar chart to look good
-      ["chest", "back", "legs"].forEach(m => {
-        if (!counts[m]) data.push({ muscle: m, value: 0 });
-      });
-    }
-    return data;
-  }, [history, globalExercises]);
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6 animate-fadeIn bg-bg-deep min-h-screen">
@@ -514,35 +483,8 @@ export default function Dashboard() {
         <ActivityChart data={heatmapData} currentDate={activityDate} />
       </div>
 
-      {/* Muscle Heatmap */}
-      <div className="glass-card p-5">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
-          <Target size={16} className="text-neon-emerald" />
-          Muscles Targeted (This Week)
-        </h2>
-        {muscleData.every((d) => d.value === 0) ? (
-          <div className="text-center py-6">
-            <Dumbbell size={24} className="mx-auto text-slate-700 mb-2" />
-            <p className="text-xs text-slate-500">Train some muscles this week to see your heatmap!</p>
-          </div>
-        ) : (
-          <div className="w-full h-56 -ml-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={muscleData}>
-                <PolarGrid stroke="#334155" />
-                <PolarAngleAxis dataKey="muscle" tick={{ fill: "#94a3b8", fontSize: 10 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 2']} tick={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px', fontSize: '12px' }}
-                  itemStyle={{ color: '#38bdf8' }}
-                  formatter={(value) => [`${value} sets`, "Volume"]}
-                />
-                <Radar name="Sets" dataKey="value" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.3} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </div>
+      {/* Biomechanical Angle Radar Chart */}
+      <AngleRadarChart />
 
       {/* Last Session */}
       <div className="glass-card p-5">

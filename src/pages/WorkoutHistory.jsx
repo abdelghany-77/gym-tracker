@@ -8,9 +8,12 @@ import {
   TrendingUp,
   ArrowLeft,
   X,
+  Share2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useWorkoutStore from "../store/workoutStore";
+import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
+import AngleRadarChart from "../components/AngleRadarChart";
 
 export default function WorkoutHistory() {
   const navigate = useNavigate();
@@ -18,6 +21,7 @@ export default function WorkoutHistory() {
   const exercises = useWorkoutStore((s) => s.exercises);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedSession, setSelectedSession] = useState(null);
+  const [receiptSession, setReceiptSession] = useState(null);
 
   const getExerciseName = (id) =>
     exercises.find((e) => e.id === id)?.name || id;
@@ -242,6 +246,14 @@ export default function WorkoutHistory() {
               <p className="text-[10px] text-slate-500">Total Sets</p>
             </div>
           </div>
+
+          <button
+            onClick={() => setReceiptSession(selectedSession)}
+            className="w-full bg-[#121824] hover:bg-[#1a2332] text-neon-cyan text-xs font-bold py-2.5 rounded-xl border border-neon-cyan/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <Share2 size={13} />
+            View Cyberpunk Receipt (.PNG)
+          </button>
         </div>
       )}
 
@@ -298,6 +310,18 @@ export default function WorkoutHistory() {
           </div>
         )}
       </div>
+
+      {/* Biomechanical Angle Analysis */}
+      <AngleRadarChart />
+
+      {/* Shareable Receipt Modal */}
+      {receiptSession && (
+        <WorkoutReceiptModal
+          isOpen={Boolean(receiptSession)}
+          session={receiptSession}
+          onClose={() => setReceiptSession(null)}
+        />
+      )}
     </div>
   );
 }

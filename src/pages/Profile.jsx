@@ -23,6 +23,7 @@ export default function Profile() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const weeklyTrend = useMemo(() => getWeeklyTrend(), [getWeeklyTrend, history]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const bmi = useMemo(() => getBMI(), [getBMI, userProfile.weight, userProfile.height]);
   const maxTrend = Math.max(...weeklyTrend.map((w) => w.count), 1);
 
