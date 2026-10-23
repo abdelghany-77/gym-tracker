@@ -6,7 +6,14 @@ import { createExerciseSlice } from "./exerciseSlice";
 import { createReminderSlice } from "./reminderSlice";
 import { createMeasurementSlice } from "./measurementSlice";
 import { createMealSlice } from "./mealSlice";
-import { loadFromStorage, saveToStorage } from "./helpers";
+import { createCardioSlice } from "./cardioSlice";
+import {
+  STORAGE_KEYS,
+  loadFromStorage,
+  saveToStorage,
+  loadActiveSession,
+  mergeCustomOverrides,
+} from "./helpers";
 
 // ── Zustand Store (composed from domain slices) ──
 const useWorkoutStore = create((set, get) => ({
@@ -17,34 +24,35 @@ const useWorkoutStore = create((set, get) => ({
   ...createReminderSlice(set, get),
   ...createMeasurementSlice(set, get),
   ...createMealSlice(set, get),
+  ...createCardioSlice(set, get),
 
   // ── Theme (item 13) ──
-  theme: loadFromStorage("gym_theme", "dark"), // "dark" | "light"
+  theme: loadFromStorage(STORAGE_KEYS.theme, "dark"), // "dark" | "light"
   setTheme: (theme) => {
     set({ theme });
-    saveToStorage("gym_theme", theme);
+    saveToStorage(STORAGE_KEYS.theme, theme);
     document.documentElement.setAttribute("data-theme", theme);
   },
   toggleTheme: () => {
     const newTheme = get().theme === "dark" ? "light" : "dark";
     set({ theme: newTheme });
-    saveToStorage("gym_theme", newTheme);
+    saveToStorage(STORAGE_KEYS.theme, newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
   },
 
   // ── Onboarding (item 12) ──
-  onboardingComplete: loadFromStorage("gym_onboarding", false),
+  onboardingComplete: loadFromStorage(STORAGE_KEYS.onboarding, false),
   completeOnboarding: () => {
     set({ onboardingComplete: true });
-    saveToStorage("gym_onboarding", true);
+    saveToStorage(STORAGE_KEYS.onboarding, true);
   },
 
   // ── Rest timer per exercise (item 6) ──
-  exerciseRestTimes: loadFromStorage("gym_rest_times", {}),
+  exerciseRestTimes: loadFromStorage(STORAGE_KEYS.restTimes, {}),
   setExerciseRestTime: (exerciseId, seconds) => {
     set((state) => {
       const updated = { ...state.exerciseRestTimes, [exerciseId]: seconds };
-      saveToStorage("gym_rest_times", updated);
+      saveToStorage(STORAGE_KEYS.restTimes, updated);
       return { exerciseRestTimes: updated };
     });
   },
@@ -56,16 +64,20 @@ const useWorkoutStore = create((set, get) => ({
   // ── Reactive Rehydration ──
   rehydrateFromStorage: () => {
     set({
-      history: loadFromStorage("gym_history", []),
-      personalRecords: loadFromStorage("gym_prs", {}),
-      exercises: loadFromStorage("gym_exercises", get().exercises),
-      programs: loadFromStorage("gym_programs", get().programs),
-      weeklySchedule: loadFromStorage("gym_schedule", get().weeklySchedule),
-      customProgramOverrides: loadFromStorage("gym_custom_program_overrides", {}),
-      activeProgram: loadFromStorage("gym_active_program", "ppl_upper"),
-      userProfile: loadFromStorage("gym_profile", get().userProfile),
-      measurements: loadFromStorage("gym_measurements", get().measurements || []),
-      theme: loadFromStorage("gym_theme", "dark"),
+      history: loadFromStorage(STORAGE_KEYS.history, []),
+      personalRecords: loadFromStorage(STORAGE_KEYS.prs, {}),
+      exercises: loadFromStorage(STORAGE_KEYS.exercises, get().exercises),
+      programs: loadFromStorage(STORAGE_KEYS.programs, get().programs),
+      weeklySchedule: loadFromStorage(STORAGE_KEYS.schedule, get().weeklySchedule),
+      customProgramOverrides: mergeCustomOverrides(),
+      activeProgram: loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper"),
+      userProfile: loadFromStorage(STORAGE_KEYS.profile, get().userProfile),
+      measurements: loadFromStorage(STORAGE_KEYS.measurements, get().measurements || []),
+      theme: loadFromStorage(STORAGE_KEYS.theme, "dark"),
+      activeWorkout: loadActiveSession(),
+      // Cardio rehydration
+      cardioHistory: loadFromStorage(STORAGE_KEYS.cardioHistory, []),
+      cardioGoal: loadFromStorage(STORAGE_KEYS.cardioGoal, get().cardioGoal),
     });
   },
 }));

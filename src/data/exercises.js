@@ -1398,11 +1398,185 @@ export const trainingPlans = {
     defaultSchedule: {
       0: "chest_day",     // Monday
       1: "back_day",      // Tuesday
-      2: "shoulder_day",  // Wednesday
-      3: "leg_day",       // Thursday
-      4: "arm_day",       // Friday
+      2: "leg_day",       // Wednesday (Leg buffer day: prevents consecutive push fatigue)
+      3: "shoulder_day",  // Thursday (Shoulders & triceps have had 48h recovery)
+      4: "arm_day",       // Friday (Biceps have had 72h recovery from Back)
       5: null,            // Saturday (rest)
       6: null,            // Sunday (rest)
+    },
+  },
+
+  // ── PROGRAM C: Push / Pull / Legs (3-Day Balanced Cycle) ──
+  ppl_3: {
+    id: "ppl_3",
+    name: "PPL (3-Day)",
+    nameAr: "دفع / سحب / أرجل (3 أيام)",
+    description: "3-Day High-Efficiency Hypertrophy Split",
+    descriptionAr: "نظام 3 أيام عالي الكفاءة يضمن تغطية جميع الوظائف مع أيام استشفاء كافية",
+    tag: "3-Day PPL",
+    tagIcon: "⚡",
+    daysPerWeek: 3,
+    color: "neon-blue",
+    programs: {
+      push_day: {
+        id: "push_day",
+        name: "Push Day",
+        nameAr: "يوم الدفع (الصدر، الكتف الأمامي والجانبي، الترايسبس)",
+        muscles: ["Chest", "Shoulders", "Arms"],
+        exercises: [
+          "chest_db_incline_press",       // 1. Upper Chest — Incline DB Press
+          "chest_bb_flat_bench",          // 2. Mid Chest — BB Flat Bench
+          "chest_high_to_low_cable_fly",  // 3. Lower Chest / Adduction — Cable Fly
+          "sh_db_lateral_raise",          // 4. Lateral Delt — DB Lateral Raise
+          "arm_overhead_cable_ext",       // 5. Tricep Long Head — Overhead Cable Ext
+          "arm_rope_pushdown",            // 6. Tricep Lateral/Medial — Rope Pushdown
+        ],
+      },
+      pull_day: {
+        id: "pull_day",
+        name: "Pull Day",
+        nameAr: "يوم السحب (الظهر بالكامل، الكتف الخلفي، البايسبس)",
+        muscles: ["Back", "Shoulders", "Arms"],
+        exercises: [
+          "back_wide_lat_pulldown",       // 1. Vertical Pull — Wide Lat Pulldown
+          "back_bb_bent_over_row",        // 2. Horizontal Row — BB Bent-Over Row
+          "back_db_single_arm_row",       // 3. Unilateral Row / Lats — Single Arm DB Row
+          "back_face_pulls",              // 4. Rear Delt / Scapular — Cable Face Pulls
+          "arm_db_incline_curl",          // 5. Bicep Long Head — Incline DB Curl
+          "arm_db_hammer_curl",           // 6. Brachialis — DB Hammer Curl
+        ],
+      },
+      legs_day: {
+        id: "legs_day",
+        name: "Leg Day",
+        nameAr: "يوم الأرجل والبطن (الرباعية، الخلفيات Hinge + Curl، السمانة، البطن)",
+        muscles: ["Legs", "Core"],
+        exercises: [
+          "leg_bb_back_squat",            // 1. Quad Compound — BB Back Squat
+          "leg_45_press",                 // 2. Quad Compound — Leg Press
+          "leg_bb_rdl",                   // 3. Hamstring Hinge — Barbell RDL
+          "leg_seated_curl",              // 4. Hamstring Knee Flexion — Seated Curl
+          "leg_standing_calf_raise",      // 5. Calves — Standing Calf Raise
+          "core_hanging_leg_raise",       // 6. Core — Hanging Leg Raise
+        ],
+      },
+    },
+    defaultSchedule: {
+      0: "push_day", // Monday
+      1: null,       // Tuesday (rest)
+      2: "pull_day", // Wednesday
+      3: null,       // Thursday (rest)
+      4: "legs_day", // Friday
+      5: null,       // Saturday (rest)
+      6: null,       // Sunday (rest)
+    },
+  },
+
+  // ── PROGRAM D: Push / Pull / Legs (6-Day Advanced Split A/B) ──
+  ppl_6: {
+    id: "ppl_6",
+    name: "PPL (6-Day)",
+    nameAr: "دفع / سحب / أرجل (6 أيام مكثف بتناوب A/B)",
+    description: "6-Day High-Frequency Split with Specialized A/B Stimulus",
+    descriptionAr: "نظام 6 أيام متقدم بتناوب حصص A وB لتوزيع الحجم التدريبي وتجنب الإجهاد المفرط",
+    tag: "6-Day PPL",
+    tagIcon: "🔥",
+    daysPerWeek: 6,
+    color: "neon-amber",
+    programs: {
+      push_day_a: {
+        id: "push_day_a",
+        name: "Push A (Upper Chest & Shoulder)",
+        nameAr: "دفع A (تركيز صدر علوي وكتف)",
+        muscles: ["Chest", "Shoulders", "Arms"],
+        exercises: [
+          "chest_bb_incline_press",       // Upper Chest
+          "chest_db_flat_press",          // Mid Chest
+          "sh_seated_db_press",           // Front Delt / Overhead Push
+          "sh_cable_lateral_raise",       // Lateral Delt
+          "arm_rope_pushdown",            // Triceps Lateral/Medial
+          "arm_overhead_cable_ext",       // Triceps Long Head
+        ],
+      },
+      pull_day_a: {
+        id: "pull_day_a",
+        name: "Pull A (Lat & Vertical Focus)",
+        nameAr: "سحب A (تركيز المجنص والسحب الرأسي)",
+        muscles: ["Back", "Shoulders", "Arms"],
+        exercises: [
+          "back_wide_lat_pulldown",       // Vertical Pull
+          "back_bb_bent_over_row",        // Horizontal Row
+          "back_straight_arm_pulldown",   // Lat Isolation
+          "sh_reverse_pec_deck",          // Rear Delt Fly
+          "arm_db_incline_curl",          // Bicep Long Head
+          "arm_db_hammer_curl",           // Brachialis
+        ],
+      },
+      legs_day_a: {
+        id: "legs_day_a",
+        name: "Legs A (Quad & Hip Hinge Focus)",
+        nameAr: "أرجل A (تركيز رباعية ومد الورك)",
+        muscles: ["Legs", "Core"],
+        exercises: [
+          "leg_bb_back_squat",            // Quad Compound
+          "leg_extension",                // Quad Isolation
+          "leg_bb_rdl",                   // Hamstring Hinge
+          "leg_seated_curl",              // Hamstring Curl
+          "leg_standing_calf_raise",      // Calves
+          "core_hanging_leg_raise",       // Core
+        ],
+      },
+      push_day_b: {
+        id: "push_day_b",
+        name: "Push B (Mid Chest & Tricep Power)",
+        nameAr: "دفع B (تركيز صدر أوسط وقوة الترايسبس)",
+        muscles: ["Chest", "Shoulders", "Arms"],
+        exercises: [
+          "chest_bb_flat_bench",          // Mid Chest
+          "chest_db_incline_press",       // Upper Chest
+          "chest_dips",                   // Lower Chest / Triceps
+          "sh_db_lateral_raise",          // Lateral Delt
+          "arm_ez_skull_crushers",        // Triceps Long Head
+          "chest_pec_deck_fly",           // Horizontal Adduction
+        ],
+      },
+      pull_day_b: {
+        id: "pull_day_b",
+        name: "Pull B (Upper Back & Row Focus)",
+        nameAr: "سحب B (تركيز أعلى الظهر وسحب أفقي)",
+        muscles: ["Back", "Shoulders", "Arms"],
+        exercises: [
+          "back_tbar_row",                // Horizontal Row
+          "back_close_grip_pulldown",     // Vertical Pull
+          "back_db_single_arm_row",       // Unilateral Row
+          "back_face_pulls",              // Upper Back / Rear Delt
+          "arm_preacher_curl",            // Bicep Short Head
+          "arm_cable_rope_curl",          // Brachialis
+        ],
+      },
+      legs_day_b: {
+        id: "legs_day_b",
+        name: "Legs B (Unilateral & Hamstring Curl Focus)",
+        nameAr: "أرجل B (تركيز أحادي وعزل الخلفيات)",
+        muscles: ["Legs", "Core"],
+        exercises: [
+          "leg_hack_squat",               // Quad Compound
+          "leg_bulgarian_split_squat",    // Unilateral Quad/Glutes
+          "leg_db_rdl",                   // Hamstring Hinge
+          "leg_lying_curl",               // Hamstring Curl
+          "leg_seated_calf_raise",        // Calves Soleus
+          "core_weighted_plank",          // Core Anti-Extension
+        ],
+      },
+    },
+    defaultSchedule: {
+      0: "push_day_a", // Monday
+      1: "pull_day_a", // Tuesday
+      2: "legs_day_a", // Wednesday
+      3: "push_day_b", // Thursday
+      4: "pull_day_b", // Friday
+      5: "legs_day_b", // Saturday
+      6: null,         // Sunday (rest)
     },
   },
 };

@@ -1,5 +1,26 @@
 // ── Schema Version ──
-export const DATABASE_VERSION = "3.0.0";
+export const DATABASE_VERSION = "3.1.0";
+
+// ── Canonical Storage Keys ──
+export const STORAGE_KEYS = {
+  exercises: "gym_exercises",
+  programs: "gym_programs",
+  schedule: "gym_schedule",
+  overrides: "gym_custom_program_overrides",  // unified key
+  overridesLegacy: "gym_custom_overrides",     // old key (read-only)
+  history: "gym_history",
+  prs: "gym_prs",
+  profile: "gym_profile",
+  activeProgram: "gym_active_program",
+  measurements: "gym_measurements",
+  theme: "gym_theme",
+  onboarding: "gym_onboarding",
+  restTimes: "gym_rest_times",
+  dbVersion: "gym_db_version",
+  activeSession: "gym_active_session",
+  cardioHistory: "gym_cardio_history",
+  cardioGoal: "gym_cardio_goal",
+};
 
 // ── Helper: Deduplication & Sanitizer ──
 export const sanitizeExerciseList = (list) => {
@@ -36,6 +57,60 @@ export const todayKey = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM
 export const generateId = () =>
   `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
+// ── Merge custom program overrides from legacy keys ──
+// Reads from both old (gym_custom_overrides) and new (gym_custom_program_overrides)
+// and returns a merged result. New key takes priority per-program.
+export const mergeCustomOverrides = () => {
+  const oldOverrides = loadFromStorage(STORAGE_KEYS.overridesLegacy, {});
+  const newOverrides = loadFromStorage(STORAGE_KEYS.overrides, {});
+
+  // Deep merge: for each program, merge old into new (new wins per exercise key)
+  const merged = { ...oldOverrides };
+  for (const [programId, programOverrides] of Object.entries(newOverrides)) {
+    merged[programId] = {
+      ...(merged[programId] || {}),
+      ...programOverrides,
+    };
+  }
+
+  // Save unified and clean up legacy
+  if (Object.keys(oldOverrides).length > 0) {
+    saveToStorage(STORAGE_KEYS.overrides, merged);
+    try {
+      localStorage.removeItem(STORAGE_KEYS.overridesLegacy);
+    } catch {
+      // silent
+    }
+  }
+
+  return merged;
+};
+
+// ── Active Session Persistence ──
+export const saveActiveSession = (session) => {
+  if (session) {
+    saveToStorage(STORAGE_KEYS.activeSession, session);
+  } else {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.activeSession);
+    } catch {
+      // silent
+    }
+  }
+};
+
+export const loadActiveSession = () => {
+  return loadFromStorage(STORAGE_KEYS.activeSession, null);
+};
+
+export const clearActiveSession = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.activeSession);
+  } catch {
+    // silent
+  }
+};
+
 // ── Backup & Restore Engine ──
 
 /**
@@ -44,17 +119,20 @@ export const generateId = () =>
  */
 export const exportUserData = () => {
   const exportPayload = {
-    gym_history: loadFromStorage("gym_history", []),
-    gym_prs: loadFromStorage("gym_prs", {}),
-    gym_exercises: loadFromStorage("gym_exercises", []),
-    gym_programs: loadFromStorage("gym_programs", {}),
-    gym_schedule: loadFromStorage("gym_schedule", {}),
-    gym_custom_program_overrides: loadFromStorage("gym_custom_program_overrides", {}),
-    gym_db_version: loadFromStorage("gym_db_version", DATABASE_VERSION),
+    gym_history: loadFromStorage(STORAGE_KEYS.history, []),
+    gym_prs: loadFromStorage(STORAGE_KEYS.prs, {}),
+    gym_exercises: loadFromStorage(STORAGE_KEYS.exercises, []),
+    gym_programs: loadFromStorage(STORAGE_KEYS.programs, {}),
+    gym_schedule: loadFromStorage(STORAGE_KEYS.schedule, {}),
+    gym_custom_program_overrides: loadFromStorage(STORAGE_KEYS.overrides, {}),
+    gym_db_version: loadFromStorage(STORAGE_KEYS.dbVersion, DATABASE_VERSION),
     // Additional user data for completeness
-    gym_profile: loadFromStorage("gym_profile", { name: "", weight: 0, height: 0, age: 0 }),
-    gym_active_program: loadFromStorage("gym_active_program", "ppl_upper"),
-    gym_measurements: loadFromStorage("gym_measurements", []),
+    gym_profile: loadFromStorage(STORAGE_KEYS.profile, { name: "", weight: 0, height: 0, age: 0 }),
+    gym_active_program: loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper"),
+    gym_measurements: loadFromStorage(STORAGE_KEYS.measurements, []),
+    // Cardio data
+    gym_cardio_history: loadFromStorage(STORAGE_KEYS.cardioHistory, []),
+    gym_cardio_goal: loadFromStorage(STORAGE_KEYS.cardioGoal, null),
     exportedAt: new Date().toISOString(),
   };
 
@@ -110,30 +188,45 @@ export const importUserData = (rawInput, onRehydrate) => {
 
     const programs = data.gym_programs ?? data.programs ?? {};
     const schedule = data.gym_schedule ?? data.schedule ?? data.weeklySchedule ?? {};
-    const overrides = data.gym_custom_program_overrides ?? data.customProgramOverrides ?? {};
+    // Support both override key names
+    const overrides = data.gym_custom_program_overrides ?? data.gym_custom_overrides ?? data.customProgramOverrides ?? {};
     const dbVersion = data.gym_db_version ?? data.dbVersion ?? DATABASE_VERSION;
     const profile = data.gym_profile ?? data.userProfile ?? null;
     const activeProgram = data.gym_active_program ?? data.activeProgram ?? null;
     const measurements = data.gym_measurements ?? data.measurements ?? null;
 
+    // Cardio data (backward-compatible: old backups may not have it)
+    const cardioHistory = data.gym_cardio_history ?? data.cardioHistory ?? [];
+    const cardioGoal = data.gym_cardio_goal ?? data.cardioGoal ?? null;
+
     // Persist verified keys to localStorage
-    saveToStorage("gym_history", history);
-    saveToStorage("gym_prs", prs);
+    saveToStorage(STORAGE_KEYS.history, history);
+    saveToStorage(STORAGE_KEYS.prs, prs);
     if (exercises.length > 0) {
-      saveToStorage("gym_exercises", exercises);
+      saveToStorage(STORAGE_KEYS.exercises, exercises);
     }
     if (Object.keys(programs).length > 0) {
-      saveToStorage("gym_programs", programs);
+      saveToStorage(STORAGE_KEYS.programs, programs);
     }
     if (Object.keys(schedule).length > 0) {
-      saveToStorage("gym_schedule", schedule);
+      saveToStorage(STORAGE_KEYS.schedule, schedule);
     }
-    saveToStorage("gym_custom_program_overrides", overrides);
-    saveToStorage("gym_db_version", String(dbVersion));
+    saveToStorage(STORAGE_KEYS.overrides, overrides);
+    // Remove legacy override key on import
+    try { localStorage.removeItem(STORAGE_KEYS.overridesLegacy); } catch { /* silent */ }
+    saveToStorage(STORAGE_KEYS.dbVersion, String(dbVersion));
 
-    if (profile) saveToStorage("gym_profile", profile);
-    if (activeProgram) saveToStorage("gym_active_program", activeProgram);
-    if (Array.isArray(measurements)) saveToStorage("gym_measurements", measurements);
+    if (profile) saveToStorage(STORAGE_KEYS.profile, profile);
+    if (activeProgram) saveToStorage(STORAGE_KEYS.activeProgram, activeProgram);
+    if (Array.isArray(measurements)) saveToStorage(STORAGE_KEYS.measurements, measurements);
+
+    // Cardio
+    if (Array.isArray(cardioHistory) && cardioHistory.length > 0) {
+      saveToStorage(STORAGE_KEYS.cardioHistory, cardioHistory);
+    }
+    if (cardioGoal) {
+      saveToStorage(STORAGE_KEYS.cardioGoal, cardioGoal);
+    }
 
     // Reactive store re-hydration
     if (typeof onRehydrate === "function") {

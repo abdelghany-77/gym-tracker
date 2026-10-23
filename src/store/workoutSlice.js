@@ -1,14 +1,23 @@
-import { loadFromStorage, saveToStorage, todayKey } from "./helpers";
+import {
+  STORAGE_KEYS,
+  loadFromStorage,
+  saveToStorage,
+  todayKey,
+  mergeCustomOverrides,
+  saveActiveSession,
+  loadActiveSession,
+  clearActiveSession,
+} from "./helpers";
 
 // ── Workout Slice ──
 export const createWorkoutSlice = (set, get) => ({
   // State
-  history: loadFromStorage("gym_history", []),
-  activeWorkout: null,
+  history: loadFromStorage(STORAGE_KEYS.history, []),
+  activeWorkout: loadActiveSession(),  // Restore active workout on init
   restTimerTrigger: 0,
-  personalRecords: loadFromStorage("gym_prs", {}),
+  personalRecords: loadFromStorage(STORAGE_KEYS.prs, {}),
   showConfetti: false,
-  customProgramOverrides: loadFromStorage("gym_custom_overrides", {}),
+  customProgramOverrides: mergeCustomOverrides(),  // Unified key with migration
 
   // Getters
   getAchievements: () => {
@@ -177,14 +186,15 @@ export const createWorkoutSlice = (set, get) => ({
       return { exerciseId: exId, sets };
     });
 
-    set({
-      activeWorkout: {
-        programId,
-        programName: program.name,
-        startedAt: new Date().toISOString(),
-        exercises: workoutExercises,
-      },
-    });
+    const workout = {
+      programId,
+      programName: program.name,
+      startedAt: new Date().toISOString(),
+      exercises: workoutExercises,
+    };
+
+    set({ activeWorkout: workout });
+    saveActiveSession(workout);
   },
 
   updateSet: (exerciseIndex, setIndex, field, value) => {
@@ -194,9 +204,9 @@ export const createWorkoutSlice = (set, get) => ({
       const sets = [...exercises[exerciseIndex].sets];
       sets[setIndex] = { ...sets[setIndex], [field]: value };
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
-      return {
-        activeWorkout: { ...state.activeWorkout, exercises },
-      };
+      const updated = { ...state.activeWorkout, exercises };
+      saveActiveSession(updated);
+      return { activeWorkout: updated };
     });
   },
 
@@ -208,8 +218,10 @@ export const createWorkoutSlice = (set, get) => ({
       const newDoneState = !sets[setIndex].done;
       sets[setIndex] = { ...sets[setIndex], done: newDoneState };
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
+      const updated = { ...state.activeWorkout, exercises };
+      saveActiveSession(updated);
       return {
-        activeWorkout: { ...state.activeWorkout, exercises },
+        activeWorkout: updated,
         restTimerTrigger: newDoneState ? Date.now() : state.restTimerTrigger,
       };
     });
@@ -224,9 +236,9 @@ export const createWorkoutSlice = (set, get) => ({
         { weight: "", reps: "", done: false },
       ];
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
-      return {
-        activeWorkout: { ...state.activeWorkout, exercises },
-      };
+      const updated = { ...state.activeWorkout, exercises };
+      saveActiveSession(updated);
+      return { activeWorkout: updated };
     });
   },
 
@@ -239,9 +251,9 @@ export const createWorkoutSlice = (set, get) => ({
       );
       if (sets.length === 0) return state;
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
-      return {
-        activeWorkout: { ...state.activeWorkout, exercises },
-      };
+      const updated = { ...state.activeWorkout, exercises };
+      saveActiveSession(updated);
+      return { activeWorkout: updated };
     });
   },
 
@@ -267,6 +279,9 @@ export const createWorkoutSlice = (set, get) => ({
         activeWorkout: { ...state.activeWorkout, exercises },
       };
 
+      // Persist active session
+      saveActiveSession(result.activeWorkout);
+
       // Permanent swap: store in customProgramOverrides (not mutating base programs)
       if (permanent && state.activeWorkout.programId) {
         const programId = state.activeWorkout.programId;
@@ -274,7 +289,7 @@ export const createWorkoutSlice = (set, get) => ({
         const programOverrides = { ...(updatedOverrides[programId] || {}) };
         programOverrides[oldExerciseId] = newExerciseId;
         updatedOverrides[programId] = programOverrides;
-        saveToStorage("gym_custom_overrides", updatedOverrides);
+        saveToStorage(STORAGE_KEYS.overrides, updatedOverrides);
         result.customProgramOverrides = updatedOverrides;
       }
 
@@ -288,9 +303,9 @@ export const createWorkoutSlice = (set, get) => ({
       const exercises = [...state.activeWorkout.exercises];
       const [moved] = exercises.splice(fromIndex, 1);
       exercises.splice(toIndex, 0, moved);
-      return {
-        activeWorkout: { ...state.activeWorkout, exercises },
-      };
+      const updated = { ...state.activeWorkout, exercises };
+      saveActiveSession(updated);
+      return { activeWorkout: updated };
     });
   },
 
@@ -328,8 +343,11 @@ export const createWorkoutSlice = (set, get) => ({
     });
 
     const updatedHistory = [...history, session];
-    saveToStorage("gym_history", updatedHistory);
-    saveToStorage("gym_prs", updatedPRs);
+    saveToStorage(STORAGE_KEYS.history, updatedHistory);
+    saveToStorage(STORAGE_KEYS.prs, updatedPRs);
+
+    // Clear active session from localStorage
+    clearActiveSession();
 
     set({
       history: updatedHistory,
@@ -343,12 +361,13 @@ export const createWorkoutSlice = (set, get) => ({
   },
 
   cancelWorkout: () => {
+    clearActiveSession();
     set({ activeWorkout: null });
   },
 
   clearHistory: () => {
-    saveToStorage("gym_history", []);
-    saveToStorage("gym_prs", {});
+    saveToStorage(STORAGE_KEYS.history, []);
+    saveToStorage(STORAGE_KEYS.prs, {});
     set({ history: [], personalRecords: {} });
   },
 });

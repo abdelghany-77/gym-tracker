@@ -12,9 +12,10 @@ import {
 import useWorkoutStore from "../store/workoutStore";
 import { trainingPlans } from "../data/exercises";
 import { ConfirmDialog } from "./Modal";
+import ProgramCoverageReport from "./ProgramCoverageReport";
 
 const planMeta = {
-  ppl_upper: {
+  ppl_3: {
     icon: Zap,
     gradient: "from-cyan-500/20 via-blue-500/10 to-transparent",
     borderActive: "border-neon-blue/60 shadow-[0_0_20px_rgba(0,212,255,0.15)]",
@@ -27,10 +28,29 @@ const planMeta = {
     checkColor: "text-neon-blue",
     badgeBg: "bg-neon-blue",
     highlights: [
-      "Push / Pull / Legs / Upper",
-      "Compound + Isolation mix",
-      "Full body coverage in 4 days",
-      "Ideal for intermediate-advanced",
+      "Push / Pull / Legs (3 days)",
+      "High recovery efficiency",
+      "Essential functional movements",
+      "Ideal for all levels & busy schedules",
+    ],
+  },
+  ppl_6: {
+    icon: Zap,
+    gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
+    borderActive: "border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.15)]",
+    borderIdle: "border-slate-700/50 hover:border-slate-600",
+    accentColor: "text-amber-400",
+    accentBg: "bg-amber-500/10",
+    accentBorder: "border-amber-500/20",
+    tagBg: "bg-amber-500/15 text-amber-400 border-amber-500/25",
+    glowClass: "animate-neon-glow-amber",
+    checkColor: "text-amber-400",
+    badgeBg: "bg-amber-400",
+    highlights: [
+      "6 days with alternating A/B days",
+      "Volume spread across 2x frequency",
+      "Specialized angles & movement patterns",
+      "High stimulus for advanced lifters",
     ],
   },
   bro_split: {
@@ -50,6 +70,25 @@ const planMeta = {
       "Maximum volume per muscle",
       "Classic bodybuilding style",
       "Great for building mass",
+    ],
+  },
+  ppl_upper: {
+    icon: Zap,
+    gradient: "from-cyan-500/20 via-blue-500/10 to-transparent",
+    borderActive: "border-neon-blue/60 shadow-[0_0_20px_rgba(0,212,255,0.15)]",
+    borderIdle: "border-slate-700/50 hover:border-slate-600",
+    accentColor: "text-neon-blue",
+    accentBg: "bg-neon-blue/10",
+    accentBorder: "border-neon-blue/20",
+    tagBg: "bg-neon-blue/15 text-neon-blue border-neon-blue/25",
+    glowClass: "animate-neon-glow-blue",
+    checkColor: "text-neon-blue",
+    badgeBg: "bg-neon-blue",
+    highlights: [
+      "Push / Pull / Legs / Upper",
+      "Compound + Isolation mix",
+      "Full body coverage in 4 days",
+      "Ideal for intermediate-advanced",
     ],
   },
 };
@@ -86,128 +125,135 @@ export default function ProgramSelector() {
       </div>
 
       {/* Program Cards */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {Object.entries(trainingPlans).map(([planId, plan]) => {
           const isActive = planId === activeProgram;
-          const meta = planMeta[planId];
+          const meta = planMeta[planId] || planMeta.ppl_upper;
           const Icon = meta.icon;
           const programList = Object.values(plan.programs);
 
           return (
-            <button
-              key={planId}
-              onClick={() => handleSelect(planId)}
-              className={`
-                w-full text-left rounded-2xl p-4 border-[1.5px] transition-all duration-300 relative overflow-hidden group
-                ${isActive
-                  ? `${meta.borderActive} bg-slate-900/90 ${meta.glowClass}`
-                  : `${meta.borderIdle} bg-slate-900/50 hover:bg-slate-900/70 active:scale-[0.98]`
-                }
-              `}
-              aria-label={`${isActive ? "Active: " : "Switch to "}${plan.name} — ${plan.description}`}
-              aria-pressed={isActive}
-            >
-              {/* Gradient overlay */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${meta.gradient} opacity-60 pointer-events-none`}
-              />
+            <div key={planId} className="space-y-1.5">
+              <button
+                onClick={() => handleSelect(planId)}
+                className={`
+                  w-full text-left rounded-2xl p-4 border-[1.5px] transition-all duration-300 relative overflow-hidden group
+                  ${isActive
+                    ? `${meta.borderActive} bg-slate-900/90 ${meta.glowClass}`
+                    : `${meta.borderIdle} bg-slate-900/50 hover:bg-slate-900/70 active:scale-[0.98]`
+                  }
+                `}
+                aria-label={`${isActive ? "Active: " : "Switch to "}${plan.name} — ${plan.description}`}
+                aria-pressed={isActive}
+              >
+                {/* Gradient overlay */}
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${meta.gradient} opacity-60 pointer-events-none`}
+                />
 
-              {/* Content */}
-              <div className="relative z-10">
-                {/* Top row: Icon + Name + Tag */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                      isActive
-                        ? `${meta.accentBg} ${meta.accentBorder}`
-                        : "bg-slate-800 border-slate-700"
-                    } transition-colors`}
-                  >
-                    <Icon
-                      size={20}
-                      className={isActive ? meta.accentColor : "text-slate-500"}
-                    />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className={`text-base font-bold ${isActive ? "text-white" : "text-slate-300"}`}>
-                        {plan.name}
-                      </h3>
-                      {isActive && (
-                        <CheckCircle2
-                          size={16}
-                          className={`${meta.checkColor} shrink-0 animate-cardIn`}
-                        />
-                      )}
+                {/* Content */}
+                <div className="relative z-10">
+                  {/* Top row: Icon + Name + Tag */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                        isActive
+                          ? `${meta.accentBg} ${meta.accentBorder}`
+                          : "bg-slate-800 border-slate-700"
+                      } transition-colors`}
+                    >
+                      <Icon
+                        size={20}
+                        className={isActive ? meta.accentColor : "text-slate-500"}
+                      />
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium">{plan.nameAr}</p>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className={`text-base font-bold ${isActive ? "text-white" : "text-slate-300"}`}>
+                          {plan.name}
+                        </h3>
+                        {isActive && (
+                          <CheckCircle2
+                            size={16}
+                            className={`${meta.checkColor} shrink-0 animate-cardIn`}
+                          />
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-medium">{plan.nameAr}</p>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${
+                        isActive ? meta.tagBg : "bg-slate-800/80 text-slate-400 border-slate-700"
+                      }`}
+                    >
+                      {plan.tagIcon} {plan.tag}
+                    </span>
                   </div>
 
-                  <span
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${
-                      isActive ? meta.tagBg : "bg-slate-800/80 text-slate-400 border-slate-700"
-                    }`}
-                  >
-                    {plan.tagIcon} {plan.tag}
-                  </span>
-                </div>
+                  {/* Day schedule preview */}
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <Calendar size={11} className="text-slate-500 shrink-0" />
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {programList.map((prog, i) => (
+                        <span
+                          key={prog.id}
+                          className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                            isActive
+                              ? `${meta.accentBg} ${meta.accentColor} border ${meta.accentBorder}`
+                              : "bg-slate-800/60 text-slate-400 border border-slate-700/50"
+                          }`}
+                        >
+                          D{i + 1}: {prog.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
-                {/* Day schedule preview */}
-                <div className="flex items-center gap-1.5 mb-3">
-                  <Calendar size={11} className="text-slate-500 shrink-0" />
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {programList.map((prog, i) => (
-                      <span
-                        key={prog.id}
-                        className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                          isActive
-                            ? `${meta.accentBg} ${meta.accentColor} border ${meta.accentBorder}`
-                            : "bg-slate-800/60 text-slate-400 border border-slate-700/50"
-                        }`}
-                      >
-                        D{i + 1}: {prog.name}
-                      </span>
+                  {/* Highlights */}
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                    {meta.highlights.map((h, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <Target
+                          size={8}
+                          className={isActive ? meta.accentColor : "text-slate-600"}
+                        />
+                        <span className={`text-[10px] ${isActive ? "text-slate-300" : "text-slate-500"}`}>
+                          {h}
+                        </span>
+                      </div>
                     ))}
                   </div>
-                </div>
 
-                {/* Highlights */}
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                  {meta.highlights.map((h, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <Target
-                        size={8}
-                        className={isActive ? meta.accentColor : "text-slate-600"}
-                      />
-                      <span className={`text-[10px] ${isActive ? "text-slate-300" : "text-slate-500"}`}>
-                        {h}
+                  {/* Exercises count */}
+                  <div className="mt-3 pt-3 border-t border-slate-800/50 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Dumbbell size={11} className="text-slate-500" />
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        {programList.reduce((acc, p) => acc + p.exercises.length, 0)} exercises across {plan.daysPerWeek} days
                       </span>
                     </div>
-                  ))}
-                </div>
-
-                {/* Exercises count */}
-                <div className="mt-3 pt-3 border-t border-slate-800/50 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Dumbbell size={11} className="text-slate-500" />
-                    <span className="text-[10px] text-slate-500 font-medium">
-                      {programList.reduce((acc, p) => acc + p.exercises.length, 0)} exercises across {plan.daysPerWeek} days
-                    </span>
+                    {isActive && (
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${meta.accentColor} opacity-60`}>
+                        Active
+                      </span>
+                    )}
+                    {!isActive && (
+                      <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-300 transition-colors">
+                        Tap to switch →
+                      </span>
+                    )}
                   </div>
-                  {isActive && (
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${meta.accentColor} opacity-60`}>
-                      Active
-                    </span>
-                  )}
-                  {!isActive && (
-                    <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-300 transition-colors">
-                      Tap to switch →
-                    </span>
-                  )}
                 </div>
-              </div>
-            </button>
+              </button>
+
+              {/* Collapsible Biomechanical & Volume Coverage Report */}
+              <ProgramCoverageReport
+                plan={plan}
+                defaultOpen={isActive}
+              />
+            </div>
           );
         })}
       </div>

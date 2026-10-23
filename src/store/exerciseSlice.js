@@ -3,35 +3,99 @@ import defaultExercises, {
 } from "../data/exercises";
 import {
   DATABASE_VERSION,
+  STORAGE_KEYS,
   loadFromStorage,
   saveToStorage,
   generateId,
   sanitizeExerciseList,
+  mergeCustomOverrides,
 } from "./helpers";
 
-// ── Database Version Check & Hard Reset ──
+// ── Database Version Check & Safe Migration ──
+// Instead of wiping user data on version mismatch, perform incremental migration
+// that preserves custom exercises, custom programs, overrides, and schedule.
 export const purgeAndSyncDatabase = () => {
   try {
     if (typeof window === "undefined" || !window.localStorage) return;
-    const currentVersion = localStorage.getItem("gym_db_version");
-    if (currentVersion !== DATABASE_VERSION) {
-      // Hard wipe of all exercise and program states
-      localStorage.removeItem("gym_exercises");
-      localStorage.removeItem("gym_programs");
-      localStorage.removeItem("gym_schedule");
-      localStorage.removeItem("gym_custom_program_overrides");
+    const currentVersion = localStorage.getItem(STORAGE_KEYS.dbVersion);
 
-      // Set pristine 72-exercise database and initial programs
-      const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
-      const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
-      const pristineExercises = sanitizeExerciseList(defaultExercises);
-      localStorage.setItem("gym_exercises", JSON.stringify(pristineExercises));
-      localStorage.setItem("gym_programs", JSON.stringify(plan.programs));
-      localStorage.setItem("gym_schedule", JSON.stringify(plan.defaultSchedule));
-      localStorage.setItem("gym_db_version", DATABASE_VERSION);
+    if (currentVersion === DATABASE_VERSION) return; // No migration needed
+
+    // ── BACKUP before migration ──
+    const backupKey = `gym_pre_migration_backup_${Date.now()}`;
+    try {
+      const backup = {
+        exercises: loadFromStorage(STORAGE_KEYS.exercises, null),
+        programs: loadFromStorage(STORAGE_KEYS.programs, null),
+        schedule: loadFromStorage(STORAGE_KEYS.schedule, null),
+        overrides: loadFromStorage(STORAGE_KEYS.overrides, null),
+        overridesLegacy: loadFromStorage(STORAGE_KEYS.overridesLegacy, null),
+        version: currentVersion,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem(backupKey, JSON.stringify(backup));
+    } catch (e) {
+      console.warn("Pre-migration backup failed:", e);
+      // Continue with migration — we still have the original keys in place
     }
+
+    // ── MERGE default exercises with user custom exercises ──
+    const existingExercises = loadFromStorage(STORAGE_KEYS.exercises, []);
+    const defaultIds = new Set(defaultExercises.map((e) => e.id));
+
+    // Separate user-custom exercises (those not in the default catalog)
+    const customExercises = existingExercises.filter(
+      (ex) => ex.isCustom || !defaultIds.has(ex.id)
+    );
+
+    // Build merged list: fresh defaults + user customs (no duplicates)
+    const merged = sanitizeExerciseList([...defaultExercises, ...customExercises]);
+    saveToStorage(STORAGE_KEYS.exercises, merged);
+
+    // ── MERGE programs: keep custom programs, update default ones ──
+    const existingPrograms = loadFromStorage(STORAGE_KEYS.programs, null);
+    if (existingPrograms && typeof existingPrograms === "object") {
+      const activePlan = loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper");
+      const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
+      const defaultProgramIds = new Set(Object.keys(plan.programs));
+
+      // Keep custom programs untouched, refresh default program definitions
+      const mergedPrograms = {};
+      // First, add all default programs from the current plan
+      for (const [id, prog] of Object.entries(plan.programs)) {
+        mergedPrograms[id] = { ...prog };
+      }
+      // Then, add custom programs that aren't defaults
+      for (const [id, prog] of Object.entries(existingPrograms)) {
+        if (!defaultProgramIds.has(id) || prog.isCustom) {
+          mergedPrograms[id] = prog;
+        }
+      }
+      saveToStorage(STORAGE_KEYS.programs, mergedPrograms);
+    } else {
+      // No existing programs — seed from the active plan
+      const activePlan = loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper");
+      const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
+      saveToStorage(STORAGE_KEYS.programs, plan.programs);
+    }
+
+    // ── PRESERVE schedule if it exists, otherwise seed ──
+    const existingSchedule = loadFromStorage(STORAGE_KEYS.schedule, null);
+    if (!existingSchedule || Object.keys(existingSchedule).length === 0) {
+      const activePlan = loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper");
+      const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
+      saveToStorage(STORAGE_KEYS.schedule, plan.defaultSchedule);
+    }
+
+    // ── UNIFY override keys ──
+    mergeCustomOverrides();
+
+    // ── SET new version ──
+    localStorage.setItem(STORAGE_KEYS.dbVersion, DATABASE_VERSION);
+
   } catch (e) {
-    console.warn("Database purge & sync failed:", e);
+    console.warn("Database migration failed:", e);
+    // On failure, do NOT wipe data. Keep what we have.
   }
 };
 
@@ -40,35 +104,35 @@ purgeAndSyncDatabase();
 
 // ── Seed logic ──
 const seedExercises = () => {
-  const stored = loadFromStorage("gym_exercises", null);
+  const stored = loadFromStorage(STORAGE_KEYS.exercises, null);
   if (stored) {
     const sanitized = sanitizeExerciseList(stored);
-    saveToStorage("gym_exercises", sanitized);
+    saveToStorage(STORAGE_KEYS.exercises, sanitized);
     return sanitized;
   }
   const initial = sanitizeExerciseList(defaultExercises);
-  saveToStorage("gym_exercises", initial);
+  saveToStorage(STORAGE_KEYS.exercises, initial);
   return initial;
 };
 
 const seedPrograms = () => {
-  const stored = loadFromStorage("gym_programs", null);
+  const stored = loadFromStorage(STORAGE_KEYS.programs, null);
   if (stored) return stored;
   // Seed from the active program's plan
-  const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
+  const activePlan = loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper");
   const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
   const programs = { ...plan.programs };
-  saveToStorage("gym_programs", programs);
+  saveToStorage(STORAGE_KEYS.programs, programs);
   return programs;
 };
 
 const seedSchedule = () => {
-  const stored = loadFromStorage("gym_schedule", null);
+  const stored = loadFromStorage(STORAGE_KEYS.schedule, null);
   if (stored) return stored;
-  const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
+  const activePlan = loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper");
   const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
   const schedule = { ...plan.defaultSchedule };
-  saveToStorage("gym_schedule", schedule);
+  saveToStorage(STORAGE_KEYS.schedule, schedule);
   return schedule;
 };
 
@@ -78,7 +142,7 @@ export const createExerciseSlice = (set, get) => ({
   exercises: seedExercises(),
   programs: seedPrograms(),
   weeklySchedule: seedSchedule(),
-  activeProgram: loadFromStorage("gym_active_program", "ppl_upper"),
+  activeProgram: loadFromStorage(STORAGE_KEYS.activeProgram, "ppl_upper"),
   purgeAndSyncDatabase,
 
   // Getters
@@ -125,9 +189,9 @@ export const createExerciseSlice = (set, get) => ({
     const newPrograms = { ...plan.programs };
     const newSchedule = { ...plan.defaultSchedule };
 
-    saveToStorage("gym_active_program", planId);
-    saveToStorage("gym_programs", newPrograms);
-    saveToStorage("gym_schedule", newSchedule);
+    saveToStorage(STORAGE_KEYS.activeProgram, planId);
+    saveToStorage(STORAGE_KEYS.programs, newPrograms);
+    saveToStorage(STORAGE_KEYS.schedule, newSchedule);
 
     set({
       activeProgram: planId,
@@ -143,15 +207,22 @@ export const createExerciseSlice = (set, get) => ({
       const newExercise = {
         id: generateId(),
         name: exercise.name || "New Exercise",
+        nameAr: exercise.nameAr || "",
+        primaryMuscle: (exercise.muscle || "Chest").toLowerCase(),
         muscle: exercise.muscle || "Chest",
+        targetAngle: exercise.targetAngle || "mid_chest",
+        equipment: exercise.equipment || "dumbbell",
+        category: exercise.category || "compound",
+        defaultSets: exercise.default_sets || exercise.defaultSets || 3,
+        defaultReps: exercise.default_reps || exercise.defaultReps || 10,
+        default_sets: exercise.default_sets || exercise.defaultSets || 3,
+        default_reps: exercise.default_reps || exercise.defaultReps || 10,
         image: exercise.image || null,
         tips: exercise.tips || "",
-        default_sets: exercise.default_sets || 3,
-        default_reps: exercise.default_reps || 10,
         isCustom: true,
       };
       const updated = sanitizeExerciseList([...state.exercises, newExercise]);
-      saveToStorage("gym_exercises", updated);
+      saveToStorage(STORAGE_KEYS.exercises, updated);
       return { exercises: updated };
     });
   },
@@ -163,7 +234,7 @@ export const createExerciseSlice = (set, get) => ({
           ex.id === id ? { ...ex, ...updates } : ex,
         )
       );
-      saveToStorage("gym_exercises", updated);
+      saveToStorage(STORAGE_KEYS.exercises, updated);
       return { exercises: updated };
     });
   },
@@ -180,8 +251,8 @@ export const createExerciseSlice = (set, get) => ({
           ),
         };
       });
-      saveToStorage("gym_exercises", updated);
-      saveToStorage("gym_programs", updatedPrograms);
+      saveToStorage(STORAGE_KEYS.exercises, updated);
+      saveToStorage(STORAGE_KEYS.programs, updatedPrograms);
       return { exercises: updated, programs: updatedPrograms };
     });
   },
@@ -198,7 +269,7 @@ export const createExerciseSlice = (set, get) => ({
         isCustom: true,
       };
       const updated = { ...state.programs, [id]: newProgram };
-      saveToStorage("gym_programs", updated);
+      saveToStorage(STORAGE_KEYS.programs, updated);
       return { programs: updated };
     });
     return id;
@@ -210,7 +281,7 @@ export const createExerciseSlice = (set, get) => ({
         ...state.programs,
         [id]: { ...state.programs[id], ...updates },
       };
-      saveToStorage("gym_programs", updated);
+      saveToStorage(STORAGE_KEYS.programs, updated);
       return { programs: updated };
     });
   },
@@ -223,8 +294,8 @@ export const createExerciseSlice = (set, get) => ({
       Object.keys(updatedSchedule).forEach((day) => {
         if (updatedSchedule[day] === id) updatedSchedule[day] = null;
       });
-      saveToStorage("gym_programs", updated);
-      saveToStorage("gym_schedule", updatedSchedule);
+      saveToStorage(STORAGE_KEYS.programs, updated);
+      saveToStorage(STORAGE_KEYS.schedule, updatedSchedule);
       return { programs: updated, weeklySchedule: updatedSchedule };
     });
   },
@@ -233,7 +304,7 @@ export const createExerciseSlice = (set, get) => ({
   setSchedule: (dayIndex, programId) => {
     set((state) => {
       const updated = { ...state.weeklySchedule, [dayIndex]: programId };
-      saveToStorage("gym_schedule", updated);
+      saveToStorage(STORAGE_KEYS.schedule, updated);
       return { weeklySchedule: updated };
     });
   },
@@ -250,7 +321,7 @@ export const createExerciseSlice = (set, get) => ({
         ...state.programs,
         [programId]: { ...program, exercises },
       };
-      saveToStorage("gym_programs", updatedPrograms);
+      saveToStorage(STORAGE_KEYS.programs, updatedPrograms);
       return { programs: updatedPrograms };
     });
   },
@@ -261,9 +332,9 @@ export const createExerciseSlice = (set, get) => ({
     const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
 
     const sanitizedDefaults = sanitizeExerciseList(defaultExercises);
-    saveToStorage("gym_exercises", sanitizedDefaults);
-    saveToStorage("gym_programs", plan.programs);
-    saveToStorage("gym_schedule", plan.defaultSchedule);
+    saveToStorage(STORAGE_KEYS.exercises, sanitizedDefaults);
+    saveToStorage(STORAGE_KEYS.programs, plan.programs);
+    saveToStorage(STORAGE_KEYS.schedule, plan.defaultSchedule);
     set({
       exercises: sanitizedDefaults,
       programs: { ...plan.programs },

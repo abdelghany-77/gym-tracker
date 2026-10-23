@@ -14,6 +14,7 @@ const ManageExercises = lazy(() => import("./pages/ManageExercises"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Nutrition = lazy(() => import("./pages/Nutrition"));
 const WorkoutHistory = lazy(() => import("./pages/WorkoutHistory"));
+const Cardio = lazy(() => import("./pages/Cardio"));
 
 export default function App() {
   const onboardingComplete = useWorkoutStore((s) => s.onboardingComplete);
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/exercises" element={<ExerciseLibrary />} />
             <Route path="/exercises/manage" element={<ManageExercises />} />
             <Route path="/nutrition" element={<Nutrition />} />
+            <Route path="/cardio" element={<Cardio />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/history" element={<WorkoutHistory />} />
           </Route>

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Play, ChevronRight, Activity, Clock, Dumbbell, Library, Zap, Crown } from "lucide-react";
+import { Play, ChevronRight, Activity, Clock, Dumbbell, Library, Zap, Crown, HeartPulse } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
 import { trainingPlans } from "../data/exercises";
@@ -80,13 +80,23 @@ export default function WorkoutSelect() {
             </span>
           </div>
         </div>
-        <button 
-          onClick={() => navigate("/exercises")}
-          className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all shadow-sm"
-          aria-label="Exercise Library"
-        >
-          <Library size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => navigate("/cardio")}
+            className="h-10 px-3 bg-red-500/10 border border-red-500/25 rounded-xl flex items-center gap-1.5 text-red-400 hover:bg-red-500/20 hover:text-white transition-all shadow-sm text-xs font-bold"
+            aria-label="Cardio & Conditioning"
+          >
+            <HeartPulse size={16} />
+            <span>Cardio</span>
+          </button>
+          <button 
+            onClick={() => navigate("/exercises")}
+            className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all shadow-sm"
+            aria-label="Exercise Library"
+          >
+            <Library size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Resume active workout */}

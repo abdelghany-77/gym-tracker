@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import useWorkoutStore from './workoutStore';
 import exercises, { trainingPlans } from '../data/exercises';
+import { DATABASE_VERSION } from './helpers';
 
 describe('WorkoutStore & Biomechanical Database', () => {
   beforeEach(() => {
@@ -125,24 +126,25 @@ describe('WorkoutStore & Biomechanical Database', () => {
     expect(useWorkoutStore.getState().dailyChecklist.vitamin).toBe(false);
   });
 
-  it('verifies purgeAndSyncDatabase forcefully wipes legacy data on schema version bump to 3.0.0', () => {
+  it('verifies purgeAndSyncDatabase safely syncs default catalog and updates schema version', () => {
     localStorage.setItem('gym_db_version', '1.0.0');
-    localStorage.setItem('gym_exercises', JSON.stringify([{ id: 'legacy_obsolete_id' }]));
-    localStorage.setItem('gym_programs', JSON.stringify({ old_prog: {} }));
+    localStorage.setItem('gym_exercises', JSON.stringify([{ id: 'custom_user_exercise', isCustom: true }]));
+    localStorage.setItem('gym_programs', JSON.stringify({ custom_prog: { name: 'Custom', exercises: [] } }));
     localStorage.setItem('gym_custom_program_overrides', JSON.stringify({ foo: 'bar' }));
 
     const { purgeAndSyncDatabase } = useWorkoutStore.getState();
     if (typeof purgeAndSyncDatabase === 'function') {
       purgeAndSyncDatabase();
-    } else {
-      // Direct call
-      import('../store/exerciseSlice').then(({ purgeAndSyncDatabase: sync }) => sync());
     }
 
-    expect(localStorage.getItem('gym_db_version')).toBe('3.0.0');
+    expect(localStorage.getItem('gym_db_version')).toBe(DATABASE_VERSION);
     const syncedExercises = JSON.parse(localStorage.getItem('gym_exercises'));
-    expect(syncedExercises.length).toBe(72);
+    // Contains 72 defaults + 1 custom
+    expect(syncedExercises.length).toBe(73);
     expect(syncedExercises.some(e => e.id === 'chest_bb_flat_bench')).toBe(true);
-    expect(localStorage.getItem('gym_custom_program_overrides')).toBeNull();
+    expect(syncedExercises.some(e => e.id === 'custom_user_exercise')).toBe(true);
+    // Preserves custom overrides
+    const overrides = JSON.parse(localStorage.getItem('gym_custom_program_overrides'));
+    expect(overrides).toEqual({ foo: 'bar' });
   });
 });

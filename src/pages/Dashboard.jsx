@@ -14,6 +14,7 @@ import {
   Target,
   Zap,
   Crown,
+  HeartPulse,
 } from "lucide-react";
 import ActivityChart from "../components/ActivityChart";
 import useWorkoutStore from "../store/workoutStore";
@@ -170,6 +171,35 @@ export default function Dashboard() {
 
       {/* Water & Vitamin Reminders */}
       <ReminderWidget />
+
+      {/* Cardio & Conditioning Quick Access Card */}
+      <button
+        onClick={() => navigate("/cardio")}
+        className="w-full bg-gradient-to-r from-red-500/15 via-orange-500/10 to-amber-500/15 rounded-2xl p-4 border border-red-500/25 hover:border-red-500/40 transition-all text-left flex items-center justify-between group active:scale-[0.99] shadow-sm relative overflow-hidden focus-visible:ring-2 focus-visible:ring-red-400/50 focus-visible:outline-none"
+        aria-label="Open Cardio & Conditioning"
+      >
+        <div className="flex items-center gap-3 relative z-10">
+          <div className="w-12 h-12 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform">
+            <HeartPulse size={24} className="text-red-400 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-white group-hover:text-red-400 transition-colors">
+                Cardio & Conditioning
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                كارديو
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              اضغط هنا لبدء وتسجيل جلسة كارديو جديدة أو متابعة هدفك الأسبوعي
+            </p>
+          </div>
+        </div>
+        <div className="w-9 h-9 rounded-xl bg-slate-800/80 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-slate-700 transition-all shrink-0 ml-2">
+          <ChevronRight size={18} />
+        </div>
+      </button>
 
       {/* Empty State CTA — when no workouts yet */}
       {stats.totalSessions === 0 && (
