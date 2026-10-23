@@ -113,7 +113,7 @@ export default function ActiveWorkout() {
         <p className="text-slate-400 font-medium">No active workout session.</p>
         <button
           onClick={() => navigate("/workout")}
-          className="text-neon-blue hover:underline text-sm font-medium"
+          className="text-accent hover:underline text-sm font-medium"
         >
           Start a workout →
         </button>
@@ -153,17 +153,17 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <div className="max-w-lg mx-auto flex flex-col h-[calc(100dvh-4rem)] bg-bg-deep">
+    <div className="max-w-lg mx-auto flex flex-col h-[100dvh] bg-bg-deep">
       {/* ═══ COMPACT HEADER ═══ */}
-      <div className="shrink-0 bg-bg-deep px-4 pt-3 pb-2 space-y-2">
-        {/* Top row: back, title, cancel */}
-        <div className="flex items-center gap-3">
+      <div className="shrink-0 bg-bg-deep px-4 pt-3 pb-2 space-y-2 border-b border-border-slate">
+        {/* Top row: back, title, timer, cancel */}
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => navigate("/workout")}
-            className="w-9 h-9 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"
+            onClick={() => setShowConfirmCancel(true)}
+            className="w-8 h-8 rounded-lg bg-bg-card flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all text-slate-400"
             aria-label="Go back"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={15} />
           </button>
 
           <div className="flex-1 min-w-0">
@@ -173,7 +173,7 @@ export default function ActiveWorkout() {
           </div>
 
           <div
-            className="flex items-center gap-1.5 text-xs text-neon-cyan font-mono font-bold bg-neon-cyan/8 px-2.5 py-1 rounded-lg border border-neon-cyan/15"
+            className="flex items-center gap-1.5 text-xs text-accent font-mono font-bold bg-accent/8 px-2 py-1 rounded-lg border border-accent/15"
             aria-live="polite"
           >
             <Clock size={11} />
@@ -182,20 +182,20 @@ export default function ActiveWorkout() {
 
           <button
             onClick={() => setShowConfirmCancel(true)}
-            className="w-9 h-9 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-lg bg-bg-card flex items-center justify-center hover:bg-red-500/15 hover:text-red-400 text-slate-500 active:scale-95 transition-all"
             aria-label="Cancel workout"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
-        {/* Progress bar + pagination — single row */}
+        {/* Progress bar + exercise nav */}
         <div className="flex items-center gap-3">
           {/* Progress */}
           <div className="flex-1 flex items-center gap-2">
             <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-neon-cyan to-neon-green rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-accent rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress.percent}%` }}
                 role="progressbar"
                 aria-valuenow={progress.percent}
@@ -221,9 +221,9 @@ export default function ActiveWorkout() {
                   }}
                   className={`h-1.5 rounded-full transition-all ${
                     i === currentIndex
-                      ? "w-5 bg-neon-cyan"
+                      ? "w-5 bg-accent"
                       : allDone
-                        ? "w-1.5 bg-neon-green/60"
+                        ? "w-1.5 bg-neon-emerald/60"
                         : "w-1.5 bg-slate-700"
                   }`}
                   aria-label={`Exercise ${i + 1}`}
@@ -238,18 +238,18 @@ export default function ActiveWorkout() {
       {/* ═══ SCROLLABLE CONTENT ═══ */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 pt-4 pb-6 space-y-4"
+        className="flex-1 overflow-y-auto px-4 pt-3 pb-4 space-y-3"
       >
-        {/* Exercise number indicator */}
+        {/* Exercise number nav */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
               onClick={goPrev}
               disabled={currentIndex === 0}
-              className="w-8 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-90 border border-slate-700/30"
+              className="w-7 h-7 rounded-lg bg-bg-card flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-90"
               aria-label="Previous exercise"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={14} />
             </button>
             <span className="text-xs text-slate-400">
               <span className="text-white font-bold">{currentIndex + 1}</span>
@@ -259,15 +259,15 @@ export default function ActiveWorkout() {
             <button
               onClick={goNext}
               disabled={currentIndex === totalExercises - 1}
-              className="w-8 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-90 border border-slate-700/30"
+              className="w-7 h-7 rounded-lg bg-bg-card flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-20 transition-all active:scale-90"
               aria-label="Next exercise"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={14} />
             </button>
           </div>
 
           {progress.percent === 100 && (
-            <div className="flex items-center gap-1 text-xs text-neon-green font-medium animate-fadeIn">
+            <div className="flex items-center gap-1 text-xs text-neon-emerald font-medium animate-fadeIn">
               <Zap size={12} />
               All done!
             </div>
@@ -289,11 +289,11 @@ export default function ActiveWorkout() {
         {nextExercise && (
           <button
             onClick={goNext}
-            className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900/50 border border-slate-800/50 hover:border-neon-blue/25 hover:bg-slate-900/70 transition-all active:scale-[0.98] btn-press"
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-bg-card border border-border-slate hover:border-accent/15 transition-all active:scale-[0.98] btn-press"
             aria-label={`Next up: ${nextExercise.name}`}
           >
-            <div className="w-8 h-8 rounded-lg bg-neon-cyan/8 flex items-center justify-center shrink-0">
-              <ChevronRight size={14} className="text-neon-cyan" />
+            <div className="w-7 h-7 rounded-lg bg-accent/8 flex items-center justify-center shrink-0">
+              <ChevronRight size={12} className="text-accent" />
             </div>
             <div className="flex-1 text-left min-w-0">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
@@ -303,16 +303,22 @@ export default function ActiveWorkout() {
                 {nextExercise.name}
               </p>
             </div>
-            <span className="text-[10px] text-slate-500 shrink-0 bg-slate-800/60 px-2 py-0.5 rounded-md border border-slate-700/30">
+            <span className="text-[10px] text-slate-500 shrink-0 bg-slate-800/60 px-2 py-0.5 rounded-md">
               {nextExerciseData.sets.length} sets
             </span>
           </button>
         )}
+      </div>
 
-        {/* ─── Finish Workout Button ─── */}
+      {/* ═══ STICKY BOTTOM ACTION ═══ */}
+      <div className="shrink-0 px-4 pb-4 pt-2 bg-bg-deep border-t border-border-slate">
         <button
           onClick={() => setShowConfirmFinish(true)}
-          className="w-full bg-gradient-to-r from-neon-emerald/12 to-emerald-500/12 text-neon-emerald font-semibold py-3.5 rounded-2xl border border-neon-emerald/20 hover:border-neon-emerald/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-press"
+          className={`w-full font-semibold py-3.5 rounded-xl border flex items-center justify-center gap-2 btn-press transition-all ${
+            progress.percent === 100
+              ? "bg-accent text-bg-deep border-accent hover:bg-accent/90"
+              : "bg-accent/10 text-accent border-accent/20 hover:bg-accent/20"
+          }`}
           aria-label={`Finish workout, ${progress.percent}% completed`}
         >
           <CheckCircle2 size={18} />

@@ -10,18 +10,17 @@ import {
   X,
   Share2,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import useWorkoutStore from "../store/workoutStore";
 import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
 import AngleRadarChart from "../components/AngleRadarChart";
 
 export default function WorkoutHistory() {
-  const navigate = useNavigate();
   const history = useWorkoutStore((s) => s.history);
   const exercises = useWorkoutStore((s) => s.exercises);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedSession, setSelectedSession] = useState(null);
   const [receiptSession, setReceiptSession] = useState(null);
+  const [viewMode, setViewMode] = useState("list"); // "list" or "calendar"
 
   const getExerciseName = (id) =>
     exercises.find((e) => e.id === id)?.name || id;
@@ -77,104 +76,113 @@ export default function WorkoutHistory() {
   );
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-lg mx-auto space-y-5 animate-fadeIn">
+    <div className="px-4 pt-4 pb-24 max-w-lg mx-auto space-y-4 animate-fadeIn">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate("/")}
-          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"
-          aria-label="Back to Dashboard"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-white">Workout History</h1>
-          <p className="text-[11px] text-slate-500">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Progress</h1>
+          <p className="text-[10px] text-slate-500">
             {totalSessions} sessions · {totalSets} total sets
           </p>
         </div>
-      </div>
-
-      {/* Calendar */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-4 border border-slate-800">
-        {/* Month navigation */}
-        <div className="flex items-center justify-between mb-4">
+        {/* View mode toggle */}
+        <div className="flex bg-bg-card rounded-lg p-0.5 border border-border-slate">
           <button
-            onClick={prevMonth}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            aria-label="Previous month"
+            onClick={() => setViewMode("list")}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+              viewMode === "list" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"
+            }`}
           >
-            <ChevronLeft size={18} />
+            Recent
           </button>
-          <h2 className="text-sm font-bold text-white">
-            {currentDate.toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </h2>
           <button
-            onClick={nextMonth}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            aria-label="Next month"
+            onClick={() => setViewMode("calendar")}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+              viewMode === "calendar" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"
+            }`}
           >
-            <ChevronRight size={18} />
+            Calendar
           </button>
         </div>
+      </div>
 
-        {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-            <div
-              key={d}
-              className="text-[10px] text-slate-500 text-center font-medium"
+      {/* Calendar View */}
+      {viewMode === "calendar" && (
+        <div className="glass-card p-4">
+          {/* Month navigation */}
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={prevMonth}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              aria-label="Previous month"
             >
-              {d}
-            </div>
-          ))}
-        </div>
+              <ChevronLeft size={16} />
+            </button>
+            <h2 className="text-xs font-bold text-white">
+              {currentDate.toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}
+            </h2>
+            <button
+              onClick={nextMonth}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              aria-label="Next month"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
 
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
-          {calendarData.map((cell, i) =>
-            cell === null ? (
-              <div key={`empty-${i}`} className="aspect-square" />
-            ) : (
-              <button
-                key={cell.date}
-                onClick={() =>
-                  cell.sessions.length > 0 &&
-                  setSelectedSession(cell.sessions[0])
-                }
-                className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${
-                  cell.sessions.length > 0
-                    ? "bg-neon-blue/15 text-neon-blue font-bold hover:bg-neon-blue/25 cursor-pointer"
-                    : cell.isToday
-                      ? "bg-slate-800 text-white font-medium ring-1 ring-neon-blue/40"
-                      : "text-slate-500 hover:bg-slate-800/50"
-                }`}
-                disabled={cell.sessions.length === 0}
-                aria-label={`${cell.date}${cell.sessions.length > 0 ? `, ${cell.sessions.length} workout(s)` : ""}`}
-              >
-                <span>{cell.day}</span>
-                {cell.sessions.length > 0 && (
-                  <div className="absolute bottom-0.5 w-1.5 h-1.5 rounded-full bg-neon-blue" />
-                )}
-              </button>
-            ),
-          )}
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
+              <div key={d} className="text-[9px] text-slate-600 text-center font-medium">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {calendarData.map((cell, i) =>
+              cell === null ? (
+                <div key={`empty-${i}`} className="aspect-square" />
+              ) : (
+                <button
+                  key={cell.date}
+                  onClick={() =>
+                    cell.sessions.length > 0 &&
+                    setSelectedSession(cell.sessions[0])
+                  }
+                  className={`aspect-square rounded-md flex flex-col items-center justify-center text-[11px] transition-all relative ${
+                    cell.sessions.length > 0
+                      ? "bg-accent/12 text-accent font-bold hover:bg-accent/20 cursor-pointer"
+                      : cell.isToday
+                        ? "bg-bg-card text-white font-medium ring-1 ring-accent/30"
+                        : "text-slate-500 hover:bg-bg-card"
+                  }`}
+                  disabled={cell.sessions.length === 0}
+                  aria-label={`${cell.date}${cell.sessions.length > 0 ? `, ${cell.sessions.length} workout(s)` : ""}`}
+                >
+                  <span>{cell.day}</span>
+                  {cell.sessions.length > 0 && (
+                    <div className="absolute bottom-0.5 w-1 h-1 rounded-full bg-accent" />
+                  )}
+                </button>
+              ),
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Selected Session Detail */}
       {selectedSession && (
-        <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800 space-y-4 animate-fadeIn">
+        <div className="glass-card p-4 space-y-3 animate-fadeIn">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-white">
-                {selectedSession.programName}
-              </h3>
-              <p className="text-[11px] text-slate-500 flex items-center gap-2">
-                <Calendar size={10} />
+              <h3 className="text-sm font-bold text-white">{selectedSession.programName}</h3>
+              <p className="text-[10px] text-slate-500 flex items-center gap-2">
+                <Calendar size={9} />
                 {new Date(selectedSession.date).toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "short",
@@ -182,7 +190,7 @@ export default function WorkoutHistory() {
                 })}
                 {formatDuration(selectedSession) && (
                   <>
-                    <Clock size={10} />
+                    <Clock size={9} />
                     {formatDuration(selectedSession)}
                   </>
                 )}
@@ -190,34 +198,24 @@ export default function WorkoutHistory() {
             </div>
             <button
               onClick={() => setSelectedSession(null)}
-              className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
               aria-label="Close details"
             >
-              <X size={14} />
+              <X size={12} />
             </button>
           </div>
 
           {/* Exercises in that session */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {selectedSession.exercises.map((ex, i) => (
-              <div
-                key={i}
-                className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-white">
-                    {getExerciseName(ex.exerciseId)}
-                  </p>
-                  <span className="text-[10px] text-slate-500">
-                    {ex.sets.length} sets
-                  </span>
+              <div key={i} className="bg-bg-card rounded-lg p-2.5 border border-border-slate">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-xs font-medium text-white">{getExerciseName(ex.exerciseId)}</p>
+                  <span className="text-[9px] text-slate-500">{ex.sets.length} sets</span>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {ex.sets.map((set, si) => (
-                    <span
-                      key={si}
-                      className="text-[10px] bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full border border-slate-600/50"
-                    >
+                    <span key={si} className="text-[9px] bg-slate-800/60 text-slate-300 px-1.5 py-0.5 rounded-full">
                       {set.weight}kg × {set.reps}
                     </span>
                   ))}
@@ -227,84 +225,70 @@ export default function WorkoutHistory() {
           </div>
 
           {/* Quick stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700/50">
-              <Dumbbell size={14} className="text-neon-blue mx-auto mb-1" />
-              <p className="text-sm font-bold text-white">
-                {selectedSession.exercises.length}
-              </p>
-              <p className="text-[10px] text-slate-500">Exercises</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-bg-card rounded-lg p-2.5 text-center border border-border-slate">
+              <Dumbbell size={12} className="text-accent mx-auto mb-1" />
+              <p className="text-sm font-bold text-white">{selectedSession.exercises.length}</p>
+              <p className="text-[9px] text-slate-500">Exercises</p>
             </div>
-            <div className="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700/50">
-              <TrendingUp size={14} className="text-neon-green mx-auto mb-1" />
+            <div className="bg-bg-card rounded-lg p-2.5 text-center border border-border-slate">
+              <TrendingUp size={12} className="text-neon-emerald mx-auto mb-1" />
               <p className="text-sm font-bold text-white">
-                {selectedSession.exercises.reduce(
-                  (acc, e) => acc + e.sets.length,
-                  0,
-                )}
+                {selectedSession.exercises.reduce((acc, e) => acc + e.sets.length, 0)}
               </p>
-              <p className="text-[10px] text-slate-500">Total Sets</p>
+              <p className="text-[9px] text-slate-500">Total Sets</p>
             </div>
           </div>
 
           <button
             onClick={() => setReceiptSession(selectedSession)}
-            className="w-full bg-[#121824] hover:bg-[#1a2332] text-neon-cyan text-xs font-bold py-2.5 rounded-xl border border-neon-cyan/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            className="w-full bg-bg-card hover:bg-slate-700 text-accent text-[11px] font-semibold py-2 rounded-lg border border-accent/20 flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
           >
-            <Share2 size={13} />
-            View Cyberpunk Receipt (.PNG)
+            <Share2 size={11} />
+            View Receipt
           </button>
         </div>
       )}
 
-      {/* Recent Sessions List */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800 space-y-3">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2">
-          <Clock size={14} className="text-slate-400" />
+      {/* Recent Sessions List — primary view */}
+      <div className="glass-card p-4 space-y-2.5">
+        <h2 className="text-xs font-semibold text-white flex items-center gap-2">
+          <Clock size={13} className="text-slate-400" />
           Recent Sessions
         </h2>
         {history.length === 0 ? (
           <div className="text-center py-6">
-            <Dumbbell size={22} className="mx-auto text-slate-600 mb-2" />
+            <Dumbbell size={20} className="mx-auto text-slate-600 mb-2" />
             <p className="text-xs text-slate-500">No workouts yet</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {[...history]
               .reverse()
-              .slice(0, 10)
+              .slice(0, 15)
               .map((session) => (
                 <button
                   key={session.id}
                   onClick={() => setSelectedSession(session)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/30 border border-slate-800 hover:border-slate-700 transition-all text-left active:scale-[0.98]"
+                  className="w-full flex items-center justify-between p-2.5 rounded-lg bg-bg-card border border-border-slate hover:border-slate-600 transition-all text-left active:scale-[0.98]"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-neon-blue/10 flex items-center justify-center">
-                      <Dumbbell size={16} className="text-neon-blue" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-accent/8 flex items-center justify-center">
+                      <Dumbbell size={14} className="text-accent" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">
-                        {session.programName}
-                      </p>
-                      <p className="text-[11px] text-slate-500 flex items-center gap-2">
+                      <p className="text-xs font-medium text-white">{session.programName}</p>
+                      <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
                         {new Date(session.date).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                         })}
-                        <span>
-                          · {session.exercises.length} exercises
-                        </span>
-                        {formatDuration(session) && (
-                          <span>· {formatDuration(session)}</span>
-                        )}
+                        <span>· {session.exercises.length} ex</span>
+                        {formatDuration(session) && <span>· {formatDuration(session)}</span>}
                       </p>
                     </div>
                   </div>
-                  <ChevronRight
-                    size={16}
-                    className="text-slate-600 shrink-0"
-                  />
+                  <ChevronRight size={14} className="text-slate-600 shrink-0" />
                 </button>
               ))}
           </div>

@@ -58,19 +58,19 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
 
   return (
     <>
-      <div className="glass-card overflow-hidden shadow-xl shadow-black/40 border border-border-slate transition-all">
+      <div className="glass-card overflow-hidden border border-border-subtle transition-all">
         {/* Exercise Header */}
-        <div className="flex items-center gap-3.5 p-4 border-b border-border-slate/60 bg-bg-surface/60">
+        <div className="flex items-center gap-3.5 p-4 border-b border-border-subtle bg-bg-card/40">
           <button
             onClick={() => setShowImageModal(true)}
-            className="w-14 h-14 rounded-2xl overflow-hidden bg-[#121824] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 transition-transform active:scale-95 border border-[#1E293B] shadow-md flex items-center justify-center"
+            className="w-14 h-14 rounded-2xl overflow-hidden bg-bg-deep shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50 transition-transform active:scale-95 border border-border-subtle shadow-md flex items-center justify-center"
             aria-label={`View ${exercise.name} details`}
             title="Click to view details"
           >
             <img
               src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
               alt={exercise.name}
-              className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1"
+              className="w-12 h-12 rounded-lg object-contain bg-bg-deep border border-border-subtle p-1"
               loading="lazy"
               onError={(e) => {
                 e.target.onerror = null;
@@ -88,14 +88,14 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               </p>
             )}
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider bg-bg-deep px-2 py-0.5 rounded-md border border-border-subtle">
                 {exercise.muscle}
               </span>
               {exercise.targetAngle && (
                 <AngleBadge angle={exercise.targetAngle} size="sm" />
               )}
               {pr && (
-                <span className="text-[10px] text-amber-accent font-bold flex items-center gap-1 bg-amber-accent/10 px-2 py-0.5 rounded-md border border-amber-accent/20">
+                <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
                   🏆 {pr} kg
                 </span>
               )}
@@ -104,9 +104,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           {/* Swap button */}
           <button
             onClick={() => setShowSwap(true)}
-            className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-neon-cyan/15 hover:text-neon-cyan text-slate-400 transition-all active:scale-90 border border-slate-700/50"
+            className="w-10 h-10 rounded-xl bg-bg-card flex items-center justify-center hover:bg-teal-500/10 hover:text-teal-400 text-slate-400 transition-all active:scale-90 border border-border-subtle"
             aria-label={`Swap ${exercise.name} for another exercise`}
-            title="تبديل التمرين"
+            title="Swap Exercise"
           >
             <ArrowLeftRight size={17} />
           </button>
@@ -114,10 +114,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
 
         {/* Ghost Replay Banner */}
         {ghostData && (
-          <div className="px-4 py-2 bg-vivid-purple/8 border-b border-border-slate/50 flex items-center gap-2">
-            <Ghost size={14} className="text-vivid-purple shrink-0" />
+          <div className="px-4 py-2 bg-teal-500/5 border-b border-border-subtle flex items-center gap-2">
+            <Ghost size={14} className="text-teal-400 shrink-0" />
             <div className="text-xs text-slate-300 flex-1 truncate">
-              <span className="text-vivid-purple font-semibold">
+              <span className="text-teal-400 font-semibold">
                 Previous ({ghostData.date}):{" "}
               </span>
               {ghostData.sets.map((s, i) => (
@@ -131,10 +131,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
         )}
 
         {/* Form Tips + Video */}
-        <details className="border-b border-border-slate/50 group">
+        <details className="border-b border-border-subtle group">
           <summary className="px-4 py-2 text-xs text-slate-400 cursor-pointer hover:text-slate-200 flex items-center gap-1.5 select-none font-medium">
-            <Info size={13} className="text-neon-cyan" />
-            How to perform / التكنيك
+            <Info size={13} className="text-teal-400" />
+            Technique & Form Tips
           </summary>
           <div className="px-4 pb-3 space-y-2 bg-bg-deep/40 pt-1">
             <p className="text-xs text-slate-300 leading-relaxed">
@@ -145,7 +145,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                 href={exercise.video}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] text-neon-cyan hover:underline transition-colors font-semibold"
+                className="inline-flex items-center gap-1 text-[11px] text-teal-400 hover:underline transition-colors font-semibold"
               >
                 <ExternalLink size={11} />
                 Watch form tutorial video
@@ -157,7 +157,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
         {/* Sets Table */}
         <div className="p-4 space-y-2.5">
           {/* Table header */}
-          <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 text-[11px] text-slate-400 uppercase tracking-wider font-semibold px-1 pb-1.5 border-b border-border-slate/50">
+          <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 text-[11px] text-slate-400 uppercase tracking-wider font-semibold px-1 pb-1.5 border-b border-border-subtle">
             <span id={`set-header-${exerciseId}`}>Set</span>
             <span id={`kg-header-${exerciseId}`}>Weight (KG)</span>
             <span id={`reps-header-${exerciseId}`}>Reps</span>
@@ -172,8 +172,8 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               key={si}
               className={`grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 items-center transition-all relative py-1 rounded-xl px-1 ${
                 set.done
-                  ? "bg-neon-emerald/5 border border-neon-emerald/20 opacity-75"
-                  : "bg-bg-deep/50 border border-border-slate/60 hover:border-slate-700"
+                  ? "bg-teal-500/10 border border-teal-500/30 opacity-80"
+                  : "bg-bg-deep/50 border border-border-subtle hover:border-slate-700"
               }`}
             >
               {/* Set index badge */}
@@ -194,7 +194,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   onChange={(e) =>
                     updateSet(exerciseIndex, si, "weight", e.target.value)
                   }
-                  className="w-full bg-slate-900/90 border border-border-slate rounded-lg pl-2.5 pr-6 py-2 text-sm text-white font-mono font-semibold placeholder:text-slate-600 focus:border-neon-cyan focus:outline-none focus:ring-1 focus:ring-neon-cyan/40 transition-colors"
+                  className="w-full bg-bg-card border border-border-subtle rounded-lg pl-2.5 pr-6 py-2 text-sm text-white font-mono font-semibold placeholder:text-slate-600 focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400/40 transition-colors"
                   disabled={set.done}
                   aria-label={`Set ${si + 1} weight in kg`}
                   aria-describedby={`kg-header-${exerciseId}`}
@@ -204,7 +204,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     <button
                       type="button"
                       onClick={() => adjustWeight(si, 2.5)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="text-slate-500 hover:text-teal-400 p-0.5 transition-colors"
                       title="+2.5 kg"
                     >
                       <ChevronUp size={10} />
@@ -212,7 +212,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     <button
                       type="button"
                       onClick={() => adjustWeight(si, -2.5)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="text-slate-500 hover:text-teal-400 p-0.5 transition-colors"
                       title="-2.5 kg"
                     >
                       <ChevronDown size={10} />
@@ -231,7 +231,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   onChange={(e) =>
                     updateSet(exerciseIndex, si, "reps", e.target.value)
                   }
-                  className="w-full bg-slate-900/90 border border-border-slate rounded-lg pl-2.5 pr-6 py-2 text-sm text-white font-mono font-semibold placeholder:text-slate-600 focus:border-neon-cyan focus:outline-none focus:ring-1 focus:ring-neon-cyan/40 transition-colors"
+                  className="w-full bg-bg-card border border-border-subtle rounded-lg pl-2.5 pr-6 py-2 text-sm text-white font-mono font-semibold placeholder:text-slate-600 focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400/40 transition-colors"
                   disabled={set.done}
                   aria-label={`Set ${si + 1} reps`}
                   aria-describedby={`reps-header-${exerciseId}`}
@@ -241,7 +241,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     <button
                       type="button"
                       onClick={() => adjustReps(si, 1)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="text-slate-500 hover:text-teal-400 p-0.5 transition-colors"
                       title="+1 rep"
                     >
                       <ChevronUp size={10} />
@@ -249,7 +249,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     <button
                       type="button"
                       onClick={() => adjustReps(si, -1)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="text-slate-500 hover:text-teal-400 p-0.5 transition-colors"
                       title="-1 rep"
                     >
                       <ChevronDown size={10} />
@@ -261,7 +261,6 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               {/* Done Check Button */}
               <button
                 onClick={() => {
-                  // If fields empty, auto-fill from ghost data or defaults for fast mobile logging
                   if (!set.done) {
                     if (!set.weight && ghostData?.sets[si]?.weight) {
                       updateSet(exerciseIndex, si, "weight", ghostData.sets[si].weight);
@@ -273,12 +272,12 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   toggleSetDone(exerciseIndex, si);
                   if (!set.done) haptics.light();
                 }}
-                className={`w-11 h-10 rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none ${
+                className={`w-11 h-10 rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-teal-400/50 focus-visible:outline-none ${
                   set.done ? "animate-set-complete " : ""
                 }${
                   set.done
-                    ? "bg-neon-emerald text-bg-deep font-bold shadow-[0_0_12px_rgba(16,185,129,0.4)]"
-                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-neon-cyan/50 hover:text-white"
+                    ? "bg-teal-500 text-bg-deep font-bold shadow-sm"
+                    : "bg-bg-card text-slate-400 border border-border-subtle hover:border-teal-400/50 hover:text-white"
                 }`}
                 aria-label={
                   set.done
@@ -293,11 +292,11 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               {ghostData?.sets[si] && set.weight && (
                 <div className="absolute -right-1 -top-1" aria-hidden="true">
                   {Number(set.weight) > ghostData.sets[si].weight ? (
-                    <span className="flex items-center text-[9px] bg-neon-green/20 text-neon-green px-1 rounded-full border border-neon-green/30 font-bold">
+                    <span className="flex items-center text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded-full border border-teal-500/30 font-bold">
                       <TrendingUp size={9} className="mr-0.5" /> +PR
                     </span>
                   ) : Number(set.weight) < ghostData.sets[si].weight ? (
-                    <TrendingDown size={10} className="text-red-400" />
+                    <TrendingDown size={10} className="text-rose-400" />
                   ) : null}
                 </div>
               )}
@@ -305,10 +304,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           ))}
 
           {/* Add/Remove set buttons */}
-          <div className="flex items-center justify-between pt-3 border-t border-border-slate/40 mt-2 px-1">
+          <div className="flex items-center justify-between pt-3 border-t border-border-subtle mt-2 px-1">
             <button
               onClick={() => removeSet(exerciseIndex, sets.length - 1)}
-              className="text-xs text-slate-400 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none px-2 py-1 rounded-lg"
+              className="text-xs text-slate-400 hover:text-rose-400 flex items-center gap-1 transition-colors disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-teal-400/50 focus-visible:outline-none px-2 py-1 rounded-lg"
               disabled={sets.length <= 1}
               aria-label="Remove last set"
             >
@@ -316,7 +315,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
             </button>
             <button
               onClick={() => addSet(exerciseIndex)}
-              className="text-xs text-neon-cyan font-semibold hover:text-neon-cyan/80 flex items-center gap-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none bg-neon-cyan/10 px-3 py-1 rounded-lg border border-neon-cyan/20"
+              className="text-xs text-teal-400 font-semibold hover:text-teal-300 flex items-center gap-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-teal-400/50 focus-visible:outline-none bg-teal-500/10 px-3 py-1 rounded-lg border border-teal-500/20"
               aria-label="Add a set"
             >
               <Plus size={13} /> Add Set
@@ -333,20 +332,20 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
             onClick={() => setShowImageModal(false)}
           >
             <div
-              className="relative glass-card overflow-hidden shadow-2xl w-full max-w-sm border border-border-slate"
+              className="relative glass-card overflow-hidden shadow-2xl w-full max-w-sm border border-border-subtle"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close button */}
               <button
                 onClick={() => setShowImageModal(false)}
-                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-slate-900/80 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-bg-deep/80 border border-border-subtle flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 aria-label="Close"
               >
                 <X size={16} />
               </button>
 
               {/* Large image */}
-              <div className="w-full aspect-square bg-[#121824] flex items-center justify-center p-4 border-b border-border-slate">
+              <div className="w-full aspect-square bg-bg-deep flex items-center justify-center p-4 border-b border-border-subtle">
                 <img
                   src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
                   alt={exercise.name}
@@ -359,7 +358,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               </div>
 
               {/* Info */}
-              <div className="p-4 bg-bg-surface">
+              <div className="p-4 bg-bg-card">
                 <h3 className="font-bold text-white text-lg">
                   {exercise.name}
                 </h3>
@@ -367,13 +366,13 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   <p className="text-xs text-slate-400 mb-2" dir="rtl">{exercise.nameAr}</p>
                 )}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded font-semibold">{exercise.muscle}</span>
+                  <span className="text-xs text-slate-400 bg-bg-deep border border-border-subtle px-2 py-0.5 rounded font-semibold">{exercise.muscle}</span>
                   {exercise.targetAngle && <AngleBadge angle={exercise.targetAngle} />}
                 </div>
-                <div className="flex items-start gap-2 bg-bg-deep/60 p-3 rounded-xl border border-border-slate">
-                  <Info size={15} className="text-neon-cyan mt-0.5 shrink-0" />
+                <div className="flex items-start gap-2 bg-bg-deep/80 p-3 rounded-xl border border-border-subtle">
+                  <Info size={15} className="text-teal-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-neon-cyan font-bold mb-1">
+                    <p className="text-xs text-teal-400 font-bold mb-1">
                       Biomechanical Cue
                     </p>
                     <p className="text-xs text-slate-300 leading-relaxed">

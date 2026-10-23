@@ -36,48 +36,48 @@ const muscleColors = {
     text: "text-red-400",
     border: "border-red-500/20",
     dot: "bg-red-400",
-    activeBg: "bg-red-500/20",
-    activeBorder: "border-red-500/40",
+    activeBg: "bg-red-500/15",
+    activeBorder: "border-red-500/30",
   },
   Back: {
     bg: "bg-blue-500/10",
     text: "text-blue-400",
     border: "border-blue-500/20",
     dot: "bg-blue-400",
-    activeBg: "bg-blue-500/20",
-    activeBorder: "border-blue-500/40",
+    activeBg: "bg-blue-500/15",
+    activeBorder: "border-blue-500/30",
   },
   Shoulders: {
     bg: "bg-amber-500/10",
     text: "text-amber-400",
     border: "border-amber-500/20",
     dot: "bg-amber-400",
-    activeBg: "bg-amber-500/20",
-    activeBorder: "border-amber-500/40",
+    activeBg: "bg-amber-500/15",
+    activeBorder: "border-amber-500/30",
   },
   Arms: {
     bg: "bg-purple-500/10",
     text: "text-purple-400",
     border: "border-purple-500/20",
     dot: "bg-purple-400",
-    activeBg: "bg-purple-500/20",
-    activeBorder: "border-purple-500/40",
+    activeBg: "bg-purple-500/15",
+    activeBorder: "border-purple-500/30",
   },
   Legs: {
     bg: "bg-emerald-500/10",
     text: "text-emerald-400",
     border: "border-emerald-500/20",
     dot: "bg-emerald-400",
-    activeBg: "bg-emerald-500/20",
-    activeBorder: "border-emerald-500/40",
+    activeBg: "bg-emerald-500/15",
+    activeBorder: "border-emerald-500/30",
   },
   Core: {
-    bg: "bg-cyan-500/10",
-    text: "text-cyan-400",
-    border: "border-cyan-500/20",
-    dot: "bg-cyan-400",
-    activeBg: "bg-cyan-500/20",
-    activeBorder: "border-cyan-500/40",
+    bg: "bg-teal-500/10",
+    text: "text-teal-400",
+    border: "border-teal-500/20",
+    dot: "bg-teal-400",
+    activeBg: "bg-teal-500/15",
+    activeBorder: "border-teal-500/30",
   },
 };
 
@@ -90,7 +90,7 @@ export default function ManageExercises() {
   const updateExercise = useWorkoutStore((s) => s.updateExercise);
   const deleteExercise = useWorkoutStore((s) => s.deleteExercise);
 
-  // Sanitize exercise list from store to avoid any duplicates
+  // Sanitize exercise list from store to avoid duplicates
   const exercises = useMemo(() => sanitizeExerciseList(rawExercises), [rawExercises]);
 
   // Which program is being edited
@@ -188,12 +188,11 @@ export default function ManageExercises() {
     } else {
       currentExercises.push(exerciseId);
     }
-    // Deduplicate array
     const deduplicated = Array.from(new Set(currentExercises));
     updateProgram(selectedProgramId, { exercises: deduplicated });
   };
 
-  // Get exercises currently in the program (ordered & deduplicated)
+  // Get exercises currently in the program
   const programExercises = useMemo(() => {
     if (!selectedProgram) return [];
     const seen = new Set();
@@ -208,7 +207,6 @@ export default function ManageExercises() {
     return list;
   }, [selectedProgram, exercises]);
 
-  // Form handlers
   const resetForm = () => {
     setForm({
       name: "",
@@ -262,15 +260,15 @@ export default function ManageExercises() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate("/exercises")}
-          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"
+          className="w-10 h-10 rounded-xl bg-bg-card border border-border-subtle flex items-center justify-center text-slate-400 hover:text-white hover:bg-bg-card-hover active:scale-95 transition-all"
           aria-label="Back to Exercise Library"
         >
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-white">Manage Exercises</h1>
-          <p className="text-[11px] text-slate-500">
-            Pick exercises for each workout program
+          <h1 className="text-xl font-bold text-white tracking-tight">Manage Exercises</h1>
+          <p className="text-[11px] text-slate-400">
+            Customize exercise lineups for each routine
           </p>
         </div>
         <button
@@ -278,7 +276,7 @@ export default function ManageExercises() {
             resetForm();
             setShowAddForm(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neon-blue/10 text-neon-blue text-xs font-semibold border border-neon-blue/20 hover:bg-neon-blue/20 transition-all active:scale-95"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-500/10 text-teal-400 text-xs font-semibold border border-teal-500/20 hover:bg-teal-500/20 transition-all active:scale-95"
         >
           <Plus size={14} />
           New
@@ -286,27 +284,27 @@ export default function ManageExercises() {
       </div>
 
       {/* View Toggle */}
-      <div className="flex bg-slate-800/60 rounded-xl p-1 gap-1">
+      <div className="flex bg-bg-card rounded-xl p-1 gap-1 border border-border-subtle">
         <button
           onClick={() => setView("program")}
           className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
             view === "program"
-              ? "bg-slate-700 text-white shadow-sm"
+              ? "bg-bg-deep text-white shadow-sm border border-border-subtle"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          <Settings2 size={12} className="inline mr-1.5 -mt-0.5" />
+          <Settings2 size={12} className="inline mr-1.5 -mt-0.5 text-teal-400" />
           By Program
         </button>
         <button
           onClick={() => setView("all")}
           className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
             view === "all"
-              ? "bg-slate-700 text-white shadow-sm"
+              ? "bg-bg-deep text-white shadow-sm border border-border-subtle"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          <Dumbbell size={12} className="inline mr-1.5 -mt-0.5" />
+          <Dumbbell size={12} className="inline mr-1.5 -mt-0.5 text-teal-400" />
           All Exercises
         </button>
       </div>
@@ -321,8 +319,8 @@ export default function ManageExercises() {
               onClick={() => setSelectedEquipment(opt.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-95 border ${
                 isSelected
-                  ? "bg-neon-blue/20 text-neon-blue border-neon-blue/40 shadow-sm"
-                  : "bg-slate-800/60 text-slate-400 border-slate-700/50 hover:bg-slate-800 hover:text-white"
+                  ? "bg-teal-500/15 text-teal-400 border-teal-500/30"
+                  : "bg-bg-card text-slate-400 border-border-subtle hover:bg-bg-card-hover hover:text-slate-200"
               }`}
             >
               {opt.label}
@@ -347,7 +345,7 @@ export default function ManageExercises() {
                   className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-95 border shrink-0 ${
                     isSelected
                       ? `${colors.activeBg} ${colors.text} ${colors.activeBorder}`
-                      : "bg-slate-800/60 text-slate-400 border-slate-700/50 hover:bg-slate-800 hover:text-white"
+                      : "bg-bg-card text-slate-400 border-border-subtle hover:bg-bg-card-hover hover:text-white"
                   }`}
                 >
                   <span
@@ -360,7 +358,7 @@ export default function ManageExercises() {
                     className={`text-[10px] px-1.5 py-0.5 rounded-md ${
                       isSelected
                         ? `${colors.bg} ${colors.text}`
-                        : "bg-slate-700/50 text-slate-500"
+                        : "bg-bg-deep text-slate-500"
                     }`}
                   >
                     {prog.exercises?.length || 0}
@@ -374,38 +372,38 @@ export default function ManageExercises() {
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
             />
             <input
               type="text"
-              placeholder={`Search ${programMuscles.join(", ") || "all"} exercises (EN / عربي / Angle / Equipment)...`}
+              placeholder={`Search ${programMuscles.join(", ") || "all"} exercises...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-800/80 border border-slate-700/50 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+              className="w-full bg-bg-card border border-border-subtle rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-500"
             />
           </div>
 
           {/* Current Selection Summary */}
           {selectedProgram && programExercises.length > 0 && (
-            <div className="bg-slate-900/80 rounded-2xl border border-slate-800/60 p-3 space-y-2">
+            <div className="bg-bg-card rounded-2xl border border-border-subtle p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-[11px] text-slate-500 uppercase tracking-wider font-medium">
-                  Current Lineup — {programExercises.length} exercises
+                <p className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
+                  Selected Lineup ({programExercises.length})
                 </p>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {programExercises.map((ex, i) => (
                   <span
                     key={ex.id}
-                    className="inline-flex items-center gap-1.5 text-[11px] bg-slate-800/80 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700/40"
+                    className="inline-flex items-center gap-1.5 text-[11px] bg-bg-deep text-slate-300 px-2.5 py-1 rounded-lg border border-border-subtle"
                   >
-                    <span className="text-[10px] text-slate-500 font-mono">
+                    <span className="text-[10px] text-teal-400 font-mono font-bold">
                       {i + 1}
                     </span>
                     {ex.name}
                     <button
                       onClick={() => toggleExerciseInProgram(ex.id)}
-                      className="text-slate-500 hover:text-red-400 transition-colors -mr-0.5"
+                      className="text-slate-500 hover:text-rose-400 transition-colors -mr-0.5"
                       aria-label={`Remove ${ex.name}`}
                     >
                       <X size={10} />
@@ -420,8 +418,7 @@ export default function ManageExercises() {
           <div className="space-y-1.5">
             {availableExercises.map((ex) => {
               const selected = isInProgram(ex.id);
-              const colors =
-                muscleColors[ex.muscle] || muscleColors.Chest;
+              const colors = muscleColors[ex.muscle] || muscleColors.Chest;
               return (
                 <button
                   key={ex.id}
@@ -429,15 +426,15 @@ export default function ManageExercises() {
                   className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] text-left group ${
                     selected
                       ? `${colors.bg} ${colors.activeBorder} border`
-                      : "bg-slate-900/60 border-slate-800/60 hover:border-slate-700"
+                      : "bg-bg-card border-border-subtle hover:border-slate-700"
                   }`}
                 >
                   {/* Checkbox */}
                   <div
                     className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all ${
                       selected
-                        ? `bg-neon-blue text-slate-950`
-                        : "bg-slate-800 border border-slate-700 text-transparent group-hover:border-slate-600"
+                        ? `bg-teal-500 text-bg-deep font-bold`
+                        : "bg-bg-deep border border-border-subtle text-transparent group-hover:border-slate-600"
                     }`}
                   >
                     <Check size={14} strokeWidth={3} />
@@ -447,7 +444,7 @@ export default function ManageExercises() {
                   <img
                     src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
                     alt={ex.name}
-                    className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 shrink-0"
+                    className="w-12 h-12 rounded-lg object-contain bg-bg-deep border border-border-subtle p-1 shrink-0"
                     loading="lazy"
                     onError={(e) => {
                       e.target.onerror = null;
@@ -470,7 +467,7 @@ export default function ManageExercises() {
                       </p>
                     )}
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <span className="text-[9px] text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/50 uppercase font-medium">
+                      <span className="text-[9px] text-slate-400 bg-bg-deep px-1.5 py-0.5 rounded border border-border-subtle uppercase font-medium">
                         {ex.equipment || "barbell"}
                       </span>
                       {ex.targetAngle && (
@@ -485,7 +482,7 @@ export default function ManageExercises() {
                   {/* Order number if selected */}
                   {selected && (
                     <span
-                      className={`text-xs font-bold ${colors.text} bg-slate-800/60 w-6 h-6 rounded-md flex items-center justify-center shrink-0`}
+                      className={`text-xs font-bold ${colors.text} bg-bg-deep w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-border-subtle`}
                     >
                       {(selectedProgram?.exercises?.indexOf(ex.id) ?? -1) + 1}
                     </span>
@@ -506,22 +503,21 @@ export default function ManageExercises() {
       {/* ═══ ALL EXERCISES VIEW ═══ */}
       {view === "all" && (
         <>
-          {/* Search & Filter */}
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
             />
             <input
               type="text"
               placeholder="Search all exercises (EN / عربي / Angle / Equipment)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-800/80 border border-slate-700/50 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+              className="w-full bg-bg-card border border-border-subtle rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-500"
             />
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {Object.entries(allExercisesGrouped).map(([muscle, items]) => {
               const colors = muscleColors[muscle] || muscleColors.Chest;
               return (
@@ -533,22 +529,21 @@ export default function ManageExercises() {
                     <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       {muscle}
                     </h2>
-                    <span className="text-[10px] text-slate-600 bg-slate-800/50 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] text-slate-400 bg-bg-card border border-border-subtle px-2 py-0.5 rounded-full">
                       {items.length}
                     </span>
-                    <div className="h-px bg-slate-800 flex-1" />
+                    <div className="h-px bg-border-subtle flex-1" />
                   </div>
 
                   {items.map((ex) => (
                     <div
                       key={ex.id}
-                      className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 hover:border-slate-700 transition-all group"
+                      className="flex items-center gap-3 bg-bg-card p-3 rounded-xl border border-border-subtle hover:border-slate-700 transition-all group"
                     >
-                      {/* Image with fallback */}
                       <img
                         src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
                         alt={ex.name}
-                        className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 shrink-0"
+                        className="w-12 h-12 rounded-lg object-contain bg-bg-deep border border-border-subtle p-1 shrink-0"
                         loading="lazy"
                         onError={(e) => {
                           e.target.onerror = null;
@@ -570,32 +565,32 @@ export default function ManageExercises() {
                           >
                             {ex.muscle}
                           </span>
-                          <span className="text-[9px] text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/50 uppercase font-medium">
+                          <span className="text-[9px] text-slate-400 bg-bg-deep px-1.5 py-0.5 rounded border border-border-subtle uppercase font-medium">
                             {ex.equipment || "barbell"}
                           </span>
                           {ex.targetAngle && (
                             <AngleBadge angle={ex.targetAngle} size="xs" />
                           )}
                           {ex.isCustom && (
-                            <span className="text-[9px] text-neon-green bg-neon-green/10 px-1.5 py-0.5 rounded-full border border-neon-green/20">
+                            <span className="text-[9px] text-teal-400 bg-teal-500/10 px-1.5 py-0.5 rounded-full border border-teal-500/20">
                               Custom
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Actions - always visible on mobile */}
+                      {/* Actions */}
                       <div className="flex gap-1">
                         <button
                           onClick={() => handleStartEdit(ex)}
-                          className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700 text-slate-400 hover:text-neon-blue transition-colors"
+                          className="w-8 h-8 rounded-lg bg-bg-deep border border-border-subtle flex items-center justify-center hover:bg-teal-500/10 text-slate-400 hover:text-teal-400 transition-colors"
                           aria-label={`Edit ${ex.name}`}
                         >
                           <Pencil size={13} />
                         </button>
                         <button
                           onClick={() => setDeleteConfirm(ex.id)}
-                          className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                          className="w-8 h-8 rounded-lg bg-bg-deep border border-border-subtle flex items-center justify-center hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-colors"
                           aria-label={`Delete ${ex.name}`}
                         >
                           <Trash2 size={13} />
@@ -618,15 +613,15 @@ export default function ManageExercises() {
 
       {/* Add/Edit Form (overlay bottom sheet) */}
       {(showAddForm || editingId) && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 w-full max-w-md rounded-t-3xl border-t border-slate-700 p-5 space-y-4 animate-slideUp">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-bg-card w-full max-w-md rounded-t-3xl border-t border-border-subtle p-5 space-y-3.5 animate-slideUp">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-white">
                 {editingId ? "Edit Exercise" : "New Exercise"}
               </h3>
               <button
                 onClick={resetForm}
-                className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700"
+                className="w-8 h-8 rounded-lg bg-bg-deep border border-border-subtle flex items-center justify-center text-slate-400 hover:text-white"
                 aria-label="Cancel"
               >
                 <X size={16} />
@@ -638,7 +633,7 @@ export default function ManageExercises() {
               placeholder="Exercise name (English)"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+              className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600"
               autoFocus
             />
 
@@ -648,12 +643,12 @@ export default function ManageExercises() {
               value={form.nameAr}
               dir="rtl"
               onChange={(e) => setForm({ ...form, nameAr: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+              className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600"
             />
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">
+                <label className="text-[10px] text-slate-400 mb-1 block">
                   Muscle Group
                 </label>
                 <div className="relative">
@@ -662,7 +657,7 @@ export default function ManageExercises() {
                     onChange={(e) =>
                       setForm({ ...form, muscle: e.target.value })
                     }
-                    className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                    className="w-full appearance-none bg-bg-deep border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
                     title="Select muscle group"
                   >
                     {muscleGroups.map((m) => (
@@ -673,12 +668,12 @@ export default function ManageExercises() {
                   </select>
                   <ChevronDown
                     size={12}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">
+                <label className="text-[10px] text-slate-400 mb-1 block">
                   Equipment
                 </label>
                 <div className="relative">
@@ -687,7 +682,7 @@ export default function ManageExercises() {
                     onChange={(e) =>
                       setForm({ ...form, equipment: e.target.value })
                     }
-                    className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                    className="w-full appearance-none bg-bg-deep border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
                     title="Select equipment"
                   >
                     {equipmentOptions.filter(e => e.id !== 'all').map((e) => (
@@ -698,7 +693,7 @@ export default function ManageExercises() {
                   </select>
                   <ChevronDown
                     size={12}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                   />
                 </div>
               </div>
@@ -706,7 +701,7 @@ export default function ManageExercises() {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">
+                <label className="text-[10px] text-slate-400 mb-1 block">
                   Sets
                 </label>
                 <input
@@ -718,11 +713,11 @@ export default function ManageExercises() {
                       default_sets: Number(e.target.value) || 3,
                     })
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                  className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">
+                <label className="text-[10px] text-slate-400 mb-1 block">
                   Reps
                 </label>
                 <input
@@ -734,7 +729,7 @@ export default function ManageExercises() {
                       default_reps: Number(e.target.value) || 10,
                     })
                   }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                  className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
                 />
               </div>
             </div>
@@ -744,13 +739,13 @@ export default function ManageExercises() {
               value={form.tips}
               onChange={(e) => setForm({ ...form, tips: e.target.value })}
               rows={2}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500 resize-none"
+              className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600 resize-none"
             />
 
             <button
               onClick={editingId ? handleSaveEdit : handleAdd}
               disabled={!form.name.trim()}
-              className="w-full py-3.5 rounded-xl bg-neon-blue/20 text-neon-blue font-semibold text-sm border border-neon-blue/30 hover:bg-neon-blue/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-bg-deep font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
             >
               <Check size={16} />
               {editingId ? "Save Changes" : "Add Exercise"}

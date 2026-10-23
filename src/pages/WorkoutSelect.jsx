@@ -1,34 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { Play, ChevronRight, Activity, Clock, Dumbbell, Library, Zap, Crown, HeartPulse } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import { getImageUrl } from "../utils/imageUtil";
 import { trainingPlans } from "../data/exercises";
 
 const muscleColors = {
-  Chest: "bg-red-500/15 text-red-400 border-red-500/30",
-  Back: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  Shoulders: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  Arms: "bg-purple-500/15 text-purple-400 border-purple-500/30",
-  Legs: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  Core: "bg-orange-500/15 text-orange-400 border-orange-500/30",
-};
-
-const muscleAccent = {
-  Chest: "from-red-500/20",
-  Back: "from-blue-500/20",
-  Shoulders: "from-amber-500/20",
-  Arms: "from-purple-500/20",
-  Legs: "from-emerald-500/20",
-  Core: "from-orange-500/20",
-};
-
-const muscleBorder = {
-  Chest: "border-l-red-500/40",
-  Back: "border-l-blue-500/40",
-  Shoulders: "border-l-amber-500/40",
-  Arms: "border-l-purple-500/40",
-  Legs: "border-l-emerald-500/40",
-  Core: "border-l-orange-500/40",
+  Chest: "bg-red-500/10 text-red-400 border-red-500/20",
+  Back: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  Shoulders: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  Arms: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  Legs: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  Core: "bg-orange-500/10 text-orange-400 border-orange-500/20",
 };
 
 export default function WorkoutSelect() {
@@ -36,7 +17,6 @@ export default function WorkoutSelect() {
   const startWorkout = useWorkoutStore((s) => s.startWorkout);
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
   const programs = useWorkoutStore((s) => s.programs);
-  const exercises = useWorkoutStore((s) => s.exercises);
   const activeProgram = useWorkoutStore((s) => s.activeProgram);
   const activePlan = trainingPlans[activeProgram] || trainingPlans.ppl_upper;
   const programList = Object.values(programs);
@@ -46,55 +26,43 @@ export default function WorkoutSelect() {
     navigate("/workout/active");
   };
 
-  // Get first 3 exercise images for a program
-  const getExerciseThumbnails = (program) => {
-    return program.exercises
-      .slice(0, 3)
-      .map((exId) => {
-        const ex = exercises.find((e) => e.id === exId);
-        return ex?.image || null;
-      })
-      .filter(Boolean);
-  };
-
   // Estimate duration: ~4 min per exercise
   const estimateDuration = (program) => {
     return program.exercises.length * 4;
   };
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5 animate-fadeIn">
+    <div className="px-4 pt-5 pb-4 max-w-lg mx-auto space-y-4 animate-fadeIn">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Start Workout</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-sm text-slate-500">
-              Choose your program for today
-            </p>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+          <h1 className="text-xl font-bold text-white">Start Workout</h1>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-xs text-slate-500">Choose your program</p>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
               activeProgram === 'ppl_upper'
-                ? 'bg-neon-blue/10 text-neon-blue border-neon-blue/20'
-                : 'bg-neon-purple/10 text-neon-purple border-neon-purple/20'
+                ? 'bg-accent/8 text-accent border-accent/20'
+                : 'bg-vivid-purple/8 text-vivid-purple border-vivid-purple/20'
             }`}>
-              {activeProgram === 'ppl_upper' ? '⚡' : '💪'} {activePlan.name}
+              {activePlan.name}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button 
             onClick={() => navigate("/cardio")}
-            className="h-10 px-3 bg-red-500/10 border border-red-500/25 rounded-xl flex items-center gap-1.5 text-red-400 hover:bg-red-500/20 hover:text-white transition-all shadow-sm text-xs font-bold"
-            aria-label="Cardio & Conditioning"
+            className="h-9 px-2.5 bg-red-500/8 border border-red-500/20 rounded-lg flex items-center gap-1 text-red-400 hover:bg-red-500/15 transition-all text-[11px] font-semibold"
+            aria-label="Cardio"
           >
-            <HeartPulse size={16} />
-            <span>Cardio</span>
+            <HeartPulse size={14} />
+            Cardio
           </button>
           <button 
             onClick={() => navigate("/exercises")}
-            className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all shadow-sm"
+            className="w-9 h-9 bg-bg-card rounded-lg flex items-center justify-center text-slate-400 border border-border-slate hover:bg-slate-700 hover:text-white transition-all"
             aria-label="Exercise Library"
           >
-            <Library size={18} />
+            <Library size={16} />
           </button>
         </div>
       </div>
@@ -103,130 +71,91 @@ export default function WorkoutSelect() {
       {activeWorkout && (
         <button
           onClick={() => navigate("/workout/active")}
-          className="w-full bg-linear-to-r from-emerald-500/15 to-neon-green/10 rounded-2xl p-4 border border-emerald-500/30 hover:border-emerald-500/50 transition-all active:scale-[0.98] text-left focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none"
+          className="w-full bg-accent/8 rounded-xl p-3.5 border border-accent/25 hover:border-accent/40 transition-all active:scale-[0.98] text-left"
           aria-label={`Resume ${activeWorkout.programName} workout`}
         >
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
-                <Activity size={12} />
-                Active Workout
-              </p>
-              <p className="text-base font-semibold text-white mt-0.5">
-                {activeWorkout.programName}
-              </p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Started{" "}
-                {new Date(activeWorkout.startedAt).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-bg-deep">
+                <Activity size={18} />
+              </div>
+              <div>
+                <p className="text-[10px] text-accent font-semibold uppercase tracking-wider">Active Workout</p>
+                <p className="text-sm font-semibold text-white mt-0.5">{activeWorkout.programName}</p>
+                <p className="text-[10px] text-slate-500">
+                  Started{" "}
+                  {new Date(activeWorkout.startedAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
             </div>
-            <ChevronRight size={20} className="text-emerald-400" />
+            <ChevronRight size={18} className="text-accent" />
           </div>
         </button>
       )}
 
       {/* Program list */}
       {programList.length === 0 && (
-        <div className="text-center py-16 px-4 rounded-2xl bg-slate-800/20 border border-dashed border-slate-700/50 space-y-3">
-          <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-600">
-            <Dumbbell size={24} />
+        <div className="text-center py-12 px-4 rounded-2xl bg-bg-card border border-dashed border-border-slate space-y-3">
+          <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-600">
+            <Dumbbell size={20} />
           </div>
-          <p className="text-slate-400 font-medium">No programs yet</p>
-          <p className="text-xs text-slate-500">
-            Head to the Exercise Library to create your first program.
-          </p>
+          <p className="text-slate-400 font-medium text-sm">No programs yet</p>
+          <p className="text-xs text-slate-500">Head to the Exercise Library to create your first program.</p>
           <button
             onClick={() => navigate("/exercises/manage")}
-            className="mt-2 px-5 py-2.5 bg-neon-blue/10 text-neon-blue text-sm font-medium rounded-xl border border-neon-blue/20 hover:bg-neon-blue/20 transition-colors"
+            className="mt-2 px-4 py-2 bg-accent/10 text-accent text-xs font-medium rounded-lg border border-accent/20 hover:bg-accent/20 transition-colors"
           >
             Manage Exercises
           </button>
         </div>
       )}
-      <div className="space-y-3">
+
+      <div className="space-y-2.5">
         {programList.map((program) => {
-          const thumbnails = getExerciseThumbnails(program);
           const duration = estimateDuration(program);
-          const mainMuscle = program.muscles?.[0];
           return (
             <button
               key={program.id}
               onClick={() => handleStartWorkout(program.id)}
-              className={`w-full bg-slate-900 rounded-2xl p-4 border border-slate-800 border-l-[3px] ${muscleBorder[mainMuscle] || "border-l-slate-700"} hover:border-slate-700 transition-all active:scale-[0.98] text-left group relative overflow-hidden focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none`}
+              className="w-full bg-bg-card rounded-xl p-3.5 border border-border-slate hover:border-slate-600 transition-all active:scale-[0.98] text-left group relative overflow-hidden"
               aria-label={`Start ${program.name} — ${program.exercises.length} exercises, approximately ${duration} minutes`}
             >
-              {/* Subtle gradient accent */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-r ${muscleAccent[mainMuscle] || "from-slate-800/20"} to-transparent opacity-30 pointer-events-none`}
-              />
-
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex-1">
-                  <p className="text-base font-semibold text-white group-hover:text-neon-blue transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white group-hover:text-accent transition-colors truncate">
                     {program.name}
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
+                  <div className="flex flex-wrap gap-1 mt-1.5">
                     {(program.muscles || []).map((muscle) => (
                       <span
                         key={muscle}
-                        className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
-                          muscleColors[muscle] ||
-                          "bg-slate-800 text-slate-400 border-slate-700"
+                        className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${
+                          muscleColors[muscle] || "bg-slate-800 text-slate-400 border-slate-700"
                         }`}
                       >
                         {muscle}
                       </span>
                     ))}
                     {program.isCustom && (
-                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-neon-green/10 text-neon-green border-neon-green/20">
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border bg-neon-emerald/10 text-neon-emerald border-neon-emerald/20">
                         Custom
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <p className="text-[11px] text-slate-500 flex items-center gap-1">
-                      {program.exercises.length} exercises
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                      <Dumbbell size={10} /> {program.exercises.length} exercises
                     </p>
-                    <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                    <p className="text-[10px] text-slate-500 flex items-center gap-1">
                       <Clock size={10} /> ~{duration} min
                     </p>
                   </div>
-                  {/* Exercise thumbnails */}
-                  <div className="flex items-center gap-1 mt-2.5">
-                    {thumbnails.map((img, i) => (
-                      <div
-                        key={i}
-                        className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 border border-slate-700"
-                      >
-                        <img
-                          src={getImageUrl(img)}
-                          alt=""
-                          className="w-full h-full object-contain bg-[#0B0F17] p-0.5"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = getImageUrl("/icons/dumbbell.svg");
-                          }}
-                        />
-                      </div>
-                    ))}
-                    {thumbnails.length === 0 && (
-                      <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-600">
-                        <Dumbbell size={12} />
-                      </div>
-                    )}
-                    {program.exercises.length > 3 && (
-                      <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 font-medium">
-                        +{program.exercises.length - 3}
-                      </div>
-                    )}
-                  </div>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-neon-blue/10 flex items-center justify-center group-hover:bg-neon-blue/20 transition-colors shrink-0 ml-3">
-                  <Play size={20} className="text-neon-blue ml-0.5" />
+                <div className="w-10 h-10 rounded-lg bg-accent/8 flex items-center justify-center group-hover:bg-accent/15 transition-colors shrink-0 ml-3">
+                  <Play size={18} className="text-accent ml-0.5" />
                 </div>
               </div>
             </button>

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Home, Dumbbell, Library, User, Apple, History } from "lucide-react";
+import { Home, Dumbbell, TrendingUp, Apple, User } from "lucide-react";
 import Confetti from "./Confetti";
 import NotificationManager from "./NotificationManager";
 import OfflineIndicator from "./OfflineIndicator";
@@ -7,13 +7,14 @@ import OfflineIndicator from "./OfflineIndicator";
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/workout", icon: Dumbbell, label: "Workout" },
+  { to: "/history", icon: TrendingUp, label: "Progress" },
   { to: "/nutrition", icon: Apple, label: "Nutrition" },
-  { to: "/history", icon: History, label: "History" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 
 export default function Layout() {
   const location = useLocation();
+  const isActiveWorkout = location.pathname === "/workout/active";
 
   return (
     <div className="min-h-screen bg-bg-deep text-white flex flex-col">
@@ -25,51 +26,53 @@ export default function Layout() {
       <NotificationManager />
 
       {/* Main content area — scrollable, with bottom padding for nav */}
-      <main className="flex-1 overflow-y-auto pb-20" role="main">
+      <main className={`flex-1 overflow-y-auto ${isActiveWorkout ? 'pb-0' : 'pb-18'}`} role="main">
         <div key={location.pathname} className="animate-fadeIn">
           <Outlet />
         </div>
       </main>
 
-      {/* Bottom Navigation Bar */}
-      <nav
-        className="fixed bottom-0 inset-x-0 z-50 bg-bg-surface/95 backdrop-blur-xl border-t border-border-slate"
-        aria-label="Main navigation"
-        role="navigation"
-      >
-        <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 relative ${
-                  isActive
-                    ? "text-neon-cyan"
-                    : "text-slate-500 hover:text-slate-300 active:scale-95"
-                }`
-              }
-              aria-label={item.label}
-            >
-              {({ isActive }) => {
-                const Icon = item.icon;
-                return (
-                  <>
-                    {isActive && (
-                      <div className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-neon-cyan rounded-full shadow-[0_0_8px_rgba(0,240,255,0.6)]" />
-                    )}
-                    <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-                    <span className="text-[11px] font-medium">
-                      {item.label}
-                    </span>
-                  </>
-                );
-              }}
-            </NavLink>
-          ))}
-        </div>
-      </nav>
+      {/* Bottom Navigation Bar — hidden during active workout */}
+      {!isActiveWorkout && (
+        <nav
+          className="fixed bottom-0 inset-x-0 z-50 bg-bg-surface/95 backdrop-blur-xl border-t border-border-slate"
+          aria-label="Main navigation"
+          role="navigation"
+        >
+          <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                className={({ isActive }) =>
+                  `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 relative ${
+                    isActive
+                      ? "text-accent"
+                      : "text-slate-500 hover:text-slate-300 active:scale-95"
+                  }`
+                }
+                aria-label={item.label}
+              >
+                {({ isActive }) => {
+                  const Icon = item.icon;
+                  return (
+                    <>
+                      {isActive && (
+                        <div className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-accent rounded-full" />
+                      )}
+                      <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                      <span className="text-[11px] font-medium">
+                        {item.label}
+                      </span>
+                    </>
+                  );
+                }}
+              </NavLink>
+            ))}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 /* ── Custom theme overrides ── */
 @theme {
-  /* Existing neon accents */
+  /* Existing neon accents (kept for backward compatibility) */
   --color-neon-green: #39ff14;
   --color-neon-blue: #00d4ff;
   --color-neon-purple: #b347d9;
@@ -10,14 +10,19 @@
   --color-surface-light: #1e293b;
   --color-surface-lighter: #334155;
 
-  /* New cyberpunk dark-neon palette */
-  --color-bg-deep: #0B0F17;
-  --color-bg-surface: #121824;
-  --color-border-slate: #1E293B;
+  /* Refined dark palette — charcoal base with teal accent */
+  --color-bg-deep: #111318;
+  --color-bg-surface: #181B22;
+  --color-bg-card: #1E2028;
+  --color-border-slate: #282C35;
   --color-neon-cyan: #00F0FF;
   --color-neon-emerald: #10B981;
   --color-amber-accent: #F59E0B;
   --color-vivid-purple: #A855F7;
+
+  /* New primary accent — teal */
+  --color-accent: #14B8A6;
+  --color-accent-light: #2DD4BF;
 }
 
 /* ── Global resets ── */
@@ -43,10 +48,10 @@ body {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0F17;
+  background: #111318;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #282C35;
   border-radius: 4px;
 }
 
@@ -62,48 +67,41 @@ input[type="number"] {
 }
 
 /* ══════════════════════════════════════════════════════
-   GLASSMORPHISM & GLOW UTILITIES
+   CARD & SURFACE UTILITIES
    ══════════════════════════════════════════════════════ */
 
-/* Glass card preset */
+/* Clean card — no heavy glow */
 .glass-card {
-  background: rgba(18, 24, 36, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(30, 41, 59, 0.6);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-slate);
   border-radius: 1rem;
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .glass-card-hover {
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .glass-card-hover:hover {
-  border-color: rgba(0, 240, 255, 0.2);
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.25),
-    0 0 20px rgba(0, 240, 255, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-color: rgba(20, 184, 166, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Glow border variants */
+/* Glow border variants (kept subtle) */
 .glow-border-cyan {
-  border: 1px solid rgba(0, 240, 255, 0.25);
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.1), inset 0 0 12px rgba(0, 240, 255, 0.02);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.06);
 }
 .glow-border-emerald {
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.1), inset 0 0 12px rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.06);
 }
 .glow-border-amber {
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.1), inset 0 0 12px rgba(245, 158, 11, 0.02);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.06);
 }
 .glow-border-purple {
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.1), inset 0 0 12px rgba(168, 85, 247, 0.02);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.06);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -150,7 +148,7 @@ input[type="number"] {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -158,7 +156,7 @@ input[type="number"] {
   }
 }
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.25s ease-out;
 }
 
 /* Scrollbar utilities */
@@ -174,14 +172,14 @@ input[type="number"] {
   width: 3px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #282C35;
   border-radius: 3px;
 }
 
 /* Accessibility global */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.5);
   border-radius: 8px;
 }
 

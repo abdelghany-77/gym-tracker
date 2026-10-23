@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Plus,
   Clock,
-  Flame,
   TrendingUp,
   Activity,
   ChevronDown,
@@ -21,9 +20,9 @@ import { cardioActivities, intensityLevels, beginnerPrograms, safetyDisclaimer, 
 import { ConfirmDialog } from "../components/Modal";
 
 const intensityColors = {
-  light: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", dot: "bg-emerald-400" },
+  light: { bg: "bg-teal-500/10", text: "text-teal-400", border: "border-teal-500/20", dot: "bg-teal-400" },
   moderate: { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20", dot: "bg-amber-400" },
-  vigorous: { bg: "bg-red-500/10", text: "text-red-400", border: "border-red-500/20", dot: "bg-red-400" },
+  vigorous: { bg: "bg-rose-500/10", text: "text-rose-400", border: "border-rose-500/20", dot: "bg-rose-400" },
 };
 
 const defaultForm = {
@@ -138,39 +137,39 @@ export default function Cardio() {
   };
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-lg mx-auto space-y-5 animate-fadeIn">
+    <div className="px-4 pt-4 pb-24 max-w-lg mx-auto space-y-4 animate-fadeIn">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"
+          className="w-10 h-10 rounded-xl bg-bg-card border border-border-subtle flex items-center justify-center text-slate-400 hover:text-white hover:bg-bg-card-hover active:scale-95 transition-all"
           aria-label="Go back"
         >
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-white">Cardio</h1>
-          <p className="text-[11px] text-slate-500">Track aerobic activity & progress</p>
+          <h1 className="text-xl font-bold text-white tracking-tight">Cardio</h1>
+          <p className="text-[11px] text-slate-400">Track aerobic stamina & weekly targets</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neon-cyan/10 text-neon-cyan text-xs font-semibold border border-neon-cyan/20 hover:bg-neon-cyan/20 transition-all active:scale-95"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-500/10 text-teal-400 text-xs font-semibold border border-teal-500/20 hover:bg-teal-500/20 transition-all active:scale-95"
         >
           <Plus size={14} />
-          Log
+          Log Session
         </button>
       </div>
 
-      {/* ── Weekly Progress Card ── */}
-      <div className="glass-card p-5 space-y-3">
+      {/* Weekly Progress Card */}
+      <div className="glass-card p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <Target size={16} className="text-neon-cyan" />
+            <Target size={16} className="text-teal-400" />
             Weekly Progress
           </h2>
           <button
             onClick={() => { setGoalInput(goalMinutes); setShowGoalEdit(true); }}
-            className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-[11px] text-slate-400 hover:text-teal-400 transition-colors"
           >
             Goal: {goalMinutes} min ✎
           </button>
@@ -182,16 +181,16 @@ export default function Cardio() {
             <span className="text-slate-400">
               {weeklyStats.totalModerateEquiv} / {goalMinutes} moderate-equiv min
             </span>
-            <span className={`font-bold ${goalProgress >= 100 ? "text-neon-green" : "text-neon-cyan"}`}>
+            <span className={`font-bold ${goalProgress >= 100 ? "text-emerald-400" : "text-teal-400"}`}>
               {goalProgress}%
             </span>
           </div>
-          <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-slate-900 rounded-full overflow-hidden border border-border-subtle">
             <div
               className={`h-full rounded-full transition-all duration-700 ease-out ${
                 goalProgress >= 100
-                  ? "bg-gradient-to-r from-neon-green to-emerald-400"
-                  : "bg-gradient-to-r from-neon-cyan to-neon-blue"
+                  ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                  : "bg-gradient-to-r from-teal-500 to-emerald-400"
               }`}
               style={{ width: `${goalProgress}%` }}
             />
@@ -199,45 +198,45 @@ export default function Cardio() {
         </div>
 
         {/* Quick stats */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="text-center p-2 bg-slate-900/60 rounded-xl">
+        <div className="grid grid-cols-3 gap-2 pt-1">
+          <div className="text-center p-2.5 bg-bg-deep/60 rounded-xl border border-border-subtle/50">
             <p className="text-lg font-bold text-white">{weeklyStats.sessions}</p>
-            <p className="text-[10px] text-slate-500 uppercase">Sessions</p>
+            <p className="text-[10px] text-slate-500 uppercase font-medium">Sessions</p>
           </div>
-          <div className="text-center p-2 bg-slate-900/60 rounded-xl">
+          <div className="text-center p-2.5 bg-bg-deep/60 rounded-xl border border-border-subtle/50">
             <p className="text-lg font-bold text-white">{weeklyStats.totalDuration}</p>
-            <p className="text-[10px] text-slate-500 uppercase">Minutes</p>
+            <p className="text-[10px] text-slate-500 uppercase font-medium">Minutes</p>
           </div>
-          <div className="text-center p-2 bg-slate-900/60 rounded-xl">
+          <div className="text-center p-2.5 bg-bg-deep/60 rounded-xl border border-border-subtle/50">
             <p className="text-lg font-bold text-white">
               {weeklyStats.totalDistance != null ? weeklyStats.totalDistance.toFixed(1) : "—"}
             </p>
-            <p className="text-[10px] text-slate-500 uppercase">km</p>
+            <p className="text-[10px] text-slate-500 uppercase font-medium">km</p>
           </div>
         </div>
 
-        {/* How calculation works */}
-        <p className="text-[10px] text-slate-600 leading-relaxed">
-          <Info size={10} className="inline -mt-0.5 mr-0.5" />
-          1 vigorous min = 2 moderate min. 1 light min = 0.5 moderate min.
+        {/* Calculation hint */}
+        <p className="text-[10px] text-slate-500 leading-relaxed pt-0.5">
+          <Info size={11} className="inline -mt-0.5 mr-1 text-slate-400" />
+          1 vigorous min = 2 moderate min · 1 light min = 0.5 moderate min
         </p>
       </div>
 
-      {/* ── Activity Trend ── */}
-      <div className="glass-card p-5">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
-          <TrendingUp size={16} className="text-vivid-purple" />
-          8-Week Trend
+      {/* 8-Week Trend */}
+      <div className="glass-card p-4 space-y-3">
+        <h2 className="text-sm font-bold text-white flex items-center gap-2">
+          <TrendingUp size={16} className="text-teal-400" />
+          8-Week Activity Trend
         </h2>
-        <div className="flex items-end gap-1.5 h-20">
+        <div className="flex items-end gap-1.5 h-20 pt-2">
           {trend.map((w, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <div
                 className={`w-full rounded-t-md transition-all duration-500 ${
-                  w.minutes > 0 ? "bg-gradient-to-t from-neon-cyan/60 to-neon-cyan/20" : "bg-slate-800"
+                  w.minutes > 0 ? "bg-gradient-to-t from-teal-500/70 to-teal-400/30" : "bg-slate-800/60"
                 }`}
                 style={{
-                  height: `${Math.max(4, (w.minutes / maxTrend) * 64)}px`,
+                  height: `${Math.max(4, (w.minutes / maxTrend) * 60)}px`,
                 }}
                 title={`${w.minutes} moderate-equiv min`}
               />
@@ -247,24 +246,24 @@ export default function Cardio() {
         </div>
       </div>
 
-      {/* ── Beginner Programs ── */}
+      {/* Beginner Programs Toggle */}
       <button
         onClick={() => setShowPrograms(!showPrograms)}
-        className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 transition-all text-left"
+        className="w-full flex items-center justify-between p-3.5 rounded-xl bg-bg-card border border-border-subtle hover:border-slate-700 transition-all text-left"
       >
         <span className="text-xs font-semibold text-slate-300 flex items-center gap-2">
           <Activity size={14} className="text-amber-400" />
-          Beginner Programs & Tips
+          Cardio Programs & Recovery Tips
         </span>
-        <ChevronDown size={14} className={`text-slate-500 transition-transform ${showPrograms ? "rotate-180" : ""}`} />
+        <ChevronDown size={14} className={`text-slate-400 transition-transform ${showPrograms ? "rotate-180" : ""}`} />
       </button>
 
       {showPrograms && (
         <div className="space-y-3 animate-fadeIn">
           {/* Safety disclaimer */}
-          <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-3">
-            <p className="text-[11px] text-red-400 flex items-start gap-1.5">
-              <AlertTriangle size={13} className="shrink-0 mt-0.5" />
+          <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
+            <p className="text-[11px] text-rose-300 flex items-start gap-1.5 leading-relaxed">
+              <AlertTriangle size={13} className="shrink-0 mt-0.5 text-rose-400" />
               {safetyDisclaimer.en}
             </p>
           </div>
@@ -273,20 +272,22 @@ export default function Cardio() {
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-3">
               <p className="text-[10px] text-emerald-400 font-bold uppercase mb-1">Warm-up</p>
-              <p className="text-[10px] text-slate-400 leading-relaxed">{warmupCooldownTips.warmup.en}</p>
+              <p className="text-[10px] text-slate-300 leading-relaxed">{warmupCooldownTips.warmup.en}</p>
             </div>
-            <div className="bg-blue-500/5 border border-blue-500/15 rounded-xl p-3">
-              <p className="text-[10px] text-blue-400 font-bold uppercase mb-1">Cool-down</p>
-              <p className="text-[10px] text-slate-400 leading-relaxed">{warmupCooldownTips.cooldown.en}</p>
+            <div className="bg-teal-500/5 border border-teal-500/15 rounded-xl p-3">
+              <p className="text-[10px] text-teal-400 font-bold uppercase mb-1">Cool-down</p>
+              <p className="text-[10px] text-slate-300 leading-relaxed">{warmupCooldownTips.cooldown.en}</p>
             </div>
           </div>
 
           {/* Programs */}
           {beginnerPrograms.map((prog) => (
-            <div key={prog.id} className="bg-slate-900/60 border border-slate-800/60 rounded-xl p-4 space-y-2">
+            <div key={prog.id} className="bg-bg-card border border-border-subtle rounded-xl p-3.5 space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-white">{prog.name}</h3>
-                <span className="text-[10px] text-slate-500">{prog.totalMinutesPerWeek} min/week</span>
+                <span className="text-[10px] text-teal-400 font-mono bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">
+                  {prog.totalMinutesPerWeek} min/wk
+                </span>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">{prog.notes}</p>
               <div className="flex flex-wrap gap-1.5 mt-1">
@@ -305,25 +306,25 @@ export default function Cardio() {
         </div>
       )}
 
-      {/* ── Recent Sessions ── */}
-      <div className="space-y-2">
+      {/* Recent Sessions */}
+      <div className="space-y-2.5">
         <h2 className="text-sm font-bold text-white flex items-center gap-2">
           <Clock size={16} className="text-slate-400" />
           Recent Sessions
           {recentSessions.length > 0 && (
-            <span className="text-[10px] text-slate-600 bg-slate-800/50 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] text-slate-400 bg-bg-card border border-border-subtle px-2 py-0.5 rounded-full">
               {recentSessions.length}
             </span>
           )}
         </h2>
 
         {recentSessions.length === 0 ? (
-          <div className="text-center py-10 px-4 rounded-2xl bg-slate-800/20 border border-dashed border-slate-700/50 space-y-2">
-            <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-600">
+          <div className="text-center py-10 px-4 rounded-2xl bg-bg-card/40 border border-dashed border-border-subtle space-y-2">
+            <div className="w-12 h-12 bg-bg-card rounded-full flex items-center justify-center mx-auto text-slate-500 border border-border-subtle">
               <Activity size={20} />
             </div>
-            <p className="text-slate-400 text-sm font-medium">No cardio sessions yet</p>
-            <p className="text-[11px] text-slate-500">Log your first cardio activity above</p>
+            <p className="text-slate-300 text-sm font-medium">No cardio sessions yet</p>
+            <p className="text-[11px] text-slate-500">Log your first session to track endurance progression</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -331,7 +332,7 @@ export default function Cardio() {
               const activity = cardioActivities.find((a) => a.id === session.activityId);
               const ic = intensityColors[session.intensity] || intensityColors.moderate;
               return (
-                <div key={session.id} className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 hover:border-slate-700 transition-all group">
+                <div key={session.id} className="flex items-center gap-3 bg-bg-card p-3 rounded-xl border border-border-subtle hover:border-slate-700 transition-all group">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${ic.bg} ${ic.border} border shrink-0`}>
                     {activity?.icon || "🏃"}
                   </div>
@@ -344,13 +345,13 @@ export default function Cardio() {
                       <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${ic.bg} ${ic.text} ${ic.border}`}>
                         {session.intensity}
                       </span>
-                      <span className="text-[10px] text-slate-400">{session.duration} min</span>
+                      <span className="text-[10px] text-slate-300 font-medium">{session.duration} min</span>
                       {session.distance && (
                         <span className="text-[10px] text-slate-400">{session.distance} km</span>
                       )}
                       {session.estimatedCalories && (
-                        <span className="text-[10px] text-slate-500 italic">
-                          ~{session.estimatedCalories} cal (est.)
+                        <span className="text-[10px] text-slate-500">
+                          ~{session.estimatedCalories} cal
                         </span>
                       )}
                     </div>
@@ -358,14 +359,14 @@ export default function Cardio() {
                   <div className="flex gap-1 shrink-0">
                     <button
                       onClick={() => handleEdit(session)}
-                      className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700 text-slate-400 hover:text-neon-blue transition-colors"
+                      className="w-7 h-7 rounded-lg bg-bg-deep border border-border-subtle flex items-center justify-center hover:bg-teal-500/10 text-slate-400 hover:text-teal-400 transition-colors"
                       aria-label="Edit session"
                     >
                       <Pencil size={12} />
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(session.id)}
-                      className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                      className="w-7 h-7 rounded-lg bg-bg-deep border border-border-subtle flex items-center justify-center hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-colors"
                       aria-label="Delete session"
                     >
                       <Trash2 size={12} />
@@ -378,48 +379,48 @@ export default function Cardio() {
         )}
       </div>
 
-      {/* ── Add/Edit Form (overlay bottom sheet) ── */}
+      {/* Add/Edit Form (overlay bottom sheet) */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => resetForm()}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={() => resetForm()}>
           <div
-            className="bg-slate-900 w-full max-w-md rounded-t-3xl border-t border-slate-700 p-5 space-y-3 animate-slideUp max-h-[85vh] overflow-y-auto custom-scrollbar"
+            className="bg-bg-card w-full max-w-md rounded-t-3xl border-t border-border-subtle p-5 space-y-3.5 animate-slideUp max-h-[85vh] overflow-y-auto custom-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-white">
                 {editingId ? "Edit Session" : "Log Cardio"}
               </h3>
-              <button onClick={resetForm} className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700" aria-label="Cancel">
+              <button onClick={resetForm} className="w-8 h-8 rounded-lg bg-bg-deep border border-border-subtle flex items-center justify-center text-slate-400 hover:text-white" aria-label="Cancel">
                 <X size={16} />
               </button>
             </div>
 
             {/* Date */}
             <div>
-              <label className="text-[10px] text-slate-500 mb-1 block">Date</label>
+              <label className="text-[10px] text-slate-400 mb-1 block">Date</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
               />
             </div>
 
             {/* Activity */}
             <div>
-              <label className="text-[10px] text-slate-500 mb-1 block">Activity</label>
+              <label className="text-[10px] text-slate-400 mb-1 block">Activity</label>
               <div className="relative">
                 <select
                   value={form.activityId}
                   onChange={(e) => setForm({ ...form, activityId: e.target.value })}
-                  className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                  className="w-full appearance-none bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
                   title="Select activity"
                 >
                   {cardioActivities.map((a) => (
                     <option key={a.id} value={a.id}>{a.icon} {a.name}</option>
                   ))}
                 </select>
-                <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
               {selectedActivity && !selectedActivity.beginnerFriendly && (
                 <p className="text-[10px] text-amber-400 mt-1 flex items-center gap-1">
@@ -434,30 +435,30 @@ export default function Cardio() {
             {/* Duration & Intensity */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">Duration (min) *</label>
+                <label className="text-[10px] text-slate-400 mb-1 block">Duration (min) *</label>
                 <input
                   type="number"
                   value={form.duration}
                   onChange={(e) => setForm({ ...form, duration: e.target.value })}
                   placeholder="30"
                   min="1"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+                  className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">Intensity</label>
+                <label className="text-[10px] text-slate-400 mb-1 block">Intensity</label>
                 <div className="relative">
                   <select
                     value={form.intensity}
                     onChange={(e) => setForm({ ...form, intensity: e.target.value })}
-                    className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                    className="w-full appearance-none bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
                     title="Select intensity"
                   >
                     {intensityLevels.map((l) => (
                       <option key={l.id} value={l.id}>{l.name}</option>
                     ))}
                   </select>
-                  <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                  <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -466,7 +467,7 @@ export default function Cardio() {
             <div className="grid grid-cols-2 gap-2">
               {selectedActivity?.supportsDistance && (
                 <div>
-                  <label className="text-[10px] text-slate-500 mb-1 block">Distance (km)</label>
+                  <label className="text-[10px] text-slate-400 mb-1 block">Distance (km)</label>
                   <input
                     type="number"
                     value={form.distance}
@@ -474,12 +475,12 @@ export default function Cardio() {
                     placeholder="—"
                     step="0.1"
                     min="0"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+                    className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600"
                   />
                 </div>
               )}
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">Avg Heart Rate</label>
+                <label className="text-[10px] text-slate-400 mb-1 block">Avg Heart Rate (bpm)</label>
                 <input
                   type="number"
                   value={form.heartRate}
@@ -487,14 +488,14 @@ export default function Cardio() {
                   placeholder="—"
                   min="40"
                   max="220"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+                  className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">RPE (1–10)</label>
+                <label className="text-[10px] text-slate-400 mb-1 block">RPE (1–10)</label>
                 <input
                   type="number"
                   value={form.rpe}
@@ -502,34 +503,34 @@ export default function Cardio() {
                   placeholder="—"
                   min="1"
                   max="10"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+                  className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">Est. Calories</label>
+                <label className="text-[10px] text-slate-400 mb-1 block">Est. Calories</label>
                 <input
                   type="number"
                   value={form.estimatedCalories}
                   onChange={(e) => setForm({ ...form, estimatedCalories: e.target.value })}
                   placeholder="—"
                   min="0"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
+                  className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600"
                 />
               </div>
             </div>
 
             <textarea
-              placeholder="Notes..."
+              placeholder="Session notes (e.g., treadmill incline, route, feeling)..."
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500 resize-none"
+              className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400 placeholder:text-slate-600 resize-none"
             />
 
             <button
               onClick={handleSubmit}
               disabled={!form.duration || Number(form.duration) <= 0}
-              className="w-full py-3.5 rounded-xl bg-neon-cyan/20 text-neon-cyan font-semibold text-sm border border-neon-cyan/30 hover:bg-neon-cyan/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-bg-deep font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
             >
               <Check size={16} />
               {editingId ? "Save Changes" : "Log Session"}
@@ -538,30 +539,30 @@ export default function Cardio() {
         </div>
       )}
 
-      {/* ── Goal Edit Modal ── */}
+      {/* Goal Edit Modal */}
       {showGoalEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowGoalEdit(false)}>
-          <div className="bg-slate-900 rounded-2xl w-full max-w-xs border border-slate-700 p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-bold text-white">Weekly Goal</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowGoalEdit(false)}>
+          <div className="bg-bg-card rounded-2xl w-full max-w-xs border border-border-subtle p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-white">Weekly Cardio Goal</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">
               WHO recommends 150 min moderate or 75 min vigorous activity per week (or equivalent mix).
             </p>
             <div>
-              <label className="text-[10px] text-slate-500 mb-1 block">Moderate-equivalent minutes/week</label>
+              <label className="text-[10px] text-slate-400 mb-1 block">Moderate-equivalent minutes/week</label>
               <input
                 type="number"
                 value={goalInput}
                 onChange={(e) => setGoalInput(e.target.value)}
                 min="10"
                 max="1000"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
+                className="w-full bg-bg-deep border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-400"
               />
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowGoalEdit(false)} className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-400 text-sm border border-slate-700 hover:bg-slate-700">
+              <button onClick={() => setShowGoalEdit(false)} className="flex-1 py-2.5 rounded-xl bg-bg-deep text-slate-400 text-sm border border-border-subtle hover:bg-bg-card-hover">
                 Cancel
               </button>
-              <button onClick={handleSaveGoal} className="flex-1 py-2.5 rounded-xl bg-neon-cyan/20 text-neon-cyan text-sm font-semibold border border-neon-cyan/30 hover:bg-neon-cyan/30">
+              <button onClick={handleSaveGoal} className="flex-1 py-2.5 rounded-xl bg-teal-500 text-bg-deep text-sm font-bold hover:bg-teal-600">
                 Save
               </button>
             </div>

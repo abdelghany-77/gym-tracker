@@ -25,14 +25,14 @@ export default function Nutrition() {
 
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6 animate-fadeIn">
+    <div className="px-4 pt-5 pb-4 max-w-lg mx-auto space-y-4 animate-fadeIn">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Apple size={22} className="text-neon-green" />
+        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <Apple size={20} className="text-neon-emerald" />
           Nutrition
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-xs text-slate-500 mt-0.5">
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
             month: "short",
@@ -44,26 +44,25 @@ export default function Nutrition() {
       {/* Macro overview card */}
       <NutritionCard />
 
-
       {/* Meal Tracker */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800 space-y-4">
+      <div className="glass-card p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <Utensils size={16} className="text-neon-blue" />
+          <h2 className="text-xs font-semibold text-white flex items-center gap-2">
+            <Utensils size={14} className="text-accent" />
             Meal Tracker
           </h2>
           <button
             onClick={() => setShowMealPlan(true)}
-            className="text-[11px] text-neon-blue hover:text-neon-blue/80 font-medium transition-colors flex items-center gap-0.5"
+            className="text-[10px] text-accent hover:text-accent-light font-medium transition-colors flex items-center gap-0.5"
             aria-label="View full meal plan"
           >
-            Full Plan <ChevronRight size={12} />
+            Full Plan <ChevronRight size={10} />
           </button>
         </div>
 
         {/* Per-meal quick track */}
-        <div className="space-y-1.5">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+        <div className="space-y-1">
+          <p className="text-[9px] text-slate-500 uppercase tracking-wider font-medium">
             Tap meals you&apos;ve eaten
           </p>
           {meals.map((meal, i) => {
@@ -72,45 +71,37 @@ export default function Nutrition() {
               <button
                 key={i}
                 onClick={() => toggleMealEaten(i, meal.calories)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] btn-press ${
+                className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg border transition-all active:scale-[0.98] btn-press ${
                   isEaten
-                    ? "bg-emerald-500/10 border-emerald-500/30"
-                    : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
+                    ? "bg-neon-emerald/8 border-neon-emerald/20"
+                    : "bg-bg-card border-border-slate hover:border-slate-600"
                 }`}
                 aria-label={`${isEaten ? "Unmark" : "Mark"} ${meal.name} as eaten — ${meal.calories} calories`}
               >
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all ${
                     isEaten
-                      ? "bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)] animate-set-complete"
+                      ? "bg-neon-emerald text-white animate-set-complete"
                       : "bg-slate-800 border-2 border-slate-600 text-transparent"
                   }`}
                 >
-                  <Check size={12} />
+                  <Check size={10} />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <span
-                    className={`text-[11px] font-semibold block truncate ${
-                      isEaten ? "text-emerald-400" : "text-white"
-                    }`}
-                  >
+                  <span className={`text-[11px] font-medium block truncate ${
+                    isEaten ? "text-neon-emerald" : "text-white"
+                  }`}>
                     {meal.name}
                   </span>
                   <span className="text-[9px] text-slate-500">{meal.time}</span>
                 </div>
                 <div className="text-right shrink-0">
-                  <span
-                    className={`text-[10px] font-medium block ${
-                      isEaten ? "text-emerald-400/70" : "text-orange-400"
-                    }`}
-                  >
+                  <span className={`text-[10px] font-medium block ${
+                    isEaten ? "text-neon-emerald/70" : "text-orange-400"
+                  }`}>
                     {meal.calories} kcal
                   </span>
-                  <span
-                    className={`text-[9px] ${
-                      isEaten ? "text-emerald-400/50" : "text-neon-blue/70"
-                    }`}
-                  >
+                  <span className={`text-[9px] ${isEaten ? "text-neon-emerald/50" : "text-accent/70"}`}>
                     {meal.protein}g protein
                   </span>
                 </div>
@@ -121,8 +112,8 @@ export default function Nutrition() {
 
         {/* Completion message */}
         {mealPlanFollowed && (
-          <div className="py-2.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center animate-set-complete">
-            <p className="text-[11px] font-semibold text-emerald-400">
+          <div className="py-2 px-3 rounded-lg bg-neon-emerald/8 border border-neon-emerald/15 text-center animate-set-complete">
+            <p className="text-[10px] font-semibold text-neon-emerald">
               All meals completed! Great job!
             </p>
           </div>
