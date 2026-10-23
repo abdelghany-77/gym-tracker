@@ -6,7 +6,6 @@ import {
   Dumbbell,
   Clock,
   TrendingUp,
-  ArrowLeft,
   X,
   Share2,
 } from "lucide-react";
@@ -20,7 +19,7 @@ export default function WorkoutHistory() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedSession, setSelectedSession] = useState(null);
   const [receiptSession, setReceiptSession] = useState(null);
-  const [viewMode, setViewMode] = useState("list"); // "list" or "calendar"
+  const [viewMode, setViewMode] = useState("list");
 
   const getExerciseName = (id) =>
     exercises.find((e) => e.id === id)?.name || id;
@@ -80,25 +79,29 @@ export default function WorkoutHistory() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Progress</h1>
-          <p className="text-[10px] text-slate-500">
-            {totalSessions} sessions · {totalSets} total sets
+          <h1 className="text-xl font-bold text-white tracking-tight">Progress</h1>
+          <p className="text-xs text-slate-400">
+            {totalSessions} total sessions · {totalSets} logged sets
           </p>
         </div>
         {/* View mode toggle */}
-        <div className="flex bg-bg-card rounded-lg p-0.5 border border-border-slate">
+        <div className="flex bg-surface-elevated rounded-lg p-0.5 border border-border">
           <button
             onClick={() => setViewMode("list")}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-              viewMode === "list" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"
+            className={`px-3 py-1 rounded-md text-xs transition-all ${
+              viewMode === "list"
+                ? "bg-teal-500 text-slate-950 font-bold"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Recent
           </button>
           <button
             onClick={() => setViewMode("calendar")}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-              viewMode === "calendar" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"
+            className={`px-3 py-1 rounded-md text-xs transition-all ${
+              viewMode === "calendar"
+                ? "bg-teal-500 text-slate-950 font-bold"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Calendar
@@ -108,17 +111,17 @@ export default function WorkoutHistory() {
 
       {/* Calendar View */}
       {viewMode === "calendar" && (
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 space-y-3">
           {/* Month navigation */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <button
               onClick={prevMonth}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-surface-elevated transition-colors"
               aria-label="Previous month"
             >
               <ChevronLeft size={16} />
             </button>
-            <h2 className="text-xs font-bold text-white">
+            <h2 className="text-xs font-bold text-white tracking-wide">
               {currentDate.toLocaleDateString("en-US", {
                 month: "long",
                 year: "numeric",
@@ -126,7 +129,7 @@ export default function WorkoutHistory() {
             </h2>
             <button
               onClick={nextMonth}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-surface-elevated transition-colors"
               aria-label="Next month"
             >
               <ChevronRight size={16} />
@@ -134,9 +137,9 @@ export default function WorkoutHistory() {
           </div>
 
           {/* Day headers */}
-          <div className="grid grid-cols-7 gap-1 mb-1">
+          <div className="grid grid-cols-7 gap-1">
             {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-              <div key={d} className="text-[9px] text-slate-600 text-center font-medium">
+              <div key={d} className="text-[10px] text-slate-400 text-center font-semibold">
                 {d}
               </div>
             ))}
@@ -154,19 +157,19 @@ export default function WorkoutHistory() {
                     cell.sessions.length > 0 &&
                     setSelectedSession(cell.sessions[0])
                   }
-                  className={`aspect-square rounded-md flex flex-col items-center justify-center text-[11px] transition-all relative ${
+                  className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${
                     cell.sessions.length > 0
-                      ? "bg-accent/12 text-accent font-bold hover:bg-accent/20 cursor-pointer"
+                      ? "bg-teal-500/15 text-teal-400 font-bold hover:bg-teal-500/25 cursor-pointer border border-teal-500/30"
                       : cell.isToday
-                        ? "bg-bg-card text-white font-medium ring-1 ring-accent/30"
-                        : "text-slate-500 hover:bg-bg-card"
+                        ? "bg-surface-elevated text-white font-bold ring-1 ring-teal-400/50"
+                        : "text-slate-400 hover:bg-surface-elevated"
                   }`}
                   disabled={cell.sessions.length === 0}
                   aria-label={`${cell.date}${cell.sessions.length > 0 ? `, ${cell.sessions.length} workout(s)` : ""}`}
                 >
                   <span>{cell.day}</span>
                   {cell.sessions.length > 0 && (
-                    <div className="absolute bottom-0.5 w-1 h-1 rounded-full bg-accent" />
+                    <div className="absolute bottom-1 w-1 h-1 rounded-full bg-teal-400" />
                   )}
                 </button>
               ),
@@ -175,22 +178,23 @@ export default function WorkoutHistory() {
         </div>
       )}
 
-      {/* Selected Session Detail */}
+      {/* Selected Session Detail Card */}
       {selectedSession && (
         <div className="glass-card p-4 space-y-3 animate-fadeIn">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-white">{selectedSession.programName}</h3>
-              <p className="text-[10px] text-slate-500 flex items-center gap-2">
-                <Calendar size={9} />
+              <p className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                <Calendar size={11} className="text-teal-400" />
                 {new Date(selectedSession.date).toLocaleDateString("en-US", {
-                  weekday: "long",
+                  weekday: "short",
                   month: "short",
                   day: "numeric",
                 })}
                 {formatDuration(selectedSession) && (
                   <>
-                    <Clock size={9} />
+                    <span>·</span>
+                    <Clock size={11} className="text-teal-400" />
                     {formatDuration(selectedSession)}
                   </>
                 )}
@@ -198,24 +202,24 @@ export default function WorkoutHistory() {
             </div>
             <button
               onClick={() => setSelectedSession(null)}
-              className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              className="w-7 h-7 rounded-lg bg-surface-elevated border border-border flex items-center justify-center text-slate-400 hover:text-white transition-colors"
               aria-label="Close details"
             >
-              <X size={12} />
+              <X size={13} />
             </button>
           </div>
 
           {/* Exercises in that session */}
           <div className="space-y-1.5">
             {selectedSession.exercises.map((ex, i) => (
-              <div key={i} className="bg-bg-card rounded-lg p-2.5 border border-border-slate">
+              <div key={i} className="bg-surface rounded-xl p-2.5 border border-border">
                 <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-xs font-medium text-white">{getExerciseName(ex.exerciseId)}</p>
-                  <span className="text-[9px] text-slate-500">{ex.sets.length} sets</span>
+                  <p className="text-xs font-semibold text-white">{getExerciseName(ex.exerciseId)}</p>
+                  <span className="text-[10px] text-slate-400 font-mono">{ex.sets.length} sets</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {ex.sets.map((set, si) => (
-                    <span key={si} className="text-[9px] bg-slate-800/60 text-slate-300 px-1.5 py-0.5 rounded-full">
+                    <span key={si} className="text-[10px] bg-surface-elevated border border-border text-slate-300 px-2 py-0.5 rounded-md font-mono">
                       {set.weight}kg × {set.reps}
                     </span>
                   ))}
@@ -224,42 +228,28 @@ export default function WorkoutHistory() {
             ))}
           </div>
 
-          {/* Quick stats */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-bg-card rounded-lg p-2.5 text-center border border-border-slate">
-              <Dumbbell size={12} className="text-accent mx-auto mb-1" />
-              <p className="text-sm font-bold text-white">{selectedSession.exercises.length}</p>
-              <p className="text-[9px] text-slate-500">Exercises</p>
-            </div>
-            <div className="bg-bg-card rounded-lg p-2.5 text-center border border-border-slate">
-              <TrendingUp size={12} className="text-neon-emerald mx-auto mb-1" />
-              <p className="text-sm font-bold text-white">
-                {selectedSession.exercises.reduce((acc, e) => acc + e.sets.length, 0)}
-              </p>
-              <p className="text-[9px] text-slate-500">Total Sets</p>
-            </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => setReceiptSession(selectedSession)}
+              className="w-full bg-surface-elevated hover:bg-surface-hover text-teal-400 text-xs font-semibold py-2.5 rounded-xl border border-border flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+            >
+              <Share2 size={13} />
+              View Workout Summary
+            </button>
           </div>
-
-          <button
-            onClick={() => setReceiptSession(selectedSession)}
-            className="w-full bg-bg-card hover:bg-slate-700 text-accent text-[11px] font-semibold py-2 rounded-lg border border-accent/20 flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
-          >
-            <Share2 size={11} />
-            View Receipt
-          </button>
         </div>
       )}
 
-      {/* Recent Sessions List — primary view */}
+      {/* Recent Sessions List */}
       <div className="glass-card p-4 space-y-2.5">
         <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-          <Clock size={13} className="text-slate-400" />
+          <Clock size={13} className="text-teal-400" />
           Recent Sessions
         </h2>
         {history.length === 0 ? (
-          <div className="text-center py-6">
-            <Dumbbell size={20} className="mx-auto text-slate-600 mb-2" />
-            <p className="text-xs text-slate-500">No workouts yet</p>
+          <div className="text-center py-6 text-slate-400">
+            <Dumbbell size={22} className="mx-auto text-slate-500 mb-2" />
+            <p className="text-xs">No workout sessions recorded yet</p>
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -270,15 +260,15 @@ export default function WorkoutHistory() {
                 <button
                   key={session.id}
                   onClick={() => setSelectedSession(session)}
-                  className="w-full flex items-center justify-between p-2.5 rounded-lg bg-bg-card border border-border-slate hover:border-slate-600 transition-all text-left active:scale-[0.98]"
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-surface border border-border hover:border-slate-500 transition-all text-left active:scale-[0.99] group"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-lg bg-accent/8 flex items-center justify-center">
-                      <Dumbbell size={14} className="text-accent" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-surface-elevated border border-border flex items-center justify-center shrink-0">
+                      <Dumbbell size={15} className="text-teal-400" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-white">{session.programName}</p>
-                      <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-white group-hover:text-teal-400 transition-colors">{session.programName}</p>
+                      <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                         {new Date(session.date).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -288,14 +278,14 @@ export default function WorkoutHistory() {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight size={14} className="text-slate-600 shrink-0" />
+                  <ChevronRight size={15} className="text-slate-400 group-hover:text-white shrink-0" />
                 </button>
               ))}
           </div>
         )}
       </div>
 
-      {/* Biomechanical Angle Analysis */}
+      {/* Biomechanical Angle Analysis Radar */}
       <AngleRadarChart />
 
       {/* Shareable Receipt Modal */}

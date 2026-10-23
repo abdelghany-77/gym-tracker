@@ -111,15 +111,15 @@ export default function RestTimer({ inline = false }) {
 
   // Dynamic Color
   const getColor = () => {
-    if (timeLeft === 0) return "stroke-emerald-500";
-    if (timeLeft < 10) return "stroke-red-500";
-    return "stroke-neon-blue";
+    if (timeLeft === 0) return "stroke-emerald-400";
+    if (timeLeft < 10) return "stroke-rose-400";
+    return "stroke-teal-400";
   };
 
   const getTextColor = () => {
     if (timeLeft === 0) return "text-emerald-400";
-    if (timeLeft < 10) return "text-red-400";
-    return "text-neon-blue";
+    if (timeLeft < 10) return "text-rose-400";
+    return "text-teal-400";
   };
 
   if (!activeWorkout) return null;
@@ -131,29 +131,29 @@ export default function RestTimer({ inline = false }) {
       return (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800/60 hover:border-slate-700 transition-all active:scale-[0.98]"
+          className="w-full flex items-center gap-3 p-3 rounded-2xl bg-bg-card border border-border hover:border-slate-600 transition-all active:scale-[0.98]"
           aria-label="Open rest timer"
         >
-          <div className="w-9 h-9 rounded-xl bg-neon-blue/10 flex items-center justify-center shrink-0">
-            <Timer size={16} className="text-neon-blue" />
+          <div className="w-9 h-9 rounded-xl bg-teal-500/10 flex items-center justify-center shrink-0">
+            <Timer size={16} className="text-teal-400" />
           </div>
           <div className="flex-1 text-left">
-            <p className="text-xs text-slate-400 font-medium">Rest Timer</p>
-            <p className="text-[10px] text-slate-500">Tap to set up</p>
+            <p className="text-xs text-slate-300 font-medium">Rest Timer</p>
+            <p className="text-[10px] text-slate-400">Tap to start timer</p>
           </div>
-          <span className="text-xs text-slate-500 font-mono">{totalTime}s</span>
+          <span className="text-xs text-slate-400 font-mono">{totalTime}s</span>
         </button>
       );
     }
 
     // Expanded inline timer
     return (
-      <div className="w-full bg-slate-900/80 border border-slate-800/60 rounded-2xl overflow-hidden animate-fadeIn">
+      <div className="w-full bg-bg-card border border-border rounded-2xl overflow-hidden animate-fadeIn">
         {/* Compact header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/40">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <div className="flex items-center gap-2">
-            <Timer size={13} className="text-neon-blue" />
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <Timer size={13} className="text-teal-400" />
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
               Rest Timer
             </span>
           </div>
@@ -163,7 +163,7 @@ export default function RestTimer({ inline = false }) {
               setIsRunning(false);
               setTimeLeft(0);
             }}
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-500 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-elevated text-slate-400 hover:text-white transition-colors"
             aria-label="Close rest timer"
           >
             <X size={14} />
@@ -179,7 +179,7 @@ export default function RestTimer({ inline = false }) {
                 cx="50%"
                 cy="50%"
                 r={RADIUS}
-                className="stroke-slate-800"
+                className="stroke-surface-elevated"
                 strokeWidth="5"
                 fill="none"
               />
@@ -204,7 +204,7 @@ export default function RestTimer({ inline = false }) {
               <span className={`text-2xl font-bold font-mono block leading-none ${getTextColor()}`}>
                 {timeLeft}
               </span>
-              <span className="text-[8px] text-slate-500 font-medium uppercase">
+              <span className="text-[8px] text-slate-400 font-medium uppercase">
                 sec
               </span>
             </div>
@@ -219,10 +219,10 @@ export default function RestTimer({ inline = false }) {
                   if (!isRunning && timeLeft === 0) setTimeLeft(totalTime);
                   setIsRunning(!isRunning);
                 }}
-                className={`flex-1 h-10 rounded-xl flex items-center justify-center gap-2 transition-all btn-press text-sm font-medium ${
+                className={`flex-1 h-10 rounded-xl flex items-center justify-center gap-2 transition-all btn-press text-sm font-semibold ${
                   isRunning
                     ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                    : "bg-neon-blue/15 text-neon-blue border border-neon-blue/30"
+                    : "bg-teal-500 text-slate-950 hover:bg-teal-400"
                 }`}
                 aria-label={isRunning ? "Pause" : "Start"}
               >
@@ -237,7 +237,7 @@ export default function RestTimer({ inline = false }) {
                   setIsRunning(false);
                   setTimeLeft(totalTime);
                 }}
-                className="w-10 h-10 rounded-xl bg-slate-800/80 text-slate-400 flex items-center justify-center transition-all btn-press hover:text-white border border-slate-700/50"
+                className="w-10 h-10 rounded-xl bg-surface-elevated text-slate-400 flex items-center justify-center transition-all btn-press hover:text-white border border-border"
                 aria-label="Reset"
               >
                 <RotateCcw size={14} />
@@ -253,7 +253,7 @@ export default function RestTimer({ inline = false }) {
                   if (isRunning) setTimeLeft((l) => Math.max(0, l - 10));
                   else setTimeLeft(newTime);
                 }}
-                className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
+                className="flex-1 h-8 rounded-lg bg-surface-elevated flex items-center justify-center text-slate-300 btn-press text-xs gap-1 border border-border hover:text-white transition-colors"
               >
                 <Minus size={12} /> 10s
               </button>
@@ -264,13 +264,13 @@ export default function RestTimer({ inline = false }) {
                   if (isRunning) setTimeLeft((l) => l + 10);
                   else setTimeLeft(newTime);
                 }}
-                className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
+                className="flex-1 h-8 rounded-lg bg-surface-elevated flex items-center justify-center text-slate-300 btn-press text-xs gap-1 border border-border hover:text-white transition-colors"
               >
                 <Plus size={12} /> 10s
               </button>
               <button
                 onClick={() => setShowPresets(!showPresets)}
-                className="w-8 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press border border-slate-700/30 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-lg bg-surface-elevated flex items-center justify-center text-slate-400 btn-press border border-border hover:text-white transition-colors"
                 aria-label="Presets"
               >
                 <Settings size={12} />
@@ -281,7 +281,7 @@ export default function RestTimer({ inline = false }) {
 
         {/* Presets */}
         {showPresets && (
-          <div className="px-4 pb-3 pt-1 border-t border-slate-800/40">
+          <div className="px-4 pb-3 pt-2 border-t border-border">
             <div className="flex flex-wrap gap-1.5 justify-center">
               {PRESETS.map((s) => (
                 <button
@@ -302,8 +302,8 @@ export default function RestTimer({ inline = false }) {
                   }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     totalTime === s
-                      ? "bg-neon-blue text-slate-950"
-                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                      ? "bg-teal-500 text-slate-950 font-bold"
+                      : "bg-surface-elevated text-slate-300 hover:bg-slate-700 border border-border"
                   }`}
                 >
                   {s >= 60 ? `${s / 60}m` : `${s}s`}

@@ -3,14 +3,6 @@ import { X } from "lucide-react";
 
 /**
  * Shared Modal component with consistent animations, backdrop, and focus trap.
- * @param {boolean} isOpen - Whether modal is visible
- * @param {function} onClose - Close handler
- * @param {string} [title] - Optional header title
- * @param {React.ReactNode} [titleIcon] - Optional icon next to title
- * @param {React.ReactNode} children - Modal content
- * @param {string} [maxWidth] - Tailwind max-width class (default "max-w-sm")
- * @param {boolean} [showClose] - Show close X button (default true)
- * @param {string} [position] - "center" | "bottom" (default "center")
  */
 export default function Modal({
   isOpen,
@@ -24,7 +16,6 @@ export default function Modal({
 }) {
   const modalRef = useRef(null);
 
-  // Trap focus inside modal
   useEffect(() => {
     if (!isOpen) return;
 
@@ -59,7 +50,6 @@ export default function Modal({
     document.addEventListener("keydown", handleTab);
     first?.focus();
 
-    // Prevent body scroll
     document.body.style.overflow = "hidden";
 
     return () => {
@@ -74,7 +64,7 @@ export default function Modal({
     <div
       className={`fixed inset-0 z-50 flex ${
         position === "bottom" ? "items-end sm:items-center" : "items-center"
-      } justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn`}
+      } justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -82,14 +72,14 @@ export default function Modal({
     >
       <div
         ref={modalRef}
-        className={`bg-slate-900 rounded-2xl border border-slate-700 w-full ${maxWidth} shadow-2xl overflow-hidden`}
+        className={`bg-surface-elevated rounded-2xl border border-border w-full ${maxWidth} shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || showClose) && (
-          <div className="flex items-center justify-between p-4 border-b border-slate-800">
+          <div className="flex items-center justify-between p-4 border-b border-border">
             {title && (
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">
+              <h3 className="text-base font-semibold text-text-primary flex items-center gap-2">
                 {titleIcon}
                 {title}
               </h3>
@@ -97,7 +87,7 @@ export default function Modal({
             {showClose && (
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors text-slate-400 hover:text-white ml-auto"
+                className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center hover:bg-surface-hover transition-colors text-text-secondary hover:text-text-primary ml-auto"
                 aria-label="Close dialog"
               >
                 <X size={16} />
@@ -114,46 +104,38 @@ export default function Modal({
 }
 
 /**
- * Shared ConfirmDialog built on Modal.
- * @param {boolean} isOpen
- * @param {function} onClose
- * @param {function} onConfirm
- * @param {string} title
- * @param {string} description
- * @param {string} [confirmText] - Confirm button label (default "Confirm")
- * @param {string} [cancelText] - Cancel button label (default "Cancel")
- * @param {"danger"|"warning"|"default"} [variant] - Button color scheme
+ * Shared ConfirmDialog with cohesive button styling.
  */
 export function ConfirmDialog({
   isOpen,
   onClose,
   onConfirm,
   title,
-  description,
+  message,
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "danger",
 }) {
   const variantStyles = {
     danger:
-      "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 focus-visible:ring-red-500/50",
+      "bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25",
     warning:
-      "bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 focus-visible:ring-amber-500/50",
+      "bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25",
     default:
-      "bg-neon-blue/20 text-neon-blue border border-neon-blue/30 hover:bg-neon-blue/30 focus-visible:ring-neon-blue/50",
+      "bg-accent text-slate-950 font-bold hover:bg-accent-light",
     success:
-      "bg-neon-green/20 text-neon-green border border-neon-green/30 hover:bg-neon-green/30 focus-visible:ring-neon-green/50",
+      "bg-emerald-500 text-slate-950 font-bold hover:bg-emerald-400",
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} showClose={false}>
-      <div className="p-6 space-y-4">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <p className="text-sm text-slate-400">{description}</p>
-        <div className="flex gap-3">
+      <div className="p-5 space-y-4">
+        <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>
+        <p className="text-xs text-slate-400 leading-relaxed">{message}</p>
+        <div className="flex gap-2.5 pt-1">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none active:scale-[0.98]"
+            className="flex-1 py-2.5 rounded-xl bg-surface hover:bg-surface-hover text-slate-300 font-medium transition-colors text-xs border border-border active:scale-[0.98]"
           >
             {cancelText}
           </button>
@@ -162,7 +144,7 @@ export function ConfirmDialog({
               onConfirm();
               onClose();
             }}
-            className={`flex-1 py-3 rounded-xl font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98] ${variantStyles[variant]}`}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98] ${variantStyles[variant]}`}
           >
             {confirmText}
           </button>
