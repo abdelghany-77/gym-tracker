@@ -9,6 +9,8 @@ import {
   ArrowLeft,
   X,
   Share2,
+  PieChart,
+  List,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useWorkoutStore from "../store/workoutStore";
@@ -19,6 +21,7 @@ export default function WorkoutHistory() {
   const navigate = useNavigate();
   const history = useWorkoutStore((s) => s.history);
   const exercises = useWorkoutStore((s) => s.exercises);
+  const [activeTab, setActiveTab] = useState("sessions"); // "sessions" | "calendar" | "angles"
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedSession, setSelectedSession] = useState(null);
   const [receiptSession, setReceiptSession] = useState(null);
@@ -77,244 +80,284 @@ export default function WorkoutHistory() {
   );
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-lg mx-auto space-y-5 animate-fadeIn">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate("/")}
-          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"
-          aria-label="Back to Dashboard"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-white">Workout History</h1>
-          <p className="text-[11px] text-slate-500">
-            {totalSessions} sessions · {totalSets} total sets
-          </p>
+    <div className="px-4 pt-4 pb-20 max-w-lg mx-auto space-y-3.5 animate-fadeIn">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate("/")}
+            className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all text-slate-300"
+            aria-label="Back to Dashboard"
+          >
+            <ArrowLeft size={16} />
+          </button>
+          <div>
+            <h1 className="text-lg font-bold text-white tracking-tight">
+              Progress & History
+            </h1>
+            <p className="text-[11px] text-slate-400">
+              {totalSessions} sessions · {totalSets} logged sets
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-4 border border-slate-800">
-        {/* Month navigation */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={prevMonth}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            aria-label="Previous month"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <h2 className="text-sm font-bold text-white">
-            {currentDate.toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </h2>
-          <button
-            onClick={nextMonth}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            aria-label="Next month"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-
-        {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-            <div
-              key={d}
-              className="text-[10px] text-slate-500 text-center font-medium"
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
-          {calendarData.map((cell, i) =>
-            cell === null ? (
-              <div key={`empty-${i}`} className="aspect-square" />
-            ) : (
-              <button
-                key={cell.date}
-                onClick={() =>
-                  cell.sessions.length > 0 &&
-                  setSelectedSession(cell.sessions[0])
-                }
-                className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${
-                  cell.sessions.length > 0
-                    ? "bg-neon-blue/15 text-neon-blue font-bold hover:bg-neon-blue/25 cursor-pointer"
-                    : cell.isToday
-                      ? "bg-slate-800 text-white font-medium ring-1 ring-neon-blue/40"
-                      : "text-slate-500 hover:bg-slate-800/50"
-                }`}
-                disabled={cell.sessions.length === 0}
-                aria-label={`${cell.date}${cell.sessions.length > 0 ? `, ${cell.sessions.length} workout(s)` : ""}`}
-              >
-                <span>{cell.day}</span>
-                {cell.sessions.length > 0 && (
-                  <div className="absolute bottom-0.5 w-1.5 h-1.5 rounded-full bg-neon-blue" />
-                )}
-              </button>
-            ),
-          )}
-        </div>
-      </div>
-
-      {/* Selected Session Detail */}
-      {selectedSession && (
-        <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800 space-y-4 animate-fadeIn">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-white">
-                {selectedSession.programName}
-              </h3>
-              <p className="text-[11px] text-slate-500 flex items-center gap-2">
-                <Calendar size={10} />
-                {new Date(selectedSession.date).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
-                })}
-                {formatDuration(selectedSession) && (
-                  <>
-                    <Clock size={10} />
-                    {formatDuration(selectedSession)}
-                  </>
-                )}
-              </p>
-            </div>
+      {/* ── Segmented Tab Selector (Prevents Endless Scrolling) ── */}
+      <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+        {[
+          { id: "sessions", label: "Sessions", icon: List },
+          { id: "calendar", label: "Calendar", icon: Calendar },
+          { id: "angles", label: "Muscle Angles", icon: PieChart },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
             <button
-              onClick={() => setSelectedSession(null)}
-              className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-              aria-label="Close details"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                isActive
+                  ? "bg-neon-cyan text-bg-deep shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
             >
-              <X size={14} />
+              <Icon size={13} />
+              <span>{tab.label}</span>
             </button>
-          </div>
+          );
+        })}
+      </div>
 
-          {/* Exercises in that session */}
-          <div className="space-y-2">
-            {selectedSession.exercises.map((ex, i) => (
-              <div
-                key={i}
-                className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-white">
-                    {getExerciseName(ex.exerciseId)}
-                  </p>
-                  <span className="text-[10px] text-slate-500">
-                    {ex.sets.length} sets
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {ex.sets.map((set, si) => (
-                    <span
-                      key={si}
-                      className="text-[10px] bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full border border-slate-600/50"
-                    >
-                      {set.weight}kg × {set.reps}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Quick stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700/50">
-              <Dumbbell size={14} className="text-neon-blue mx-auto mb-1" />
-              <p className="text-sm font-bold text-white">
-                {selectedSession.exercises.length}
+      {/* ── TAB 1: SESSIONS LIST (FOCUSED & SCROLL-EFFICIENT) ── */}
+      {activeTab === "sessions" && (
+        <div className="space-y-2.5 animate-fadeIn">
+          {history.length === 0 ? (
+            <div className="text-center py-12 px-4 rounded-2xl glass-card border-dashed">
+              <Dumbbell size={24} className="mx-auto text-slate-600 mb-2" />
+              <p className="text-sm text-slate-300 font-medium">No workouts yet</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Complete your first workout to see records and receipts here.
               </p>
-              <p className="text-[10px] text-slate-500">Exercises</p>
             </div>
-            <div className="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700/50">
-              <TrendingUp size={14} className="text-neon-green mx-auto mb-1" />
-              <p className="text-sm font-bold text-white">
-                {selectedSession.exercises.reduce(
-                  (acc, e) => acc + e.sets.length,
-                  0,
-                )}
-              </p>
-              <p className="text-[10px] text-slate-500">Total Sets</p>
-            </div>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              {[...history]
+                .reverse()
+                .map((session) => (
+                  <div
+                    key={session.id}
+                    className="glass-card p-3 border border-border-slate hover:border-slate-700 transition-all rounded-xl"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-9 h-9 rounded-lg bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center shrink-0">
+                          <Dumbbell size={15} className="text-neon-blue" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-white truncate">
+                            {session.programName}
+                          </p>
+                          <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                            <span>
+                              {new Date(session.date).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                            <span>•</span>
+                            <span>{session.exercises.length} exercises</span>
+                            {formatDuration(session) && (
+                              <>
+                                <span>•</span>
+                                <span>{formatDuration(session)}</span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
 
-          <button
-            onClick={() => setReceiptSession(selectedSession)}
-            className="w-full bg-[#121824] hover:bg-[#1a2332] text-neon-cyan text-xs font-bold py-2.5 rounded-xl border border-neon-cyan/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-          >
-            <Share2 size={13} />
-            View Cyberpunk Receipt (.PNG)
-          </button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => setSelectedSession(session)}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-semibold text-slate-300 hover:text-white transition-colors"
+                        >
+                          Details
+                        </button>
+                        <button
+                          onClick={() => setReceiptSession(session)}
+                          className="p-1.5 rounded-lg bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 transition-colors"
+                          title="View Receipt"
+                          aria-label="View Receipt"
+                        >
+                          <Share2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Recent Sessions List */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800 space-y-3">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2">
-          <Clock size={14} className="text-slate-400" />
-          Recent Sessions
-        </h2>
-        {history.length === 0 ? (
-          <div className="text-center py-6">
-            <Dumbbell size={22} className="mx-auto text-slate-600 mb-2" />
-            <p className="text-xs text-slate-500">No workouts yet</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {[...history]
-              .reverse()
-              .slice(0, 10)
-              .map((session) => (
-                <button
-                  key={session.id}
-                  onClick={() => setSelectedSession(session)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/30 border border-slate-800 hover:border-slate-700 transition-all text-left active:scale-[0.98]"
+      {/* ── TAB 2: CALENDAR VIEW ── */}
+      {activeTab === "calendar" && (
+        <div className="space-y-3.5 animate-fadeIn">
+          <div className="glass-card p-3.5 border border-border-slate rounded-2xl">
+            {/* Month navigation */}
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={prevMonth}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                aria-label="Previous month"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <h2 className="text-xs font-bold text-white">
+                {currentDate.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </h2>
+              <button
+                onClick={nextMonth}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                aria-label="Next month"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+
+            {/* Day headers */}
+            <div className="grid grid-cols-7 gap-1 mb-1.5">
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                <div
+                  key={d}
+                  className="text-[9px] text-slate-500 text-center font-semibold"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-neon-blue/10 flex items-center justify-center">
-                      <Dumbbell size={16} className="text-neon-blue" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white">
-                        {session.programName}
-                      </p>
-                      <p className="text-[11px] text-slate-500 flex items-center gap-2">
-                        {new Date(session.date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                        <span>
-                          · {session.exercises.length} exercises
-                        </span>
-                        {formatDuration(session) && (
-                          <span>· {formatDuration(session)}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight
-                    size={16}
-                    className="text-slate-600 shrink-0"
-                  />
-                </button>
+                  {d}
+                </div>
               ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {calendarData.map((cell, i) =>
+                cell === null ? (
+                  <div key={`empty-${i}`} className="aspect-square" />
+                ) : (
+                  <button
+                    key={cell.date}
+                    onClick={() =>
+                      cell.sessions.length > 0 &&
+                      setSelectedSession(cell.sessions[0])
+                    }
+                    className={`aspect-square rounded-lg flex flex-col items-center justify-center text-[11px] transition-all relative ${
+                      cell.sessions.length > 0
+                        ? "bg-neon-cyan/20 text-neon-cyan font-bold hover:bg-neon-cyan/30 cursor-pointer"
+                        : cell.isToday
+                          ? "bg-slate-800 text-white font-medium ring-1 ring-neon-cyan/50"
+                          : "text-slate-500 hover:bg-slate-800/40"
+                    }`}
+                    disabled={cell.sessions.length === 0}
+                    aria-label={`${cell.date}${cell.sessions.length > 0 ? `, ${cell.sessions.length} workout(s)` : ""}`}
+                  >
+                    <span>{cell.day}</span>
+                    {cell.sessions.length > 0 && (
+                      <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-neon-cyan" />
+                    )}
+                  </button>
+                ),
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Biomechanical Angle Analysis */}
-      <AngleRadarChart />
+      {/* ── TAB 3: BIOMECHANICAL ANGLES ── */}
+      {activeTab === "angles" && (
+        <div className="space-y-3 animate-fadeIn">
+          <AngleRadarChart />
+        </div>
+      )}
 
-      {/* Shareable Receipt Modal */}
+      {/* ── Selected Session Modal ── */}
+      {selectedSession && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fadeIn"
+          onClick={() => setSelectedSession(null)}
+        >
+          <div
+            className="bg-slate-900 rounded-2xl w-full max-w-sm border border-slate-700 overflow-hidden shadow-2xl p-4 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div>
+                <h3 className="text-sm font-bold text-white">
+                  {selectedSession.programName}
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  {new Date(selectedSession.date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  {formatDuration(selectedSession) && ` • ${formatDuration(selectedSession)}`}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedSession(null)}
+                className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Exercises List */}
+            <div className="max-h-[50vh] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+              {selectedSession.exercises.map((ex, i) => (
+                <div
+                  key={i}
+                  className="bg-slate-800/60 rounded-xl p-2.5 border border-slate-700/50"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-xs font-semibold text-white">
+                      {getExerciseName(ex.exerciseId)}
+                    </p>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {ex.sets.length} sets
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {ex.sets.map((set, si) => (
+                      <span
+                        key={si}
+                        className="text-[10px] bg-slate-900 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700/50 font-mono"
+                      >
+                        {set.weight}kg × {set.reps}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => {
+                const s = selectedSession;
+                setSelectedSession(null);
+                setReceiptSession(s);
+              }}
+              className="w-full bg-neon-cyan text-bg-deep text-xs font-bold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] btn-press"
+            >
+              <Share2 size={13} />
+              View Workout Receipt
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Shareable Receipt Modal ── */}
       {receiptSession && (
         <WorkoutReceiptModal
           isOpen={Boolean(receiptSession)}
