@@ -1,7 +1,6 @@
 import { memo, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
-  Ghost,
   Check,
   Plus,
   Minus,
@@ -14,7 +13,6 @@ import {
   ChevronUp,
   ChevronDown,
   AlertTriangle,
-  Sparkles,
   PlayCircle,
   Activity,
 } from "lucide-react";
@@ -32,11 +30,11 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
   const toggleSetDone = useWorkoutStore((s) => s.toggleSetDone);
   const addSet = useWorkoutStore((s) => s.addSet);
   const removeSet = useWorkoutStore((s) => s.removeSet);
-  const personalRecords = useWorkoutStore((s) => s.personalRecords);
   const history = useWorkoutStore((s) => s.history);
   const exercises = useWorkoutStore((s) => s.exercises);
   const [showSwap, setShowSwap] = useState(false);
   const [showTechniqueModal, setShowTechniqueModal] = useState(false);
+  const [infoTab, setInfoTab] = useState("how");
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- exercises/history trigger re-computation
   const exercise = useMemo(() => getExerciseById(exerciseId), [getExerciseById, exerciseId, exercises]);
@@ -44,8 +42,6 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
   const ghostData = useMemo(() => getGhostData(exerciseId), [getGhostData, exerciseId, history]);
 
   if (!exercise) return null;
-
-  const pr = personalRecords[exerciseId];
 
   // Helper stepper adjustments
   const adjustWeight = (si, delta) => {
@@ -65,94 +61,91 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
   return (
     <>
       <div className="glass-card overflow-hidden shadow-xl shadow-black/40 border border-border-slate transition-all">
-        {/* Exercise Header */}
-        <div className="flex items-center gap-3.5 p-4 border-b border-border-slate/60 bg-bg-surface/60">
+        {/* Exercise overview */}
+        <div className="p-3.5 space-y-2.5 border-b border-border-slate/60 bg-bg-surface/60">
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-white truncate text-base tracking-tight">{exercise.name}</h3>
+              {exercise.nameAr && (
+                <p className="text-[11px] text-slate-400 font-medium truncate" dir="rtl">{exercise.nameAr}</p>
+              )}
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
+                  {exercise.muscle}
+                </span>
+                {exercise.targetAngle && <AngleBadge angle={exercise.targetAngle} size="sm" />}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSwap(true)}
+              className="w-9 h-9 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-400 active:scale-90 border border-slate-700/50 shrink-0"
+              aria-label={`Swap ${exercise.name} for another exercise`}
+              title="تبديل التمرين"
+            >
+              <ArrowLeftRight size={16} />
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setShowTechniqueModal(true)}
-            className="w-16 h-12 rounded-xl overflow-hidden bg-[#121824] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 transition-transform active:scale-95 border border-[#1E293B] shadow-md flex items-center justify-center relative group"
+            className="relative w-full aspect-[2/1] rounded-xl overflow-hidden bg-[#0B0F17] border border-border-slate flex items-center justify-center"
             aria-label={`View ${exercise.name} technique and anatomy`}
-            title="Click to view technique & anatomy"
           >
             <img
               src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
               alt={exercise.name}
-              className="w-full h-full rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 group-hover:scale-105 transition-transform"
+              className="w-full h-full object-contain"
               loading="lazy"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = getImageUrl("/icons/dumbbell.svg");
               }}
             />
-            <div className="absolute inset-0 bg-neon-cyan/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center">
-              <Sparkles size={14} className="text-neon-cyan drop-shadow" />
-            </div>
+            <span className="absolute right-2 top-2 rounded-md bg-bg-deep/85 px-2 py-1 text-[10px] font-semibold text-slate-300 border border-border-slate">
+              Form & Tips
+            </span>
           </button>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-white truncate text-[15px] tracking-tight">
-              {exercise.name}
-            </h3>
-            {exercise.nameAr && (
-              <p className="text-[11px] text-slate-400 font-medium truncate" dir="rtl">
-                {exercise.nameAr}
-              </p>
-            )}
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
-                {exercise.muscle}
-              </span>
-              {exercise.targetAngle && (
-                <AngleBadge angle={exercise.targetAngle} size="sm" />
-              )}
-              {pr && (
-                <span className="text-[10px] text-amber-accent font-bold flex items-center gap-1 bg-amber-accent/10 px-2 py-0.5 rounded-md border border-amber-accent/20">
-                  🏆 {pr} kg
-                </span>
-              )}
-            </div>
+
+          <div className="grid grid-cols-2 rounded-lg overflow-hidden border border-border-slate">
+            <button
+              type="button"
+              onClick={() => setInfoTab("how")}
+              className={`py-1.5 text-[11px] font-bold transition-colors ${infoTab === "how" ? "bg-neon-green text-bg-deep" : "bg-slate-900/70 text-slate-400"}`}
+            >
+              How to do it
+            </button>
+            <button
+              type="button"
+              onClick={() => setInfoTab("muscles")}
+              className={`py-1.5 text-[11px] font-bold transition-colors ${infoTab === "muscles" ? "bg-neon-green text-bg-deep" : "bg-slate-900/70 text-slate-400"}`}
+            >
+              Muscles
+            </button>
           </div>
-          {/* Swap button */}
-          <button
-            type="button"
-            onClick={() => setShowSwap(true)}
-            className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-neon-cyan/15 hover:text-neon-cyan text-slate-400 transition-all active:scale-90 border border-slate-700/50 shrink-0"
-            aria-label={`Swap ${exercise.name} for another exercise`}
-            title="تبديل التمرين"
-          >
-            <ArrowLeftRight size={17} />
-          </button>
+
+          <div className="min-h-8 text-[11px] leading-relaxed text-slate-400">
+            {infoTab === "how" ? (
+              <p>{exercise.tips || exercise.setupAlignment || "Control the movement and keep the target muscle engaged throughout every repetition."}</p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                <span className="text-neon-cyan font-semibold">{exercise.primaryTarget || exercise.muscle}</span>
+                {(exercise.secondaryMuscles || []).map((muscle) => (
+                  <span key={muscle} className="rounded-md bg-slate-800 px-2 py-0.5 text-slate-300">{muscle}</span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Ghost Replay Banner */}
-        {ghostData && (
-          <div className="px-4 py-2 bg-vivid-purple/8 border-b border-border-slate/50 flex items-center gap-2">
-            <Ghost size={14} className="text-vivid-purple shrink-0" />
-            <div className="text-xs text-slate-300 flex-1 truncate">
-              <span className="text-vivid-purple font-semibold">
-                Previous ({ghostData.date}):{" "}
-              </span>
-              {ghostData.sets.map((s, i) => (
-                <span key={i} className="text-slate-400 font-mono">
-                  {i > 0 && " | "}
-                  <strong className="text-slate-200">{s.weight}</strong>kg × <strong className="text-slate-200">{s.reps}</strong>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Technique & Anatomy Bar (1-Click Micro Modal) */}
-        <div className="px-4 py-2 bg-bg-deep/40 border-b border-border-slate/40 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setShowTechniqueModal(true)}
-            className="flex items-center gap-1.5 text-xs text-neon-cyan hover:text-white font-medium transition-colors"
-          >
-            <Activity size={13} className="text-neon-cyan shrink-0" />
-            <span>Technique & Anatomy / تفاصيل الأداء</span>
-          </button>
-          <span className="text-[10px] text-slate-500 font-mono">
-            {exercise.category || "Exercise"}
+        {/* Previous performance */}
+        <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border-slate/50 bg-bg-deep/40 text-[10px]">
+          <span className="text-slate-500">Previous Performance</span>
+          <span className="text-slate-300 font-mono truncate">
+            {ghostData
+              ? ghostData.sets.map((s) => `${s.weight || 0} kg × ${s.reps || 0} reps`).join("  ·  ")
+              : "No previous performance"}
           </span>
         </div>
 
@@ -190,7 +183,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               </div>
 
               {/* Weight Input + Steppers */}
-              <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 focus-within:border-neon-cyan/60 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
+              <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 overflow-hidden h-10 px-1">
                 <input
                   type="text"
                   inputMode="decimal"
@@ -207,7 +200,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     <button
                       type="button"
                       onClick={() => adjustWeight(si, 2.5)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="text-slate-500 p-0.5"
                       title="+2.5 kg"
                     >
                       <ChevronUp size={10} />
@@ -215,7 +208,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     <button
                       type="button"
                       onClick={() => adjustWeight(si, -2.5)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="text-slate-500 p-0.5"
                       title="-2.5 kg"
                     >
                       <ChevronDown size={10} />
@@ -225,7 +218,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               </div>
 
               {/* Reps Input + Steppers */}
-              <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 focus-within:border-neon-cyan/60 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
+              <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 overflow-hidden h-10 px-1">
                 <input
                   type="text"
                   inputMode="numeric"

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   X,
   Clock,
@@ -40,7 +41,6 @@ export default function ActiveWorkout() {
   const [swapTargetAngle, setSwapTargetAngle] = useState(null);
   const [showAngleSwapModal, setShowAngleSwapModal] = useState(false);
   const timerRef = useRef(null);
-  const activePillRef = useRef(null);
 
   // Live elapsed timer
   useEffect(() => {
@@ -54,16 +54,19 @@ export default function ActiveWorkout() {
     return () => clearInterval(timerRef.current);
   }, [activeWorkout]);
 
-  // Ensure active pill stays centered in horizontal carousel
+  // Move forward as soon as the current exercise is fully completed.
   useEffect(() => {
-    if (activePillRef.current) {
-      activePillRef.current.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
-    }
-  }, [currentIndex]);
+    if (!activeWorkout) return;
+    const currentExercise = activeWorkout.exercises[currentIndex];
+    if (!currentExercise || currentExercise.sets.length === 0) return;
+    if (!currentExercise.sets.every((set) => set.done)) return;
+    if (currentIndex >= activeWorkout.exercises.length - 1) return;
+
+    const timeout = setTimeout(() => {
+      setCurrentIndex((index) => Math.min(activeWorkout.exercises.length - 1, index + 1));
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [activeWorkout, currentIndex]);
 
   const progress = useMemo(() => {
     if (!activeWorkout) return { totalSets: 0, doneSets: 0, percent: 0 };
@@ -163,13 +166,6 @@ export default function ActiveWorkout() {
       navigator.vibrate?.(50);
       haptics.light();
 
-      // Check if all sets for this exercise are now done
-      const remaining = currentExercise.sets.filter((s, idx) => !s.done && idx !== si);
-      if (remaining.length === 0 && currentIndex < totalExercises - 1) {
-        setTimeout(() => {
-          setCurrentIndex((i) => Math.min(totalExercises - 1, i + 1));
-        }, 350);
-      }
     } else {
       if (currentIndex < totalExercises - 1) {
         setCurrentIndex((i) => i + 1);
@@ -246,42 +242,38 @@ export default function ActiveWorkout() {
         />
       </div>
 
-      {/* ═══ HORIZONTAL SWIPEABLE EXERCISE PILL CAROUSEL ═══ */}
-      <div className="shrink-0 px-3 py-1.5 overflow-x-auto no-scrollbar flex items-center gap-1.5 border-b border-border-slate/40 bg-bg-surface/30 snap-x">
-        {activeWorkout.exercises.map((exData, i) => {
-          const exInfo = exercises.find((e) => e.id === exData.exerciseId);
-          const allDone = exData.sets.length > 0 && exData.sets.every((s) => s.done);
-          const isCurrent = i === currentIndex;
-          const someDone = exData.sets.some((s) => s.done);
+      {/* ═══ EXERCISE ARROW NAVIGATION ═══ */}
+      <div className="shrink-0 border-b border-border-slate/40 bg-bg-surface/30 px-3 py-2">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
+            disabled={currentIndex === 0}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/70 text-slate-300 disabled:cursor-not-allowed disabled:opacity-25"
+            aria-label="Previous exercise"
+          >
+            <ArrowLeft size={18} />
+          </button>
 
-          return (
-            <button
-              key={i}
-              ref={isCurrent ? activePillRef : null}
-              type="button"
-              onClick={() => setCurrentIndex(i)}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold shrink-0 transition-colors active:scale-95 border snap-start ${
-                isCurrent
-                  ? "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/50 shadow-[0_0_10px_rgba(0,240,255,0.2)]"
-                  : allDone
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                    : someDone
-                      ? "bg-slate-800 text-slate-200 border-slate-700"
-                      : "bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200"
-              }`}
-            >
-              <span className="font-mono text-[10px] opacity-70">{i + 1}.</span>
-              <span className="max-w-[100px] truncate">{exInfo?.name || "Exercise"}</span>
-              {allDone ? (
-                <Check size={11} className="text-emerald-400 shrink-0" strokeWidth={3} />
-              ) : (
-                <span className="text-[10px] opacity-60 font-mono shrink-0">
-                  {exData.sets.filter((s) => s.done).length}/{exData.sets.length}
-                </span>
-              )}
-            </button>
-          );
-        })}
+          <div className="min-w-0 flex-1 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+              Exercise {currentIndex + 1} of {totalExercises}
+            </p>
+            <p className="truncate text-sm font-bold text-white">
+              {exercises.find((exercise) => exercise.id === currentExercise?.exerciseId)?.name || "Exercise"}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCurrentIndex((index) => Math.min(totalExercises - 1, index + 1))}
+            disabled={currentIndex >= totalExercises - 1}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/70 text-slate-300 disabled:cursor-not-allowed disabled:opacity-25"
+            aria-label="Next exercise"
+          >
+            <ArrowRight size={18} />
+          </button>
+        </div>
       </div>
 
       {/* ═══ CENTER WORKOUT EXECUTION AREA (Zero Scroll Optimized) ═══ */}
