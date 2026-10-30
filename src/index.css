@@ -2,22 +2,33 @@
 
 /* ── Custom theme overrides ── */
 @theme {
-  /* Existing neon accents */
-  --color-neon-green: #39ff14;
-  --color-neon-blue: #00d4ff;
-  --color-neon-purple: #b347d9;
-  --color-surface: #0f172a;
-  --color-surface-light: #1e293b;
-  --color-surface-lighter: #334155;
+  /* Reference Design Tokens: Calm, athletic, refined dark palette */
+  --color-bg-deep: #0D1723;
+  --color-bg-surface: #142332;
+  --color-bg-elevated: #192C3C;
+  --color-border-slate: #223348;
+  --color-border-subtle: #1C2B3B;
 
-  /* New cyberpunk dark-neon palette */
-  --color-bg-deep: #0B0F17;
-  --color-bg-surface: #121824;
-  --color-border-slate: #1E293B;
-  --color-neon-cyan: #00F0FF;
-  --color-neon-emerald: #10B981;
+  /* Primary Accent: Restrained athletic lime green */
+  --color-neon-green: #C4E58A;
+  --color-brand-green: #C4E58A;
+  --color-brand-green-hover: #B3D875;
+  --color-brand-green-dark: #0D1723;
+
+  /* Secondary Accent: Soft athletic teal */
+  --color-brand-teal: #73C8B4;
+  --color-neon-cyan: #73C8B4;
+  --color-neon-blue: #73C8B4;
+  --color-neon-emerald: #C4E58A;
   --color-amber-accent: #F59E0B;
-  --color-vivid-purple: #A855F7;
+  --color-vivid-purple: #9D85C5;
+
+  /* Text & Surfaces */
+  --color-text-primary: #F1F5F7;
+  --color-text-secondary: #8E9FA5;
+  --color-surface: #142332;
+  --color-surface-light: #192C3C;
+  --color-surface-lighter: #223348;
 }
 
 /* ── Global resets ── */
@@ -36,6 +47,54 @@ body {
     -apple-system,
     sans-serif;
   overscroll-behavior-y: contain;
+  overflow-x: hidden;
+  background: #0D1723;
+  color: #F1F5F7;
+}
+
+button,
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
+
+.page-shell {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+
+.app-main {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+.app-main-active {
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.app-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 768px) {
+  .page-shell {
+    padding-inline: clamp(1.5rem, 4vw, 3rem);
+  }
+}
+
+@media (min-width: 1280px) {
+  .page-shell {
+    max-width: 80rem;
+  }
 }
 
 /* ── Scrollbar styling ── */
@@ -43,11 +102,11 @@ body {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0F17;
+  background: #0D1723;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 4px;
+  background: #223348;
+border-radius: 4px;
 }
 
 /* ── Number input spinner removal ── */
@@ -168,6 +227,15 @@ input[type="number"] {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
