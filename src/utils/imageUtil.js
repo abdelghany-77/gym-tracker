@@ -1,8 +1,17 @@
+import { exercisesDatabase } from "../data/exercises";
+
+const builtInExercises = new Map(
+  exercisesDatabase.map((exercise) => [exercise.id, exercise]),
+);
+
 /**
  * Resolves the correct path for images, accounting for the Vite base path.
  * The base path should be set in vite.config.js (e.g., "/gym-tracker/")
  */
 export const getImageUrl = (path) => {
+  // An unavailable image must not become an empty src or a guessed exercise URL.
+  if (typeof path !== "string" || !path.trim()) return undefined;
+
   // If the path is already an absolute URL or data URI, return it
   if (path.startsWith("http") || path.startsWith("data:")) return path;
 
@@ -18,4 +27,12 @@ export const getImageUrl = (path) => {
   // Combine base and path
   // Base usually ends with slash if configured in vite.config.js
   return `${base}${cleanPath}`;
+};
+
+/** Persisted built-ins cannot override the current catalog's audited image decision. */
+export const getExerciseImageUrl = (exercise) => {
+  if (!exercise) return undefined;
+  const currentExercise = builtInExercises.get(exercise.id) || exercise;
+  if (currentExercise.imageStatus === "unavailable") return undefined;
+  return getImageUrl(currentExercise.image);
 };

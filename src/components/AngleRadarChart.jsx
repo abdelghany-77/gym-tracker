@@ -1,5 +1,12 @@
 import { useState, useMemo } from "react";
-import { AlertTriangle, CheckCircle2, Sparkles, Layers, Crosshair, Dumbbell } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Sparkles,
+  Layers,
+  Crosshair,
+  Dumbbell,
+} from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { exercisesDatabase } from "../data/exercises";
 import { getAngleLabel } from "../utils/angleUtils";
@@ -25,7 +32,13 @@ const MUSCLE_ANGLES = {
     "lower_back_posterior",
   ],
   shoulders: ["anterior_delt", "lateral_delt", "posterior_delt", "upper_traps"],
-  legs: ["quad_compound", "quad_isolation", "hamstring_hinge", "hamstring_curl", "calves"],
+  legs: [
+    "quad_compound",
+    "quad_isolation",
+    "hamstring_hinge",
+    "hamstring_curl",
+    "calves",
+  ],
   arms: [
     "bicep_short_head",
     "bicep_long_head",
@@ -36,7 +49,7 @@ const MUSCLE_ANGLES = {
   core: ["core_abs"],
 };
 
-export default function AngleRadarChart() {
+export default function AngleRadarChart({ showRecommendations = true }) {
   const history = useWorkoutStore((s) => s.history);
   const storeExercises = useWorkoutStore((s) => s.exercises);
 
@@ -56,55 +69,58 @@ export default function AngleRadarChart() {
   }, [storeExercises]);
 
   // Aggregate logged sets over the last 30 days and last 14 days
-  const { setsLast30ByAngle, setsLast14ByAngle, setsLast30ByMuscle } = useMemo(() => {
-    const ms30Days = 30 * 24 * 60 * 60 * 1000;
-    const ms14Days = 14 * 24 * 60 * 60 * 1000;
+  const { setsLast30ByAngle, setsLast14ByAngle, setsLast30ByMuscle } =
+    useMemo(() => {
+      const ms30Days = 30 * 24 * 60 * 60 * 1000;
+      const ms14Days = 14 * 24 * 60 * 60 * 1000;
 
-    const last30 = {};
-    const last14 = {};
-    const muscle30 = {
-      chest: 0,
-      back: 0,
-      shoulders: 0,
-      legs: 0,
-      arms: 0,
-      core: 0,
-    };
+      const last30 = {};
+      const last14 = {};
+      const muscle30 = {
+        chest: 0,
+        back: 0,
+        shoulders: 0,
+        legs: 0,
+        arms: 0,
+        core: 0,
+      };
 
-    history.forEach((session) => {
-      const sessionTime = new Date(session.date || session.startedAt).getTime();
-      const in30 = referenceTime - sessionTime <= ms30Days;
-      const in14 = referenceTime - sessionTime <= ms14Days;
+      history.forEach((session) => {
+        const sessionTime = new Date(
+          session.date || session.startedAt,
+        ).getTime();
+        const in30 = referenceTime - sessionTime <= ms30Days;
+        const in14 = referenceTime - sessionTime <= ms14Days;
 
-      if (!in30 && !in14) return;
+        if (!in30 && !in14) return;
 
-      (session.exercises || []).forEach((exEntry) => {
-        const setsCount = (exEntry.sets || []).length;
-        if (!setsCount) return;
+        (session.exercises || []).forEach((exEntry) => {
+          const setsCount = (exEntry.sets || []).length;
+          if (!setsCount) return;
 
-        const exDef = exerciseCatalog.get(exEntry.exerciseId);
-        if (!exDef) return;
+          const exDef = exerciseCatalog.get(exEntry.exerciseId);
+          if (!exDef) return;
 
-        const angle = exDef.targetAngle;
-        const muscle = exDef.primaryMuscle || exDef.muscle?.toLowerCase();
+          const angle = exDef.targetAngle;
+          const muscle = exDef.primaryMuscle || exDef.muscle?.toLowerCase();
 
-        if (angle) {
-          if (in30) last30[angle] = (last30[angle] || 0) + setsCount;
-          if (in14) last14[angle] = (last14[angle] || 0) + setsCount;
-        }
+          if (angle) {
+            if (in30) last30[angle] = (last30[angle] || 0) + setsCount;
+            if (in14) last14[angle] = (last14[angle] || 0) + setsCount;
+          }
 
-        if (muscle && muscle30[muscle] !== undefined) {
-          if (in30) muscle30[muscle] += setsCount;
-        }
+          if (muscle && muscle30[muscle] !== undefined) {
+            if (in30) muscle30[muscle] += setsCount;
+          }
+        });
       });
-    });
 
-    return {
-      setsLast30ByAngle: last30,
-      setsLast14ByAngle: last14,
-      setsLast30ByMuscle: muscle30,
-    };
-  }, [history, exerciseCatalog, referenceTime]);
+      return {
+        setsLast30ByAngle: last30,
+        setsLast14ByAngle: last14,
+        setsLast30ByMuscle: muscle30,
+      };
+    }, [history, exerciseCatalog, referenceTime]);
 
   // Determine neglected angles (< 3 sets in the last 14 days)
   const neglectedAngles = useMemo(() => {
@@ -170,7 +186,13 @@ export default function AngleRadarChart() {
         };
       });
     }
-  }, [viewMode, selectedMuscle, setsLast30ByMuscle, setsLast30ByAngle, setsLast14ByAngle]);
+  }, [
+    viewMode,
+    selectedMuscle,
+    setsLast30ByMuscle,
+    setsLast30ByAngle,
+    setsLast14ByAngle,
+  ]);
 
   const numAxes = chartAxes.length;
   const maxVal = Math.max(...chartAxes.map((a) => a.value), 10);
@@ -290,7 +312,13 @@ export default function AngleRadarChart() {
           className="w-full max-w-[340px] h-auto overflow-visible select-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
         >
           <defs>
-            <linearGradient id="radarNeonFill" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id="radarNeonFill"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#10B981" stopOpacity="0.15" />
             </linearGradient>
@@ -426,12 +454,21 @@ export default function AngleRadarChart() {
                     )}
                   </p>
                   <p className="text-slate-400 text-[11px]">
-                    30-Day Total: <span className="text-[#00F0FF] font-semibold">{item.value} sets</span>
+                    30-Day Total:{" "}
+                    <span className="text-[#00F0FF] font-semibold">
+                      {item.value} sets
+                    </span>
                   </p>
                   {item.sets14 !== null && (
                     <p className="text-slate-400 text-[11px]">
                       14-Day Velocity:{" "}
-                      <span className={item.sets14 < 3 ? "text-[#F59E0B] font-semibold" : "text-[#10B981] font-semibold"}>
+                      <span
+                        className={
+                          item.sets14 < 3
+                            ? "text-[#F59E0B] font-semibold"
+                            : "text-[#10B981] font-semibold"
+                        }
+                      >
                         {item.sets14} sets
                       </span>
                     </p>
@@ -444,91 +481,98 @@ export default function AngleRadarChart() {
       </div>
 
       {/* ── Neglected Angles Audit & Prescription Section ── */}
-      <div className="border-t border-slate-800/80 pt-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            {neglectedAngles.length > 0 ? (
-              <>
-                <AlertTriangle size={14} className="text-[#F59E0B]" />
-                Neglected Biomechanical Angles (&lt; 3 sets in 14d)
-              </>
-            ) : (
-              <>
-                <CheckCircle2 size={14} className="text-[#10B981]" />
-                Biomechanical Balance Status
-              </>
-            )}
-          </h3>
-          <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-              neglectedAngles.length > 0
-                ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30"
-                : "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/30"
-            }`}
-          >
-            {neglectedAngles.length > 0
-              ? `${neglectedAngles.length} Under-Trained`
-              : "100% Complete"}
-          </span>
-        </div>
-
-        {neglectedAngles.length === 0 ? (
-          <div className="bg-[#10B981]/10 border border-[#10B981]/25 rounded-2xl p-3.5 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#10B981]/20 flex items-center justify-center shrink-0">
-              <Sparkles size={16} className="text-[#10B981]" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-white">Full Biomechanical Angle Coverage!</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Every muscle angle has received optimal progressive overload in the last 14 days. Zero weak links detected.
-              </p>
-            </div>
+      {showRecommendations && (
+        <div className="border-t border-slate-800/80 pt-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              {neglectedAngles.length > 0 ? (
+                <>
+                  <AlertTriangle size={14} className="text-[#F59E0B]" />
+                  Neglected Biomechanical Angles (&lt; 3 sets in 14d)
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={14} className="text-[#10B981]" />
+                  Biomechanical Balance Status
+                </>
+              )}
+            </h3>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                neglectedAngles.length > 0
+                  ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30"
+                  : "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/30"
+              }`}
+            >
+              {neglectedAngles.length > 0
+                ? `${neglectedAngles.length} Under-Trained`
+                : "100% Complete"}
+            </span>
           </div>
-        ) : (
-          <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-            {neglectedAngles.map(({ angle, label, sets14, recommendation }) => (
-              <div
-                key={angle}
-                className="bg-[#121824] rounded-2xl p-3 border border-slate-800 hover:border-[#F59E0B]/40 transition-all flex items-center justify-between gap-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30">
-                      <AlertTriangle size={10} />
-                      {label}
-                    </span>
-                    <span className="text-[10px] text-slate-500">
-                      {sets14} sets logged in 14d
-                    </span>
-                  </div>
 
-                  {recommendation && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-xs font-semibold text-slate-200 truncate">
-                        Prescription: {recommendation.name}
-                      </p>
-                      <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
-                        {recommendation.equipment}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {recommendation && (
-                  <div className="shrink-0">
-                    <span
-                      title={recommendation.tips}
-                      className="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-[#F59E0B]/10 border border-slate-700 hover:border-[#F59E0B]/30 flex items-center justify-center text-slate-400 hover:text-[#F59E0B] transition-colors"
-                    >
-                      <Dumbbell size={14} />
-                    </span>
-                  </div>
-                )}
+          {neglectedAngles.length === 0 ? (
+            <div className="bg-[#10B981]/10 border border-[#10B981]/25 rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#10B981]/20 flex items-center justify-center shrink-0">
+                <Sparkles size={16} className="text-[#10B981]" />
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <div>
+                <p className="text-xs font-bold text-white">
+                  Full Biomechanical Angle Coverage!
+                </p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Every muscle angle has received optimal progressive overload
+                  in the last 14 days. Zero weak links detected.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+              {neglectedAngles.map(
+                ({ angle, label, sets14, recommendation }) => (
+                  <div
+                    key={angle}
+                    className="bg-[#121824] rounded-2xl p-3 border border-slate-800 hover:border-[#F59E0B]/40 transition-all flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30">
+                          <AlertTriangle size={10} />
+                          {label}
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          {sets14} sets logged in 14d
+                        </span>
+                      </div>
+
+                      {recommendation && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs font-semibold text-slate-200 truncate">
+                            Prescription: {recommendation.name}
+                          </p>
+                          <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
+                            {recommendation.equipment}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {recommendation && (
+                      <div className="shrink-0">
+                        <span
+                          title={recommendation.tips}
+                          className="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-[#F59E0B]/10 border border-slate-700 hover:border-[#F59E0B]/30 flex items-center justify-center text-slate-400 hover:text-[#F59E0B] transition-colors"
+                        >
+                          <Dumbbell size={14} />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ),
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

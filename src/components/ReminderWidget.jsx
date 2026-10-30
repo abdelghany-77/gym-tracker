@@ -1,11 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  Droplets,
-  Plus,
-  Minus,
-  Pill,
-  Sparkles,
-} from "lucide-react";
+import { Droplets, Plus, Minus, Pill, Sparkles } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { haptics } from "../utils/haptics";
 
@@ -15,7 +9,7 @@ export default function ReminderWidget() {
   const decrementWater = useWorkoutStore((s) => s.decrementWater);
   const userWeight = useWorkoutStore((s) => s.userProfile?.weight);
   const waterGoal = useMemo(() => {
-    if (!userWeight) return 8;
+    if (!Number.isFinite(userWeight) || userWeight <= 0) return 8;
     return Math.ceil((userWeight * 33) / 250);
   }, [userWeight]);
   const toggleChecklistItem = useWorkoutStore((s) => s.toggleChecklistItem);
@@ -106,7 +100,15 @@ export default function ReminderWidget() {
                       : "Done!"}
                   </span>
                 </div>
-                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  role="progressbar"
+                  aria-label="Water intake"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(waterPercent)}
+                  aria-valuetext={`${waterCount} of ${waterGoal} cups`}
+                  className="h-2 bg-slate-800 rounded-full overflow-hidden"
+                >
                   <div
                     className={`h-full rounded-full transition-all duration-700 ease-out animate-fillProgress ${
                       waterComplete
@@ -154,6 +156,7 @@ export default function ReminderWidget() {
             ? "border-emerald-500/30 bg-emerald-500/5"
             : "border-slate-800 hover:border-slate-700"
         }`}
+        aria-pressed={vitaminTaken}
         aria-label={
           vitaminTaken
             ? "Unmark multivitamins as taken"

@@ -1,7 +1,15 @@
 import { useState, useMemo } from "react";
-import { X, ArrowLeftRight, Search, Dumbbell, Filter, ChevronDown, Check } from "lucide-react";
+import {
+  X,
+  ArrowLeftRight,
+  Search,
+  Dumbbell,
+  Filter,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import { getImageUrl } from "../utils/imageUtil";
+import ExerciseImage from "./ExerciseImage";
 import { getAngleLabel } from "../utils/angleUtils";
 import AngleBadge from "./AngleBadge";
 
@@ -24,7 +32,10 @@ export default function SwapExerciseModal({
   }, [isOpen, getExerciseById, currentExerciseId]);
 
   const targetAngle = filterAngle || currentExercise?.targetAngle || "";
-  const targetMuscle = currentExercise?.primaryMuscle || currentExercise?.muscle?.toLowerCase() || "";
+  const targetMuscle =
+    currentExercise?.primaryMuscle ||
+    currentExercise?.muscle?.toLowerCase() ||
+    "";
 
   // Filter: by default only same targetAngle when filterAngle is present, or same primaryMuscle + angle
   const alternatives = useMemo(() => {
@@ -37,7 +48,8 @@ export default function SwapExerciseModal({
       } else {
         const exMuscle = ex.primaryMuscle || ex.muscle?.toLowerCase() || "";
         if (exMuscle !== targetMuscle) return false;
-        if (!showAllMuscle && targetAngle && ex.targetAngle !== targetAngle) return false;
+        if (!showAllMuscle && targetAngle && ex.targetAngle !== targetAngle)
+          return false;
       }
 
       if (search) {
@@ -49,7 +61,16 @@ export default function SwapExerciseModal({
       }
       return true;
     });
-  }, [exercises, currentExerciseId, targetMuscle, targetAngle, showAllMuscle, search, isOpen, filterAngle]);
+  }, [
+    exercises,
+    currentExerciseId,
+    targetMuscle,
+    targetAngle,
+    showAllMuscle,
+    search,
+    isOpen,
+    filterAngle,
+  ]);
 
   if (!isOpen) return null;
 
@@ -63,11 +84,11 @@ export default function SwapExerciseModal({
   const angleLabel = getAngleLabel(targetAngle);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-200"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-bg-surface w-full max-w-lg max-h-[85vh] sm:max-h-[80vh] flex flex-col rounded-t-3xl sm:rounded-2xl border-t sm:border border-border-slate shadow-2xl shadow-black/80 animate-slideUp overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -84,8 +105,12 @@ export default function SwapExerciseModal({
               <h3 className="text-base font-bold text-white tracking-tight">
                 {filterAngle ? "Missing Angle Candidates" : "تبديل التمرين"}
               </h3>
-              <p className={`text-[11px] font-medium ${filterAngle ? "text-amber-400" : "text-slate-400"}`}>
-                {filterAngle ? `Targeting: ${angleLabel.en} (${angleLabel.ar})` : "Smart Angle-Matched Swap"}
+              <p
+                className={`text-[11px] font-medium ${filterAngle ? "text-amber-400" : "text-slate-400"}`}
+              >
+                {filterAngle
+                  ? `Targeting: ${angleLabel.en} (${angleLabel.ar})`
+                  : "Smart Angle-Matched Swap"}
               </p>
             </div>
           </div>
@@ -105,17 +130,11 @@ export default function SwapExerciseModal({
               Replacing Current Exercise
             </p>
             <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-border-slate">
-              <div className="w-11 h-11 rounded-lg overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] flex items-center justify-center p-1">
-                <img
-                  src={getImageUrl(currentExercise.image || `/exercises/${currentExercise.id}.png`)}
-                  alt=""
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = getImageUrl("/icons/dumbbell.svg");
-                  }}
-                />
-              </div>
+              <ExerciseImage
+                exercise={currentExercise}
+                className="w-11 h-11 rounded-lg object-contain bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1"
+                compact
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white truncate">
                   {currentExercise.name}
@@ -126,7 +145,9 @@ export default function SwapExerciseModal({
                   </p>
                 )}
               </div>
-              {currentExercise.targetAngle && <AngleBadge angle={currentExercise.targetAngle} />}
+              {currentExercise.targetAngle && (
+                <AngleBadge angle={currentExercise.targetAngle} />
+              )}
             </div>
           </div>
         )}
@@ -168,7 +189,8 @@ export default function SwapExerciseModal({
                 />
               </button>
               <span className="text-[11px] text-slate-500 font-mono">
-                {alternatives.length} match{alternatives.length === 1 ? "" : "es"}
+                {alternatives.length} match
+                {alternatives.length === 1 ? "" : "es"}
               </span>
             </div>
           )}
@@ -198,24 +220,20 @@ export default function SwapExerciseModal({
                 onClick={() => handleSelect(ex.id)}
                 className="w-full flex items-center gap-3.5 p-3 rounded-2xl glass-card glass-card-hover text-left active:scale-[0.98] transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1 flex items-center justify-center">
-                  <img
-                    src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
-                    alt={ex.name}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = getImageUrl("/icons/dumbbell.svg");
-                    }}
-                  />
-                </div>
+                <ExerciseImage
+                  exercise={ex}
+                  className="w-12 h-12 rounded-xl object-contain bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1 group-hover:scale-105 transition-transform"
+                  compact
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate group-hover:text-neon-cyan transition-colors">
                     {ex.name}
                   </p>
                   {ex.nameAr && (
-                    <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                    <p
+                      className="text-[11px] text-slate-400 truncate"
+                      dir="rtl"
+                    >
                       {ex.nameAr}
                     </p>
                   )}
@@ -226,7 +244,9 @@ export default function SwapExerciseModal({
                   )}
                 </div>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  {ex.targetAngle && <AngleBadge angle={ex.targetAngle} size="sm" />}
+                  {ex.targetAngle && (
+                    <AngleBadge angle={ex.targetAngle} size="sm" />
+                  )}
                   <span className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">
                     {ex.category}
                   </span>

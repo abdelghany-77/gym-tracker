@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════════════════════════════
 
 // Human-readable labels for target angles (EN + AR)
-import { exerciseBiomechanics } from "./biomechanicsData";
+import { exerciseBiomechanics } from "./biomechanicsData.js";
 
 export const angleLabels = {
   // Back
@@ -529,7 +529,8 @@ const baseExercisesDatabase = [
     defaultReps: 15,
     default_sets: 3,
     default_reps: 15,
-    image: "/exercises/sh_cable_lateral_raise.png",
+    image: null,
+    imageUnavailableReason: "Existing picture shows a seated bent-over rear-delt raise, not the described standing lateral raise with cable behind the legs.",
     tips: "Cable set at low pulley height behind legs. Delivers continuous lateral delt tension throughout.",
   },
   {
@@ -545,7 +546,8 @@ const baseExercisesDatabase = [
     defaultReps: 15,
     default_sets: 3,
     default_reps: 15,
-    image: "/exercises/sh_machine_lateral_raise.png",
+    image: null,
+    imageUnavailableReason: "Existing picture uses dumbbells, not a lateral-raise machine with forearm pads.",
     tips: "Rest forearms on lever pads. Raise up to parallel with shoulders for strict lateral delt isolation.",
   },
   {
@@ -593,7 +595,8 @@ const baseExercisesDatabase = [
     defaultReps: 15,
     default_sets: 3,
     default_reps: 15,
-    image: "/exercises/sh_cable_rear_delt_fly.png",
+    image: null,
+    imageUnavailableReason: "Available source demonstrates an overhead-pulley variant, not the described chest-height cable setup.",
     tips: "Cross cables at chest height without attachments. Open arms wide to isolate rear delts.",
   },
   {
@@ -725,7 +728,8 @@ const baseExercisesDatabase = [
     defaultReps: 12,
     default_sets: 3,
     default_reps: 12,
-    image: "/exercises/leg_walking_lunges.png",
+    image: null,
+    imageUnavailableReason: "Source demonstrates a forward lunge returning to the starting position, not walking lunges.",
     tips: "Step forward into deep lunge, keeping front knee behind toe line and torso upright.",
   },
   {
@@ -757,7 +761,8 @@ const baseExercisesDatabase = [
     defaultReps: 10,
     default_sets: 3,
     default_reps: 10,
-    image: "/exercises/leg_db_rdl.png",
+    image: null,
+    imageUnavailableReason: "Existing picture uses a barbell. The dumbbell candidate is labeled stiff-legged deadlift; an exact dumbbell Romanian deadlift was not established.",
     tips: "Hold dumbbells close to thighs. Push glutes backward with straight neutral spine.",
   },
   {
@@ -1101,7 +1106,8 @@ const baseExercisesDatabase = [
     defaultReps: 60,
     default_sets: 3,
     default_reps: 60,
-    image: "/exercises/core_weighted_plank.png",
+    image: null,
+    imageUnavailableReason: "Existing picture is a kneeling plate exercise, not a plank with a plate on the back.",
     tips: "Maintain a rigid plank line with plate on back. Contract glutes, quads, and abs.",
   },
   {
@@ -1117,7 +1123,8 @@ const baseExercisesDatabase = [
     defaultReps: 45,
     default_sets: 3,
     default_reps: 45,
-    image: "/exercises/core_side_plank.png",
+    image: null,
+    imageUnavailableReason: "Existing picture and replacement candidate show bent-knee side bridges, not the described straight-leg side plank on the side of the foot.",
     tips: "Prop up on one elbow and side of foot. Hold straight alignment to target obliques and QL.",
   },
   {
@@ -1149,7 +1156,8 @@ const baseExercisesDatabase = [
     defaultReps: 20,
     default_sets: 3,
     default_reps: 20,
-    image: "/exercises/core_russian_twist.png",
+    image: null,
+    imageUnavailableReason: "Existing source appears supine and does not establish the described seated, feet-elevated dumbbell twist. Plate-twist candidate is also unsuitable.",
     tips: "Elevate feet slightly. Rotate torso side to side under steady control.",
   },
   {
@@ -1181,7 +1189,8 @@ const baseExercisesDatabase = [
     defaultReps: 15,
     default_sets: 3,
     default_reps: 15,
-    image: "/exercises/core_lying_leg_raise.png",
+    image: null,
+    imageUnavailableReason: "Existing picture uses a bench, not the floor with lower back pressed down as described.",
     tips: "Press lower back firmly into floor. Raise straight legs to 90 degrees and lower slowly.",
   },
   {
@@ -1213,7 +1222,8 @@ const baseExercisesDatabase = [
     defaultReps: 45,
     default_sets: 3,
     default_reps: 45,
-    image: "/exercises/core_hollow_body_hold.png",
+    image: null,
+    imageUnavailableReason: "Existing picture shows near-vertical limbs, not the described extended hollow-body position.",
     tips: "Press lower back into floor, extend arms back and legs forward, holding the banana shape.",
   },
 ];
@@ -1223,6 +1233,7 @@ export const exercisesDatabase = baseExercisesDatabase.map((ex) => {
   const bio = exerciseBiomechanics[ex.id] || {};
   return {
     ...ex,
+    imageStatus: ex.image ? "available" : "unavailable",
     primaryTarget: bio.primaryTarget || ex.name,
     secondaryMuscles: bio.secondaryMuscles || [],
     jointAction: bio.jointAction || "",

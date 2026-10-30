@@ -3,7 +3,6 @@ import {
   Zap,
   Dumbbell,
   CheckCircle2,
-  AlertTriangle,
   ArrowRightLeft,
   Calendar,
   Target,
@@ -36,7 +35,8 @@ const planMeta = {
   bro_split: {
     icon: Crown,
     gradient: "from-purple-500/20 via-fuchsia-500/10 to-transparent",
-    borderActive: "border-neon-purple/60 shadow-[0_0_20px_rgba(179,71,217,0.15)]",
+    borderActive:
+      "border-neon-purple/60 shadow-[0_0_20px_rgba(179,71,217,0.15)]",
     borderIdle: "border-slate-700/50 hover:border-slate-600",
     accentColor: "text-neon-purple",
     accentBg: "bg-neon-purple/10",
@@ -81,7 +81,9 @@ export default function ProgramSelector() {
         </div>
         <div>
           <h2 className="text-sm font-bold text-white">Training Program</h2>
-          <p className="text-[10px] text-slate-500">Choose your workout architecture</p>
+          <p className="text-[10px] text-slate-500">
+            Choose your workout architecture
+          </p>
         </div>
       </div>
 
@@ -99,9 +101,10 @@ export default function ProgramSelector() {
               onClick={() => handleSelect(planId)}
               className={`
                 w-full text-left rounded-2xl p-4 border-[1.5px] transition-all duration-300 relative overflow-hidden group
-                ${isActive
-                  ? `${meta.borderActive} bg-slate-900/90 ${meta.glowClass}`
-                  : `${meta.borderIdle} bg-slate-900/50 hover:bg-slate-900/70 active:scale-[0.98]`
+                ${
+                  isActive
+                    ? `${meta.borderActive} bg-slate-900/90 ${meta.glowClass}`
+                    : `${meta.borderIdle} bg-slate-900/50 hover:bg-slate-900/70 active:scale-[0.98]`
                 }
               `}
               aria-label={`${isActive ? "Active: " : "Switch to "}${plan.name} — ${plan.description}`}
@@ -131,7 +134,9 @@ export default function ProgramSelector() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className={`text-base font-bold ${isActive ? "text-white" : "text-slate-300"}`}>
+                      <h3
+                        className={`text-base font-bold ${isActive ? "text-white" : "text-slate-300"}`}
+                      >
                         {plan.name}
                       </h3>
                       {isActive && (
@@ -141,12 +146,16 @@ export default function ProgramSelector() {
                         />
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium">{plan.nameAr}</p>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      {plan.nameAr}
+                    </p>
                   </div>
 
                   <span
                     className={`text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${
-                      isActive ? meta.tagBg : "bg-slate-800/80 text-slate-400 border-slate-700"
+                      isActive
+                        ? meta.tagBg
+                        : "bg-slate-800/80 text-slate-400 border-slate-700"
                     }`}
                   >
                     {plan.tagIcon} {plan.tag}
@@ -178,9 +187,13 @@ export default function ProgramSelector() {
                     <div key={i} className="flex items-center gap-1.5">
                       <Target
                         size={8}
-                        className={isActive ? meta.accentColor : "text-slate-600"}
+                        className={
+                          isActive ? meta.accentColor : "text-slate-600"
+                        }
                       />
-                      <span className={`text-[10px] ${isActive ? "text-slate-300" : "text-slate-500"}`}>
+                      <span
+                        className={`text-[10px] ${isActive ? "text-slate-300" : "text-slate-500"}`}
+                      >
                         {h}
                       </span>
                     </div>
@@ -192,11 +205,17 @@ export default function ProgramSelector() {
                   <div className="flex items-center gap-1.5">
                     <Dumbbell size={11} className="text-slate-500" />
                     <span className="text-[10px] text-slate-500 font-medium">
-                      {programList.reduce((acc, p) => acc + p.exercises.length, 0)} exercises across {plan.daysPerWeek} days
+                      {programList.reduce(
+                        (acc, p) => acc + p.exercises.length,
+                        0,
+                      )}{" "}
+                      exercises across {plan.daysPerWeek} days
                     </span>
                   </div>
                   {isActive && (
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${meta.accentColor} opacity-60`}>
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider ${meta.accentColor} opacity-60`}
+                    >
                       Active
                     </span>
                   )}
@@ -218,15 +237,14 @@ export default function ProgramSelector() {
         onClose={() => setPendingSwitch(null)}
         onConfirm={confirmSwitch}
         title="Switch Training Program?"
-        message={
+        description={
           activeWorkout
-            ? "Your current active workout will be cancelled and the weekly schedule will be reset to the new program's defaults. Workout history is preserved."
-            : "The weekly schedule will be reset to the new program's defaults. Your workout history and exercise library will be preserved."
+            ? "Your active workout and history will be preserved. The weekly schedule and program exercises will be reset to the new plan's defaults."
+            : "The weekly schedule and program exercises will be reset to the new plan's defaults. Your workout history and exercise library will be preserved."
         }
         confirmText="Switch Program"
         cancelText="Keep Current"
-        variant={activeWorkout ? "danger" : "default"}
-        icon={<AlertTriangle size={20} className="text-amber-400" />}
+        variant="default"
       />
     </div>
   );

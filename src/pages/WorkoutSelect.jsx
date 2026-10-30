@@ -1,7 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { Play, ChevronRight, Activity, Clock, Dumbbell, Library, Zap, Crown } from "lucide-react";
+import {
+  Play,
+  ChevronRight,
+  Activity,
+  Clock,
+  Dumbbell,
+  Library,
+} from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import { getImageUrl } from "../utils/imageUtil";
+import ExerciseImage from "../components/ExerciseImage";
 import { trainingPlans } from "../data/exercises";
 
 const muscleColors = {
@@ -42,18 +49,22 @@ export default function WorkoutSelect() {
   const programList = Object.values(programs);
 
   const handleStartWorkout = (programId) => {
+    if (useWorkoutStore.getState().activeWorkout) {
+      navigate("/workout/active");
+      return;
+    }
+    if (!programs[programId]?.exercises.length) return;
     startWorkout(programId);
-    navigate("/workout/active");
+    if (useWorkoutStore.getState().activeWorkout) {
+      navigate("/workout/active");
+    }
   };
 
-  // Get first 3 exercise images for a program
+  // Keep exercise identity so audited built-in availability wins over stale images.
   const getExerciseThumbnails = (program) => {
     return program.exercises
       .slice(0, 3)
-      .map((exId) => {
-        const ex = exercises.find((e) => e.id === exId);
-        return ex?.image || null;
-      })
+      .map((exId) => exercises.find((exercise) => exercise.id === exId))
       .filter(Boolean);
   };
 
@@ -71,16 +82,18 @@ export default function WorkoutSelect() {
             <p className="text-sm text-slate-500">
               Choose your program for today
             </p>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-              activeProgram === 'ppl_upper'
-                ? 'bg-neon-blue/10 text-neon-blue border-neon-blue/20'
-                : 'bg-neon-purple/10 text-neon-purple border-neon-purple/20'
-            }`}>
-              {activeProgram === 'ppl_upper' ? '⚡' : '💪'} {activePlan.name}
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                activeProgram === "ppl_upper"
+                  ? "bg-neon-blue/10 text-neon-blue border-neon-blue/20"
+                  : "bg-neon-purple/10 text-neon-purple border-neon-purple/20"
+              }`}
+            >
+              {activeProgram === "ppl_upper" ? "⚡" : "💪"} {activePlan.name}
             </span>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => navigate("/exercises")}
           className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all shadow-sm"
           aria-label="Exercise Library"
@@ -141,12 +154,20 @@ export default function WorkoutSelect() {
           const thumbnails = getExerciseThumbnails(program);
           const duration = estimateDuration(program);
           const mainMuscle = program.muscles?.[0];
+          const cannotStart = !activeWorkout && program.exercises.length === 0;
           return (
             <button
               key={program.id}
               onClick={() => handleStartWorkout(program.id)}
-              className={`w-full bg-slate-900 rounded-2xl p-4 border border-slate-800 border-l-[3px] ${muscleBorder[mainMuscle] || "border-l-slate-700"} hover:border-slate-700 transition-all active:scale-[0.98] text-left group relative overflow-hidden focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none`}
-              aria-label={`Start ${program.name} — ${program.exercises.length} exercises, approximately ${duration} minutes`}
+              disabled={cannotStart}
+              className={`disabled:opacity-50 disabled:cursor-not-allowed w-full bg-slate-900 rounded-2xl p-4 border border-slate-800 border-l-[3px] ${muscleBorder[mainMuscle] || "border-l-slate-700"} hover:border-slate-700 transition-all active:scale-[0.98] text-left group relative overflow-hidden focus-visible:ring-2 focus-visible:ring-neon-blue/50 focus-visible:outline-none`}
+              aria-label={
+                activeWorkout
+                  ? `Resume ${activeWorkout.programName} workout`
+                  : cannotStart
+                    ? `${program.name} — add exercises to start`
+                    : `Start ${program.name} — ${program.exercises.length} exercises, approximately ${duration} minutes`
+              }
             >
               {/* Subtle gradient accent */}
               <div
@@ -186,22 +207,13 @@ export default function WorkoutSelect() {
                   </div>
                   {/* Exercise thumbnails */}
                   <div className="flex items-center gap-1 mt-2.5">
-                    {thumbnails.map((img, i) => (
-                      <div
-                        key={i}
-                        className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 border border-slate-700"
-                      >
-                        <img
-                          src={getImageUrl(img)}
-                          alt=""
-                          className="w-full h-full object-contain bg-[#0B0F17] p-0.5"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = getImageUrl("/icons/dumbbell.svg");
-                          }}
-                        />
-                      </div>
+                    {thumbnails.map((exercise, index) => (
+                      <ExerciseImage
+                        key={`${exercise.id}-${index}`}
+                        exercise={exercise}
+                        className="w-8 h-8 rounded-lg object-contain bg-[#0B0F17] border border-slate-700 p-0.5 shrink-0"
+                        compact
+                      />
                     ))}
                     {thumbnails.length === 0 && (
                       <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-600">
@@ -215,8 +227,17 @@ export default function WorkoutSelect() {
                     )}
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-neon-blue/10 flex items-center justify-center group-hover:bg-neon-blue/20 transition-colors shrink-0 ml-3">
-                  <Play size={20} className="text-neon-blue ml-0.5" />
+                <div className="flex flex-col items-center gap-1 shrink-0 ml-3">
+                  <span className="text-[10px] font-medium text-slate-400">
+                    {activeWorkout
+                      ? "Resume"
+                      : cannotStart
+                        ? "Add exercises"
+                        : "Start"}
+                  </span>
+                  <div className="w-12 h-12 rounded-xl bg-neon-blue/10 flex items-center justify-center group-hover:bg-neon-blue/20 transition-colors">
+                    <Play size={20} className="text-neon-blue ml-0.5" />
+                  </div>
                 </div>
               </div>
             </button>

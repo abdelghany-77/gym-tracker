@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import useWorkoutStore from "../store/workoutStore";
 import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
 import AngleRadarChart from "../components/AngleRadarChart";
+import { parseLocalDate } from "../utils/dateUtils";
 
 export default function WorkoutHistory() {
   const navigate = useNavigate();
@@ -134,67 +135,70 @@ export default function WorkoutHistory() {
           {history.length === 0 ? (
             <div className="text-center py-12 px-4 rounded-2xl glass-card border-dashed">
               <Dumbbell size={24} className="mx-auto text-slate-600 mb-2" />
-              <p className="text-sm text-slate-300 font-medium">No workouts yet</p>
+              <p className="text-sm text-slate-300 font-medium">
+                No workouts yet
+              </p>
               <p className="text-xs text-slate-500 mt-0.5">
                 Complete your first workout to see records and receipts here.
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              {[...history]
-                .reverse()
-                .map((session) => (
-                  <div
-                    key={session.id}
-                    className="glass-card p-3 border border-border-slate hover:border-slate-700 transition-all rounded-xl"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-9 h-9 rounded-lg bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center shrink-0">
-                          <Dumbbell size={15} className="text-neon-blue" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-white truncate">
-                            {session.programName}
-                          </p>
-                          <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
-                            <span>
-                              {new Date(session.date).toLocaleDateString("en-US", {
+              {[...history].reverse().map((session) => (
+                <div
+                  key={session.id}
+                  className="glass-card p-3 border border-border-slate hover:border-slate-700 transition-all rounded-xl"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-lg bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center shrink-0">
+                        <Dumbbell size={15} className="text-neon-blue" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-white truncate">
+                          {session.programName}
+                        </p>
+                        <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                          <span>
+                            {parseLocalDate(session.date).toLocaleDateString(
+                              "en-US",
+                              {
                                 month: "short",
                                 day: "numeric",
-                              })}
-                            </span>
-                            <span>•</span>
-                            <span>{session.exercises.length} exercises</span>
-                            {formatDuration(session) && (
-                              <>
-                                <span>•</span>
-                                <span>{formatDuration(session)}</span>
-                              </>
+                              },
                             )}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => setSelectedSession(session)}
-                          className="px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-semibold text-slate-300 hover:text-white transition-colors"
-                        >
-                          Details
-                        </button>
-                        <button
-                          onClick={() => setReceiptSession(session)}
-                          className="p-1.5 rounded-lg bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 transition-colors"
-                          title="View Receipt"
-                          aria-label="View Receipt"
-                        >
-                          <Share2 size={13} />
-                        </button>
+                          </span>
+                          <span>•</span>
+                          <span>{session.exercises.length} exercises</span>
+                          {formatDuration(session) && (
+                            <>
+                              <span>•</span>
+                              <span>{formatDuration(session)}</span>
+                            </>
+                          )}
+                        </p>
                       </div>
                     </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => setSelectedSession(session)}
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-semibold text-slate-300 hover:text-white transition-colors"
+                      >
+                        Details
+                      </button>
+                      <button
+                        onClick={() => setReceiptSession(session)}
+                        className="p-1.5 rounded-lg bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 transition-colors"
+                        title="View Receipt"
+                        aria-label="View Receipt"
+                      >
+                        <Share2 size={13} />
+                      </button>
+                    </div>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -297,12 +301,16 @@ export default function WorkoutHistory() {
                   {selectedSession.programName}
                 </h3>
                 <p className="text-[10px] text-slate-400">
-                  {new Date(selectedSession.date).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                  {formatDuration(selectedSession) && ` • ${formatDuration(selectedSession)}`}
+                  {parseLocalDate(selectedSession.date).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    },
+                  )}
+                  {formatDuration(selectedSession) &&
+                    ` • ${formatDuration(selectedSession)}`}
                 </p>
               </div>
               <button

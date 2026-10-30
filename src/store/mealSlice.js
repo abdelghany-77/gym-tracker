@@ -31,7 +31,15 @@ export const createMealSlice = (set, get) => ({
   updateCustomMealPlan: (id, updates) => {
     set((state) => {
       const plans = state.customMealData.customMealPlans.map((p) =>
-        p.id === id ? { ...p, ...updates } : p,
+        p.id === id
+          ? {
+              ...p,
+              ...(typeof updates.name === "string"
+                ? { name: updates.name }
+                : {}),
+              ...(Array.isArray(updates.meals) ? { meals: updates.meals } : {}),
+            }
+          : p,
       );
       const updated = { ...state.customMealData, customMealPlans: plans };
       saveToStorage(STORAGE_KEY, updated);
@@ -48,13 +56,22 @@ export const createMealSlice = (set, get) => ({
         state.customMealData.activePlanId === id
           ? null
           : state.customMealData.activePlanId;
-      const updated = { ...state.customMealData, customMealPlans: plans, activePlanId };
+      const updated = {
+        ...state.customMealData,
+        customMealPlans: plans,
+        activePlanId,
+      };
       saveToStorage(STORAGE_KEY, updated);
       return { customMealData: updated };
     });
   },
 
   setActiveMealPlan: (id) => {
+    if (
+      id !== null &&
+      !get().customMealData.customMealPlans.some((plan) => plan.id === id)
+    )
+      return;
     set((state) => {
       const updated = { ...state.customMealData, activePlanId: id };
       saveToStorage(STORAGE_KEY, updated);
@@ -65,8 +82,10 @@ export const createMealSlice = (set, get) => ({
   getActiveCustomMealPlan: () => {
     const { customMealData } = get();
     if (!customMealData.activePlanId) return null;
-    return customMealData.customMealPlans.find(
-      (p) => p.id === customMealData.activePlanId,
+    return (
+      customMealData.customMealPlans.find(
+        (p) => p.id === customMealData.activePlanId,
+      ) ?? null
     );
   },
 });

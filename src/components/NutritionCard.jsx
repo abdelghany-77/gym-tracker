@@ -1,13 +1,62 @@
 import { Flame, Beef, Wheat, Droplets, Leaf, Pill } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 const macroConfig = [
-  { key: "protein", label: "Protein", unit: "g", icon: Beef, color: "text-neon-blue", bg: "bg-neon-blue/10", border: "border-neon-blue/20", barColor: "bg-neon-blue", hex: "#3b82f6" },
-  { key: "carbs", label: "Carbs", unit: "g", icon: Wheat, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", barColor: "bg-amber-400", hex: "#fbbf24" },
-  { key: "fat", label: "Fat", unit: "g", icon: Droplets, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", barColor: "bg-rose-400", hex: "#fb7185" },
-  { key: "fiber", label: "Fiber", unit: "g", icon: Leaf, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", barColor: "bg-emerald-400", hex: "#34d399" },
-  { key: "calcium", label: "Calcium", unit: "mg", icon: Pill, color: "text-slate-300", bg: "bg-slate-700/50", border: "border-slate-600", barColor: "bg-slate-400", hex: "#cbd5e1" },
+  {
+    key: "protein",
+    label: "Protein",
+    unit: "g",
+    icon: Beef,
+    color: "text-neon-blue",
+    bg: "bg-neon-blue/10",
+    border: "border-neon-blue/20",
+    barColor: "bg-neon-blue",
+    hex: "#3b82f6",
+  },
+  {
+    key: "carbs",
+    label: "Carbs",
+    unit: "g",
+    icon: Wheat,
+    color: "text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+    barColor: "bg-amber-400",
+    hex: "#fbbf24",
+  },
+  {
+    key: "fat",
+    label: "Fat",
+    unit: "g",
+    icon: Droplets,
+    color: "text-rose-400",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500/20",
+    barColor: "bg-rose-400",
+    hex: "#fb7185",
+  },
+  {
+    key: "fiber",
+    label: "Fiber",
+    unit: "g",
+    icon: Leaf,
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+    barColor: "bg-emerald-400",
+    hex: "#34d399",
+  },
+  {
+    key: "calcium",
+    label: "Calcium",
+    unit: "mg",
+    icon: Pill,
+    color: "text-slate-300",
+    bg: "bg-slate-700/50",
+    border: "border-slate-600",
+    barColor: "bg-slate-400",
+    hex: "#cbd5e1",
+  },
 ];
 
 export default function NutritionCard({ compact = false }) {
@@ -15,7 +64,13 @@ export default function NutritionCard({ compact = false }) {
   const dailyChecklist = useWorkoutStore((s) => s.dailyChecklist);
   const caloriesConsumed = dailyChecklist?.caloriesConsumed || 0;
   const calorieGoal = nutritionTargets.calories;
-  const caloriePercent = Math.min(100, Math.round((caloriesConsumed / calorieGoal) * 100));
+  const caloriePercent =
+    calorieGoal > 0
+      ? Math.max(
+          0,
+          Math.min(100, Math.round((caloriesConsumed / calorieGoal) * 100)),
+        )
+      : 0;
 
   if (compact) {
     return (
@@ -32,7 +87,15 @@ export default function NutritionCard({ compact = false }) {
 
         {/* Calorie progress bar */}
         <div className="space-y-1">
-          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            role="progressbar"
+            aria-label="Daily calories"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={caloriePercent}
+            aria-valuetext={`${caloriesConsumed} of ${calorieGoal} kcal`}
+            className="w-full h-2 bg-slate-800 rounded-full overflow-hidden"
+          >
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 caloriePercent >= 90
@@ -59,7 +122,9 @@ export default function NutritionCard({ compact = false }) {
                 <IconComp size={12} className={`${m.color} mx-auto mb-0.5`} />
                 <p className={`text-xs font-bold ${m.color}`}>
                   {nutritionTargets[m.key]}
-                  <span className="text-[8px] font-normal ml-0.5">{m.unit}</span>
+                  <span className="text-[8px] font-normal ml-0.5">
+                    {m.unit}
+                  </span>
                 </p>
                 <p className="text-[9px] text-slate-400">{m.label}</p>
               </div>
@@ -94,7 +159,15 @@ export default function NutritionCard({ compact = false }) {
             <span className="text-xs font-normal ml-1">kcal</span>
           </p>
         </div>
-        <div className="w-full h-2 bg-slate-950/60 rounded-full overflow-hidden border border-slate-800/50 relative z-10">
+        <div
+          role="progressbar"
+          aria-label="Daily calories"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={caloriePercent}
+          aria-valuetext={`${caloriesConsumed} of ${calorieGoal} kcal`}
+          className="w-full h-2 bg-slate-950/60 rounded-full overflow-hidden border border-slate-800/50 relative z-10"
+        >
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               caloriePercent >= 90
@@ -123,7 +196,9 @@ export default function NutritionCard({ compact = false }) {
                 {nutritionTargets[m.key]}
                 <span className="text-[9px] font-normal ml-0.5">{m.unit}</span>
               </p>
-              <p className="text-[10px] text-slate-400 font-medium">{m.label}</p>
+              <p className="text-[10px] text-slate-400 font-medium">
+                {m.label}
+              </p>
             </div>
           );
         })}
@@ -140,10 +215,13 @@ export default function NutritionCard({ compact = false }) {
             >
               <div className="flex items-center gap-1.5">
                 <IconComp size={13} className={m.color} />
-                <span className="text-[10px] text-slate-400 font-medium">{m.label}</span>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  {m.label}
+                </span>
               </div>
               <span className={`text-xs font-bold ${m.color}`}>
-                {nutritionTargets[m.key]} <span className="text-[8px] font-normal">{m.unit}</span>
+                {nutritionTargets[m.key]}{" "}
+                <span className="text-[8px] font-normal">{m.unit}</span>
               </span>
             </div>
           );

@@ -1,4 +1,8 @@
-import { loadFromStorage, saveToStorage } from "./helpers";
+import {
+  loadFromStorage,
+  normalizeMeasurements,
+  saveToStorage,
+} from "./helpers";
 
 const STORAGE_KEY = "gym_measurements";
 
@@ -8,14 +12,25 @@ const defaultMeasurements = {
 
 // ── Body & InBody Measurements Slice ──
 export const createMeasurementSlice = (set, get) => ({
-  measurements: loadFromStorage(STORAGE_KEY, defaultMeasurements),
+  measurements: normalizeMeasurements(
+    loadFromStorage(STORAGE_KEY, defaultMeasurements),
+  ),
 
   addMeasurement: (entry) => {
     set((state) => {
       const userProfile = state.userProfile || {};
-      const height = entry.height !== undefined && entry.height !== "" ? Number(entry.height) : userProfile.height || null;
-      const weight = entry.weight !== undefined && entry.weight !== "" ? Number(entry.weight) : userProfile.weight || null;
-      const age = entry.age !== undefined && entry.age !== "" ? Number(entry.age) : userProfile.age || null;
+      const height =
+        entry.height !== undefined && entry.height !== ""
+          ? Number(entry.height)
+          : userProfile.height || null;
+      const weight =
+        entry.weight !== undefined && entry.weight !== ""
+          ? Number(entry.weight)
+          : userProfile.weight || null;
+      const age =
+        entry.age !== undefined && entry.age !== ""
+          ? Number(entry.age)
+          : userProfile.age || null;
 
       const newEntry = {
         id: crypto.randomUUID(),
@@ -23,7 +38,9 @@ export const createMeasurementSlice = (set, get) => ({
         height,
         weight,
         age,
-        skeletalMuscleMass: entry.skeletalMuscleMass ? Number(entry.skeletalMuscleMass) : null,
+        skeletalMuscleMass: entry.skeletalMuscleMass
+          ? Number(entry.skeletalMuscleMass)
+          : null,
         bodyFat: entry.bodyFat ? Number(entry.bodyFat) : null,
         bodyFatMass: entry.bodyFatMass ? Number(entry.bodyFatMass) : null,
         water: entry.water ? Number(entry.water) : null,
@@ -49,7 +66,7 @@ export const createMeasurementSlice = (set, get) => ({
         if (weight) profileUpdates.weight = weight;
         if (height) profileUpdates.height = height;
         if (age) profileUpdates.age = age;
-        
+
         if (typeof get().updateUserProfile === "function") {
           get().updateUserProfile(profileUpdates);
         }
@@ -81,7 +98,12 @@ export const createMeasurementSlice = (set, get) => ({
 
   getLatestMeasurement: () => {
     const { measurements } = get();
-    if (!measurements || !measurements.entries || measurements.entries.length === 0) return null;
+    if (
+      !measurements ||
+      !measurements.entries ||
+      measurements.entries.length === 0
+    )
+      return null;
     return measurements.entries[measurements.entries.length - 1];
   },
 });

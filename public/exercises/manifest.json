@@ -1,0 +1,657 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-10-30",
+  "sourceRoot": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main",
+  "license": "Unlicense",
+  "reviewScope": "Visual identification using 160px contact-sheet tiles plus source metadata; not a form, safety, or biomechanical certification.",
+  "images": [
+    {
+      "id": "chest_bb_flat_bench",
+      "name": "Barbell Bench Press",
+      "status": "available",
+      "sourceId": "Barbell_Bench_Press_-_Medium_Grip",
+      "path": "/exercises/chest_bb_flat_bench.png",
+      "sha256": "f375ac26b86f964750b8534d62464aad6158f9ce4f4ac5d34308adfe5afdbe86",
+      "note": "Flat barbell bench press; bar and flat bench visible."
+    },
+    {
+      "id": "chest_db_flat_press",
+      "name": "Flat Dumbbell Press",
+      "status": "available",
+      "sourceId": "Dumbbell_Bench_Press",
+      "path": "/exercises/chest_db_flat_press.png",
+      "sha256": "10a1bdb2e16d8abf9acd92422fa0c23d3b655987bd90d9a606597742ae3557de",
+      "note": "Flat dumbbell press; paired dumbbells on flat bench."
+    },
+    {
+      "id": "chest_bb_incline_press",
+      "name": "Incline Barbell Press",
+      "status": "available",
+      "sourceId": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+      "path": "/exercises/chest_bb_incline_press.png",
+      "sha256": "f1b790c66f1d49e7c5dc6ddd10840e3aec6fa8a6e368757429a73b9b13033b4a",
+      "note": "Incline barbell press; inclined backrest and barbell."
+    },
+    {
+      "id": "chest_db_incline_press",
+      "name": "Incline Dumbbell Press",
+      "status": "available",
+      "sourceId": "Incline_Dumbbell_Press",
+      "path": "/exercises/chest_db_incline_press.png",
+      "sha256": "baab904ed1e7b41cb64d6d99686c3069cbd43f4ef35788cf16ee8d13f2b81e05",
+      "note": "Incline dumbbell press; inclined bench and paired dumbbells."
+    },
+    {
+      "id": "chest_machine_incline_press",
+      "name": "Incline Machine Press",
+      "status": "available",
+      "sourceId": "Leverage_Incline_Chest_Press",
+      "path": "/exercises/chest_machine_incline_press.png",
+      "sha256": "24717b9ea9f4627b3edd50388fc7393555b2a38461ba797c9411c6559a95d80d",
+      "note": "Replaced single frame with incline machine press start/finish; upward press path."
+    },
+    {
+      "id": "chest_machine_flat_press",
+      "name": "Machine Chest Press",
+      "status": "available",
+      "sourceId": "Leverage_Chest_Press",
+      "path": "/exercises/chest_machine_flat_press.png",
+      "sha256": "1264795064e7dda1db6b9137d0a67b3e6c5027b044c9cf5f3e598eab353ca94a",
+      "note": "Seated machine chest press start/finish."
+    },
+    {
+      "id": "chest_bb_decline_press",
+      "name": "Decline Barbell Press",
+      "status": "available",
+      "sourceId": "Decline_Barbell_Bench_Press",
+      "path": "/exercises/chest_bb_decline_press.png",
+      "sha256": "a2e3c2c3ac1c4f035e04c5879a00777203e60f3ca747807f26f75c5218e9eb3c",
+      "note": "Decline barbell bench press with secured legs."
+    },
+    {
+      "id": "chest_db_decline_press",
+      "name": "Decline Dumbbell Press",
+      "status": "available",
+      "sourceId": "Decline_Dumbbell_Bench_Press",
+      "path": "/exercises/chest_db_decline_press.png",
+      "sha256": "85f0bc04066933de72dfe6bbedd088e8da893a2fcbb76f848afc2bd5c49154e0",
+      "note": "Decline dumbbell press on declined bench."
+    },
+    {
+      "id": "chest_high_to_low_cable_fly",
+      "name": "High-to-Low Cable Fly",
+      "status": "available",
+      "sourceId": "Cable_Crossover",
+      "path": "/exercises/chest_high_to_low_cable_fly.png",
+      "sha256": "94a0b4793ed2e3f6f8076d61fc64277755618088124cbaf53e59807e21c4ce32",
+      "note": "Replaced single frame with high-pulley crossover start/finish."
+    },
+    {
+      "id": "chest_low_to_high_cable_fly",
+      "name": "Low-to-High Cable Fly",
+      "status": "available",
+      "sourceId": "Low_Cable_Crossover",
+      "path": "/exercises/chest_low_to_high_cable_fly.png",
+      "sha256": "bdf95718b9e332191adedcf0211580fbe4b0337f6ffae68feaa32e7c0883a0a1",
+      "note": "Replaced single frame with low-pulley upward crossover start/finish."
+    },
+    {
+      "id": "chest_pec_deck_fly",
+      "name": "Pec Deck Fly",
+      "status": "available",
+      "sourceId": "Butterfly",
+      "path": "/exercises/chest_pec_deck_fly.png",
+      "sha256": "394033849e0b920bb43ed5a6216eecf056914242ae22ab4a1f92e06fbb99eedd",
+      "note": "Replaced single frame with pec-deck fly start/finish."
+    },
+    {
+      "id": "chest_dips",
+      "name": "Chest Dips",
+      "status": "available",
+      "sourceId": "Dips_-_Chest_Version",
+      "path": "/exercises/chest_dips.png",
+      "sha256": "c74ec1d8ca43f6b0e0eff5846e7ec77db5657c49fc8b88c33354de97b01ffc27",
+      "note": "Parallel-bar chest dips with forward torso lean."
+    },
+    {
+      "id": "back_wide_lat_pulldown",
+      "name": "Wide-Grip Lat Pulldown",
+      "status": "available",
+      "sourceId": "Wide-Grip_Lat_Pulldown",
+      "path": "/exercises/back_wide_lat_pulldown.png",
+      "sha256": "d82f0b9a5bbecacbff405eab2a7a13f9705c9f6ca004782cc1fa94eb15f8cb18",
+      "note": "Wide overhand pulldown to front of torso."
+    },
+    {
+      "id": "back_close_grip_pulldown",
+      "name": "Close-Grip V-Bar Pulldown",
+      "status": "available",
+      "sourceId": "V-Bar_Pulldown",
+      "path": "/exercises/back_close_grip_pulldown.png",
+      "sha256": "df45474f8197b16d1acfe1d426c8a0825e539700b80b4cf843965e8c1a0808ed",
+      "note": "Close neutral V-bar pulldown."
+    },
+    {
+      "id": "back_pullups",
+      "name": "Pull-Ups",
+      "status": "available",
+      "sourceId": "Pullups",
+      "path": "/exercises/back_pullups.png",
+      "sha256": "b0aee937aad0a7a08878bbfc5a35670beddb5b044b3277c9e2361a958f855b03",
+      "note": "Overhand pull-up start/finish."
+    },
+    {
+      "id": "back_bb_bent_over_row",
+      "name": "Barbell Bent-Over Row",
+      "status": "available",
+      "sourceId": "Bent_Over_Barbell_Row",
+      "path": "/exercises/back_bb_bent_over_row.png",
+      "sha256": "ddcbed4d763a3b64e79492c549eb542b40e1102d2ededd6edffb0b950f7cc210",
+      "note": "Hip-hinged barbell row towards abdomen."
+    },
+    {
+      "id": "back_tbar_row",
+      "name": "T-Bar Row",
+      "status": "available",
+      "sourceId": "T-Bar_Row_with_Handle",
+      "path": "/exercises/back_tbar_row.png",
+      "sha256": "2e3354edc6fd1966fbc64073e696ca190d64ab5bf3b3321b16b1f3db7e025c4c",
+      "note": "Landmine T-bar row with close handle; machine category includes this apparatus."
+    },
+    {
+      "id": "back_seated_cable_row",
+      "name": "Seated Cable Row",
+      "status": "available",
+      "sourceId": "Seated_Cable_Rows",
+      "path": "/exercises/back_seated_cable_row.png",
+      "sha256": "a4de5143df876195bfbb2990c6784eb230956c4db12be99f6b5f899e9bff3597",
+      "note": "Seated cable row with foot supports."
+    },
+    {
+      "id": "back_db_single_arm_row",
+      "name": "Single-Arm Dumbbell Row",
+      "status": "available",
+      "sourceId": "One-Arm_Dumbbell_Row",
+      "path": "/exercises/back_db_single_arm_row.png",
+      "sha256": "d1d7dd68cb44447673dcaf2dcdbad2faa047d45d33a05c395170f3aa0be4fe9e",
+      "note": "Bench-supported single-arm dumbbell row."
+    },
+    {
+      "id": "back_chest_supported_row",
+      "name": "Chest-Supported Machine Row",
+      "status": "available",
+      "sourceId": "Leverage_Iso_Row",
+      "path": "/exercises/back_chest_supported_row.png",
+      "sha256": "4c0a36970aa0d887c351d73b4d8eecc7b64de69cd8251fa643a2ebe02fc608ed",
+      "note": "Replaced overhead-machine picture with chest-supported seated leverage row."
+    },
+    {
+      "id": "back_straight_arm_pulldown",
+      "name": "Straight-Arm Cable Pulldown",
+      "status": "available",
+      "sourceId": "Straight-Arm_Pulldown",
+      "path": "/exercises/back_straight_arm_pulldown.png",
+      "sha256": "5fa13b0c1261b6ea9c9cfce8c2288aca38afa794baabb1dc0f78e410c88e1144",
+      "note": "Standing straight-arm cable pulldown towards thighs."
+    },
+    {
+      "id": "back_db_pullover",
+      "name": "Dumbbell Pullover",
+      "status": "available",
+      "sourceId": "Bent-Arm_Dumbbell_Pullover",
+      "path": "/exercises/back_db_pullover.png",
+      "sha256": "6638c27009d73e4d6b61ffa6e3117f436aff7c2160c5aad6b1d034594be0a870",
+      "note": "Dumbbell pullover lying across bench."
+    },
+    {
+      "id": "back_face_pulls",
+      "name": "Cable Face Pulls",
+      "status": "available",
+      "sourceId": "Face_Pull",
+      "path": "/exercises/back_face_pulls.png",
+      "sha256": "8cec6fd6683ab742ec6c128e7adce00d4c87d775f398e8a70821ceb0da055daa",
+      "note": "Rope face pull with hands near face."
+    },
+    {
+      "id": "back_hyperextension",
+      "name": "Hyperextension",
+      "status": "available",
+      "sourceId": "Hyperextensions_Back_Extensions",
+      "path": "/exercises/back_hyperextension.png",
+      "sha256": "1d375f1465abd56e1fe198db68b4029fb77ae0c89c352547b4d74a2aee44e7f9",
+      "note": "Roman-chair hip extension on angled support."
+    },
+    {
+      "id": "sh_seated_db_press",
+      "name": "Seated Dumbbell Shoulder Press",
+      "status": "available",
+      "sourceId": "Seated_Dumbbell_Press",
+      "path": "/exercises/sh_seated_db_press.png",
+      "sha256": "b1e6cd059235c371d707220becc5493acf3daadc20c6b4394ac0bc26f2c3db1b",
+      "note": "Seated, back-supported dumbbell overhead press."
+    },
+    {
+      "id": "sh_standing_bb_ohp",
+      "name": "Overhead Barbell Press",
+      "status": "available",
+      "sourceId": "Standing_Military_Press",
+      "path": "/exercises/sh_standing_bb_ohp.png",
+      "sha256": "afcb85516e93b41bb438ebc5c64cd347e467dfb2a5329be1071ce8a47229163b",
+      "note": "Standing barbell overhead press."
+    },
+    {
+      "id": "sh_machine_shoulder_press",
+      "name": "Machine Shoulder Press",
+      "status": "available",
+      "sourceId": "Machine_Shoulder_Military_Press",
+      "path": "/exercises/sh_machine_shoulder_press.png",
+      "sha256": "d681a2f3a40e02fcedcff8d0ff3d31aa80d84e7fe2fcf0d88f996cda09a7743d",
+      "note": "Seated fixed-path shoulder-press machine."
+    },
+    {
+      "id": "sh_arnold_press",
+      "name": "Arnold Press",
+      "status": "available",
+      "sourceId": "Arnold_Dumbbell_Press",
+      "path": "/exercises/sh_arnold_press.png",
+      "sha256": "f05c50a68b17076fe928b93b8a79199d21daea491942b84d93c10ddf4faf0f9f",
+      "note": "Seated dumbbell press with palm rotation between frames."
+    },
+    {
+      "id": "sh_db_lateral_raise",
+      "name": "Dumbbell Lateral Raise",
+      "status": "available",
+      "sourceId": "Side_Lateral_Raise",
+      "path": "/exercises/sh_db_lateral_raise.png",
+      "sha256": "3c38fa436d8363f8fdc24e3708b7b304cb219d367fddfb9249f784d126f556b3",
+      "note": "Standing dumbbell lateral raise."
+    },
+    {
+      "id": "sh_cable_lateral_raise",
+      "name": "Cable Lateral Raise",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing picture shows a seated bent-over rear-delt raise, not the described standing lateral raise with cable behind the legs."
+    },
+    {
+      "id": "sh_machine_lateral_raise",
+      "name": "Machine Lateral Raise",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing picture uses dumbbells, not a lateral-raise machine with forearm pads."
+    },
+    {
+      "id": "sh_reverse_pec_deck",
+      "name": "Reverse Pec Deck Fly",
+      "status": "available",
+      "sourceId": "Reverse_Machine_Flyes",
+      "path": "/exercises/sh_reverse_pec_deck.png",
+      "sha256": "b449da7c659ef8d94122b91785ac363581ce872a67fd77bad73982ead8b77e21",
+      "note": "Reverse pec-deck fly facing machine."
+    },
+    {
+      "id": "sh_bent_over_db_raise",
+      "name": "Bent-Over Rear Delt Raise",
+      "status": "available",
+      "sourceId": "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench",
+      "path": "/exercises/sh_bent_over_db_raise.png",
+      "sha256": "db882ad9bb3a83c65ed8ac63ddcf6010cc82c6279a34dd0f6b90c85956e38f2c",
+      "note": "Head-supported bent-over dumbbell rear-delt raise; support variant is visible."
+    },
+    {
+      "id": "sh_cable_rear_delt_fly",
+      "name": "Cable Rear Delt Fly",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Available source demonstrates an overhead-pulley variant, not the described chest-height cable setup."
+    },
+    {
+      "id": "sh_db_shrugs",
+      "name": "Dumbbell Shrugs",
+      "status": "available",
+      "sourceId": "Dumbbell_Shrug",
+      "path": "/exercises/sh_db_shrugs.png",
+      "sha256": "4445aedd4e57b1015901cfef93f2b953bd0c1783c45b14e1c4e9bcb3e88c6611",
+      "note": "Standing dumbbell shoulder shrug."
+    },
+    {
+      "id": "sh_bb_shrugs",
+      "name": "Barbell Shrugs",
+      "status": "available",
+      "sourceId": "Barbell_Shrug",
+      "path": "/exercises/sh_bb_shrugs.png",
+      "sha256": "9cda6251f5309fe07ea54a3cc50a632ffcc348825ba49c16190258b73836d6a6",
+      "note": "Standing barbell shoulder shrug."
+    },
+    {
+      "id": "leg_bb_back_squat",
+      "name": "Barbell Back Squat",
+      "status": "available",
+      "sourceId": "Barbell_Squat",
+      "path": "/exercises/leg_bb_back_squat.png",
+      "sha256": "a7b08942419fccbf1c5bfbfc03d4aeee0934b1ecbb5bdba3582b17fe822e42a4",
+      "note": "Barbell back squat with bar on upper back."
+    },
+    {
+      "id": "leg_hack_squat",
+      "name": "Hack Squat Machine",
+      "status": "available",
+      "sourceId": "Hack_Squat",
+      "path": "/exercises/leg_hack_squat.png",
+      "sha256": "23e00d69d8afc9519307f38f249104e05335ae366159c867536bb603b120e0d5",
+      "note": "Back-supported angled hack-squat machine."
+    },
+    {
+      "id": "leg_45_press",
+      "name": "45° Leg Press",
+      "status": "available",
+      "sourceId": "Leg_Press",
+      "path": "/exercises/leg_45_press.png",
+      "sha256": "b1c9352e4c7035e44b451d5472eb683c5bdfdf83537a4ee35077242d5ffde1b3",
+      "note": "Reclined sled leg press."
+    },
+    {
+      "id": "leg_extension",
+      "name": "Seated Leg Extension",
+      "status": "available",
+      "sourceId": "Leg_Extensions",
+      "path": "/exercises/leg_extension.png",
+      "sha256": "493ad84c2f118d33bc9349d0df6b62ebd1ebeeefc1f8803a5b0a22257aebe30a",
+      "note": "Seated leg-extension machine; knee-extension pad, not a leg press (rechecked against source pair)."
+    },
+    {
+      "id": "leg_bulgarian_split_squat",
+      "name": "Bulgarian Split Squat",
+      "status": "available",
+      "sourceId": "Split_Squat_with_Dumbbells",
+      "path": "/exercises/leg_bulgarian_split_squat.png",
+      "sha256": "a7a74943dfbdcdcaa0ed91d80735bc8c8b79f2ec567368ec9d094194de5c00e0",
+      "note": "Rear-foot-elevated split squat with dumbbells."
+    },
+    {
+      "id": "leg_walking_lunges",
+      "name": "Walking Dumbbell Lunges",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Source demonstrates a forward lunge returning to the starting position, not walking lunges."
+    },
+    {
+      "id": "leg_bb_rdl",
+      "name": "Barbell Romanian Deadlift",
+      "status": "available",
+      "sourceId": "Romanian_Deadlift",
+      "path": "/exercises/leg_bb_rdl.png",
+      "sha256": "b4e63d60703e20ab35705c40517a78bf6ec08d4276841911c82153b8b517b5fa",
+      "note": "Barbell hip-hinge start/finish; source instructions specify slight knee bend and hips back."
+    },
+    {
+      "id": "leg_db_rdl",
+      "name": "Dumbbell Romanian Deadlift",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing picture uses a barbell. The dumbbell candidate is labeled stiff-legged deadlift; an exact dumbbell Romanian deadlift was not established."
+    },
+    {
+      "id": "leg_lying_curl",
+      "name": "Lying Leg Curl",
+      "status": "available",
+      "sourceId": "Lying_Leg_Curls",
+      "path": "/exercises/leg_lying_curl.png",
+      "sha256": "ded80169d7b216eeb7fa45155ce591b542c61b3cabd6c11ab9926e368dd61452",
+      "note": "Prone machine leg curl on angled pad."
+    },
+    {
+      "id": "leg_seated_curl",
+      "name": "Seated Leg Curl",
+      "status": "available",
+      "sourceId": "Seated_Leg_Curl",
+      "path": "/exercises/leg_seated_curl.png",
+      "sha256": "703ae56993659ceae9a19eaab5b45ef82e9a2a5496da07e0337a71b3320c1b9f",
+      "note": "Seated machine leg curl with thigh restraint."
+    },
+    {
+      "id": "leg_standing_calf_raise",
+      "name": "Standing Calf Raise",
+      "status": "available",
+      "sourceId": "Standing_Calf_Raises",
+      "path": "/exercises/leg_standing_calf_raise.png",
+      "sha256": "a6dcd420dfeed2e5a2bc0c80d329fecf16a6bcc445b92e42fa57e3d99f540700",
+      "note": "Replaced dumbbell calf raise with shoulder-pad standing calf machine start/finish."
+    },
+    {
+      "id": "leg_seated_calf_raise",
+      "name": "Seated Calf Raise",
+      "status": "available",
+      "sourceId": "Seated_Calf_Raise",
+      "path": "/exercises/leg_seated_calf_raise.png",
+      "sha256": "e1eb1f9184f7c775c13188318a2aa763e5d246fefe898fa2118c272f9e9bda4c",
+      "note": "Seated loaded calf machine with bent knees."
+    },
+    {
+      "id": "arm_bb_bicep_curl",
+      "name": "Barbell Bicep Curl",
+      "status": "available",
+      "sourceId": "Barbell_Curl",
+      "path": "/exercises/arm_bb_bicep_curl.png",
+      "sha256": "feff4c3b3ba2a9daf7bed448055fa15f76d26042ba3d993c303598a047231752",
+      "note": "Standing underhand barbell curl."
+    },
+    {
+      "id": "arm_db_incline_curl",
+      "name": "Incline Dumbbell Curl",
+      "status": "available",
+      "sourceId": "Incline_Dumbbell_Curl",
+      "path": "/exercises/arm_db_incline_curl.png",
+      "sha256": "433a7930056215fc67fc031458081b9d6481e5fdb3c6a65395bb3bd9c40e5d64",
+      "note": "Incline-bench dumbbell curl."
+    },
+    {
+      "id": "arm_preacher_curl",
+      "name": "EZ-Bar Preacher Curl",
+      "status": "available",
+      "sourceId": "Preacher_Curl",
+      "path": "/exercises/arm_preacher_curl.png",
+      "sha256": "8a40a43e733b3a44b49d6ccf813496dfb2b42e611f6f0c89485b97c906fe3dfd",
+      "note": "Preacher-pad curl with angled/EZ bar."
+    },
+    {
+      "id": "arm_db_hammer_curl",
+      "name": "Dumbbell Hammer Curl",
+      "status": "available",
+      "sourceId": "Alternate_Hammer_Curl",
+      "path": "/exercises/arm_db_hammer_curl.png",
+      "sha256": "38952ea324737538bcb31ce360aa2010aeed591817fd7b9fb4506d8522473bef",
+      "note": "Alternating neutral-grip dumbbell hammer curl."
+    },
+    {
+      "id": "arm_cable_rope_curl",
+      "name": "Cable Rope Hammer Curl",
+      "status": "available",
+      "sourceId": "Cable_Hammer_Curls_-_Rope_Attachment",
+      "path": "/exercises/arm_cable_rope_curl.png",
+      "sha256": "6041a4a84082b91e85002b3026d4f855a175059c4b6dd1f91d7b3cf2d9e99e67",
+      "note": "Replaced single frame with rope cable hammer-curl start/finish."
+    },
+    {
+      "id": "arm_concentration_curl",
+      "name": "Concentration Dumbbell Curl",
+      "status": "available",
+      "sourceId": "Concentration_Curls",
+      "path": "/exercises/arm_concentration_curl.png",
+      "sha256": "e699cede89c05a15f8b1d04868f34556a94d6c3031fa8634999b688a7a65e519",
+      "note": "Seated concentration curl with upper arm supported on thigh."
+    },
+    {
+      "id": "arm_rope_pushdown",
+      "name": "Tricep Rope Pushdown",
+      "status": "available",
+      "sourceId": "Triceps_Pushdown_-_Rope_Attachment",
+      "path": "/exercises/arm_rope_pushdown.png",
+      "sha256": "b2909a614222114f011460342cf942eeef10acd4c1a0854821b4e595a9e5bfad",
+      "note": "Rope triceps pushdown at high cable."
+    },
+    {
+      "id": "arm_straight_bar_pushdown",
+      "name": "Straight-Bar Tricep Pushdown",
+      "status": "available",
+      "sourceId": "Triceps_Pushdown",
+      "path": "/exercises/arm_straight_bar_pushdown.png",
+      "sha256": "ae54e80450a92a458919046119401af7c483c90348bceb0dd5997e3333704c30",
+      "note": "Replaced single frame with straight-bar cable pushdown start/finish."
+    },
+    {
+      "id": "arm_ez_skull_crushers",
+      "name": "EZ-Bar Skull Crushers",
+      "status": "available",
+      "sourceId": "EZ-Bar_Skullcrusher",
+      "path": "/exercises/arm_ez_skull_crushers.png",
+      "sha256": "22438144b407db75746d64a290ed02b8a390b745a8cbab6b91f0e53e94f8cc6e",
+      "note": "Supine EZ-bar elbow extension/skull crusher."
+    },
+    {
+      "id": "arm_overhead_cable_ext",
+      "name": "Overhead Cable Triceps Extension",
+      "status": "available",
+      "sourceId": "Triceps_Overhead_Extension_with_Rope",
+      "path": "/exercises/arm_overhead_cable_ext.png",
+      "sha256": "d0d5963435c2c1dab54a262f589517cff3bb2598831d3272669e61334db03f99",
+      "note": "Overhead rope cable elbow extension."
+    },
+    {
+      "id": "arm_db_overhead_ext",
+      "name": "Single-Arm DB Overhead Extension",
+      "status": "available",
+      "sourceId": "Standing_One-Arm_Dumbbell_Triceps_Extension",
+      "path": "/exercises/arm_db_overhead_ext.png",
+      "sha256": "b0ddd805372f34a75f5c46195cad5ae4c1adefb27ab3f2570daa90b2868a13d8",
+      "note": "Replaced single frame with one-arm dumbbell overhead extension start/finish."
+    },
+    {
+      "id": "arm_close_grip_bench",
+      "name": "Close-Grip Bench Press",
+      "status": "available",
+      "sourceId": "Close-Grip_Barbell_Bench_Press",
+      "path": "/exercises/arm_close_grip_bench.png",
+      "sha256": "324d4a7eaf7eca157efb13908d251af66c80c445316b3a3328063c4dca85427e",
+      "note": "Narrow-grip barbell bench press."
+    },
+    {
+      "id": "core_hanging_leg_raise",
+      "name": "Hanging Leg Raise",
+      "status": "available",
+      "sourceId": "Hanging_Leg_Raise",
+      "path": "/exercises/core_hanging_leg_raise.png",
+      "sha256": "5f742f1b15a686bc1f904fb14310a9ae82b458fd2c91ad1d56b6390d1bb9f4a0",
+      "note": "Hanging leg raise from overhead bar."
+    },
+    {
+      "id": "core_captain_chair_raise",
+      "name": "Captain’s Chair Knee Raise",
+      "status": "available",
+      "sourceId": "Knee_Hip_Raise_On_Parallel_Bars",
+      "path": "/exercises/core_captain_chair_raise.png",
+      "sha256": "edb02bd66e76b2b19570064f4ebb2c65aeab6f1d8e076a72306246c8a338a0b2",
+      "note": "Replaced hanging-bar picture with forearm-pad captain-chair knee raise start/finish."
+    },
+    {
+      "id": "core_cable_kneeling_crunch",
+      "name": "Kneeling Cable Crunch",
+      "status": "available",
+      "sourceId": "Cable_Crunch",
+      "path": "/exercises/core_cable_kneeling_crunch.png",
+      "sha256": "d0047e90304899768c7d1c8690c9c9c601afdd0875657cd2186187caa140027a",
+      "note": "Kneeling rope cable crunch."
+    },
+    {
+      "id": "core_decline_crunch",
+      "name": "Decline Bench Crunch",
+      "status": "available",
+      "sourceId": "Decline_Crunch",
+      "path": "/exercises/core_decline_crunch.png",
+      "sha256": "fbb1e733e967eff17f5337aed64ca6c57ffd7af86a4d68e66d206a0596010666",
+      "note": "Decline bench crunch with feet secured."
+    },
+    {
+      "id": "core_weighted_plank",
+      "name": "Weighted Plank",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing picture is a kneeling plate exercise, not a plank with a plate on the back."
+    },
+    {
+      "id": "core_side_plank",
+      "name": "Side Plank",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing picture and replacement candidate show bent-knee side bridges, not the described straight-leg side plank on the side of the foot."
+    },
+    {
+      "id": "core_ab_wheel_rollout",
+      "name": "Ab Wheel Rollout",
+      "status": "available",
+      "sourceId": "Ab_Roller",
+      "path": "/exercises/core_ab_wheel_rollout.png",
+      "sha256": "4e913caa21dfd8462567d6199fe5259bf43393c598022fa6950c6b7221ea6f72",
+      "note": "Replaced barbell rollout with actual ab-wheel/roller start/finish."
+    },
+    {
+      "id": "core_russian_twist",
+      "name": "Russian Twists",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing source appears supine and does not establish the described seated, feet-elevated dumbbell twist. Plate-twist candidate is also unsuitable."
+    },
+    {
+      "id": "core_woodchopper",
+      "name": "Cable Woodchopper",
+      "status": "available",
+      "sourceId": "Standing_Cable_Wood_Chop",
+      "path": "/exercises/core_woodchopper.png",
+      "sha256": "47cda42a86e0db9bc5463cc24b3e2299cab84cac5deb94e747a0a648ac1d3024",
+      "note": "High-to-low standing cable wood chop; completed second frame instead of single overhead pose."
+    },
+    {
+      "id": "core_lying_leg_raise",
+      "name": "Lying Floor Leg Raise",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing picture uses a bench, not the floor with lower back pressed down as described."
+    },
+    {
+      "id": "core_bicycle_crunches",
+      "name": "Bicycle Crunches",
+      "status": "available",
+      "sourceId": "Air_Bike",
+      "path": "/exercises/core_bicycle_crunches.png",
+      "sha256": "8e06f8363ddda4f16635bcceb645d4175af333321f2a45c6affd116e33ed4d30",
+      "note": "Replaced single ambiguous pose with air-bike alternating elbow-to-knee sequence."
+    },
+    {
+      "id": "core_hollow_body_hold",
+      "name": "Hollow Body Hold",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing picture shows near-vertical limbs, not the described extended hollow-body position."
+    }
+  ]
+}

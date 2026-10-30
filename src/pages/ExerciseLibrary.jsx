@@ -1,295 +1,307 @@
 import { useState, useMemo } from "react";
-import { Search, Grid, List, X, Target, Layers, ChevronsUp, Dumbbell, Footprints, Settings } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import {
+  Search,
+  Grid,
+  List,
+  X,
+  Settings,
+  ChevronRight,
+  SlidersHorizontal,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 import useWorkoutStore from "../store/workoutStore";
-import { getImageUrl } from "../utils/imageUtil";
-
-const muscleIcons = {
-  Chest: Target,
-  Back: Layers,
-  Shoulders: ChevronsUp,
-  Arms: Dumbbell,
-  Legs: Footprints,
-};
+import ExerciseImage from "../components/ExerciseImage";
+import ExerciseDetails from "../components/ExerciseDetails";
 
 export default function ExerciseLibrary() {
-  const navigate = useNavigate();
   const exercises = useWorkoutStore((s) => s.exercises);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMuscle, setSelectedMuscle] = useState("All");
-  const [viewMode, setViewMode] = useState("grid"); // Default to grid
+  const [selectedEquipment, setSelectedEquipment] = useState("All");
+  const [viewMode, setViewMode] = useState("grid");
+  const [selectedId, setSelectedId] = useState(null);
+  const selectedExercise = exercises.find(
+    (exercise) => exercise.id === selectedId,
+  );
+  const muscles = [
+    "All",
+    ...new Set(exercises.map((exercise) => exercise.muscle).filter(Boolean)),
+  ];
+  const equipment = [
+    ...new Set(exercises.map((exercise) => exercise.equipment).filter(Boolean)),
+  ].sort();
 
-  // Get unique muscles
-  const muscles = ["All", ...new Set(exercises.map((e) => e.muscle))];
-
-  // Filter exercises
   const filteredExercises = useMemo(() => {
-    return exercises.filter((ex) => {
-      const matchesSearch = ex.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesMuscle =
-        selectedMuscle === "All" || ex.muscle === selectedMuscle;
-      return matchesSearch && matchesMuscle;
+    const words = searchTerm
+      .trim()
+      .toLocaleLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+    return exercises.filter((exercise) => {
+      const searchable = [
+        exercise.name,
+        exercise.nameAr,
+        exercise.muscle,
+        exercise.equipment,
+        exercise.primaryTarget,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase();
+      return (
+        words.every((word) => searchable.includes(word)) &&
+        (selectedMuscle === "All" || exercise.muscle === selectedMuscle) &&
+        (selectedEquipment === "All" ||
+          exercise.equipment === selectedEquipment)
+      );
     });
-  }, [exercises, searchTerm, selectedMuscle]);
+  }, [exercises, searchTerm, selectedMuscle, selectedEquipment]);
 
-  // Use reduce to group by muscle
-  const groupedExercises = useMemo(() => {
-    return filteredExercises.reduce((acc, ex) => {
-      if (!acc[ex.muscle]) acc[ex.muscle] = [];
-      acc[ex.muscle].push(ex);
-      return acc;
-    }, {});
-  }, [filteredExercises]);
+  const groupedExercises = useMemo(
+    () =>
+      filteredExercises.reduce((groups, exercise) => {
+        const muscle = exercise.muscle || "Other";
+        (groups[muscle] ||= []).push(exercise);
+        return groups;
+      }, {}),
+    [filteredExercises],
+  );
 
-  // Color map for muscle badges
-  const muscleColors = {
-    Chest: "bg-red-500/10 text-red-400 border-red-500/20",
-    Back: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    Shoulders: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    Arms: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-    Legs: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedMuscle("All");
+    setSelectedEquipment("All");
   };
-
-  const clearSearch = () => setSearchTerm("");
+  const hasFilters =
+    searchTerm || selectedMuscle !== "All" || selectedEquipment !== "All";
 
   return (
-    <div className="p-4 space-y-6 pb-24">
-      <header className="flex justify-between items-center">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6 space-y-6">
+      <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+          <p className="text-xs font-semibold uppercase tracking-widest text-neon-cyan mb-2">
+            Move with confidence
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
             Exercise Library
           </h1>
-          <p className="text-[11px] text-slate-500 mt-0.5">{exercises.length} exercises</p>
+          <p className="mt-2 text-sm text-slate-400">
+            Explore {exercises.length} exercises. Open any exercise for setup,
+            cues and common mistakes.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate("/exercises/manage")}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 text-slate-400 text-xs border border-slate-700 hover:bg-slate-700 hover:text-white transition-all"
-            aria-label="Manage exercises"
-          >
-            <Settings size={13} />
-            Manage
-          </button>
-        <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`p-1.5 rounded-md transition-all ${
-              viewMode === "grid"
-                ? "bg-slate-700 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            aria-label="Grid view"
-          >
-            <Grid size={18} />
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`p-1.5 rounded-md transition-all ${
-              viewMode === "list"
-                ? "bg-slate-700 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            aria-label="List view"
-          >
-            <List size={18} />
-          </button>
-        </div>
-        </div>
+        <Link
+          to="/exercises/manage"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-300 hover:text-white"
+        >
+          <Settings size={16} aria-hidden="true" /> Manage
+        </Link>
       </header>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <Search className="h-4 w-4 text-slate-400" />
-        </div>
-        <input
-          type="text"
-          placeholder="Search exercises..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-10 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 focus:border-transparent transition-all placeholder:text-slate-500"
-        />
-        {searchTerm && (
-          <button
-            onClick={clearSearch}
-            className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-white transition-colors"
-            aria-label="Clear search"
-          >
-            <X size={14} className="bg-slate-700 rounded-full p-0.5 w-5 h-5" />
-          </button>
-        )}
-      </div>
-
-      {/* Muscle Filter Chips */}
-      <div className="flex overflow-x-auto pb-2 gap-2 scrollbar-hide -mx-4 px-4">
-        {muscles.map((m) => {
-          const count =
-            m === "All"
-              ? exercises.length
-              : exercises.filter((e) => e.muscle === m).length;
-          const isActive = selectedMuscle === m;
-
-          // Determine active color style
-          let activeStyle = "bg-neon-blue text-slate-950 font-semibold shadow-lg shadow-neon-blue/20 border-neon-blue";
-          if (isActive && m !== "All") {
-             // Use specific muscle color for active state if available, else neon-blue
-             if (m === "Chest") activeStyle = "bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20";
-             else if (m === "Back") activeStyle = "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20";
-             else if (m === "Shoulders") activeStyle = "bg-amber-500 text-slate-900 border-amber-500 shadow-lg shadow-amber-500/20";
-             else if (m === "Arms") activeStyle = "bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/20";
-             else if (m === "Legs") activeStyle = "bg-emerald-500 text-slate-900 border-emerald-500 shadow-lg shadow-emerald-500/20";
-          }
-
-          return (
-            <button
-              key={m}
-              onClick={() => setSelectedMuscle(m)}
-              className={`px-4 py-2 rounded-full text-[11px] whitespace-nowrap transition-all border flex items-center gap-1.5 ${
-                isActive
-                  ? activeStyle
-                  : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600 hover:bg-slate-750"
-              }`}
-            >
-              {m}
-              <span
-                className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                  isActive ? "bg-black/20" : "bg-slate-700 text-slate-500"
-                }`}
+      <section
+        aria-label="Exercise filters"
+        className="space-y-4 rounded-2xl border border-border-slate bg-bg-surface p-4"
+      >
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search
+              size={18}
+              className="pointer-events-none absolute left-3 top-3.5 text-slate-400"
+              aria-hidden="true"
+            />
+            <label htmlFor="exercise-search" className="sr-only">
+              Search exercises
+            </label>
+            <input
+              id="exercise-search"
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by name, muscle or equipment…"
+              className="min-h-11 w-full rounded-xl border border-slate-700 bg-slate-800 py-3 pl-10 pr-11 text-sm text-white placeholder:text-slate-400"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                aria-label="Clear search"
+                className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-slate-400"
               >
-                {count}
-              </span>
+                <X size={18} />
+              </button>
+            )}
+          </div>
+          <label className="flex items-center gap-2 text-sm text-slate-400">
+            <SlidersHorizontal size={16} aria-hidden="true" />
+            <span className="sr-only">Equipment</span>
+            <select
+              value={selectedEquipment}
+              onChange={(event) => setSelectedEquipment(event.target.value)}
+              className="min-h-11 flex-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-white capitalize"
+            >
+              <option value="All">All equipment</option>
+              {equipment.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label="Muscle group"
+        >
+          {muscles.map((muscle) => (
+            <button
+              key={muscle}
+              type="button"
+              aria-pressed={selectedMuscle === muscle}
+              onClick={() => setSelectedMuscle(muscle)}
+              className={`min-h-10 rounded-full border px-4 py-2 text-xs font-medium transition-colors ${selectedMuscle === muscle ? "border-neon-cyan bg-neon-cyan text-slate-950" : "border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500"}`}
+            >
+              {muscle}
             </button>
-          );
-        })}
+          ))}
+        </div>
+      </section>
+
+      <div className="flex items-center justify-between gap-3">
+        <p role="status" className="text-sm text-slate-400">
+          {filteredExercises.length}{" "}
+          {filteredExercises.length === 1 ? "exercise" : "exercises"}
+          {hasFilters ? " found" : " to explore"}
+        </p>
+        <div className="flex items-center gap-3">
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="min-h-11 text-xs font-semibold text-neon-cyan"
+            >
+              Reset filters
+            </button>
+          )}
+          <div
+            className="inline-flex rounded-xl border border-slate-700 bg-slate-800 p-1"
+            role="group"
+            aria-label="View mode"
+          >
+            {[
+              { id: "grid", Icon: Grid },
+              { id: "list", Icon: List },
+            ].map(({ id, Icon }) => (
+              <button
+                type="button"
+                key={id}
+                aria-label={`${id === "grid" ? "Grid" : "List"} view`}
+                aria-pressed={viewMode === id}
+                onClick={() => setViewMode(id)}
+                className={`flex h-10 w-10 items-center justify-center rounded-lg ${viewMode === id ? "bg-slate-700 text-white" : "text-slate-400"}`}
+              >
+                <Icon size={18} />
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Grouped Exercise Display */}
       <div className="space-y-8">
-        {Object.entries(groupedExercises).map(([muscle, group]) => {
-          const MuscleIcon = muscleIcons[muscle] || Target;
-          return (
-            <div key={muscle} className="space-y-3">
-              <div className="flex items-center gap-2 px-1">
-                <MuscleIcon size={18} className="text-slate-400" />
-                <h2 className="text-sm font-semibold text-slate-300">
-                  {muscle}
-                </h2>
-                <span className="text-[10px] text-slate-600 font-medium bg-slate-800/50 px-2 py-0.5 rounded-full">
-                  {group.length} exercises
-                </span>
-                <div className="h-px bg-slate-800 flex-1 ml-2" />
-              </div>
-
-              {viewMode === "grid" ? (
-                /* Grid View */
-                <div className="grid grid-cols-2 gap-3">
-                  {group.map((exercise) => (
-                    <div
-                      key={exercise.id}
-                      className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-800 border border-slate-700/50 hover:border-slate-600 transition-all active:scale-[0.98]"
-                    >
-                      <img
-                        src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
-                        alt={exercise.name}
-                        className="w-full h-full object-contain p-2 opacity-85 group-hover:opacity-100 transition-opacity bg-[#0B0F17]"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = getImageUrl("/icons/dumbbell.svg");
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-3 pointer-events-none">
-                        <div
-                          className={`self-start text-[10px] px-2 py-0.5 rounded-full border mb-1.5 ${
-                            muscleColors[exercise.muscle] ||
-                            "bg-slate-700 text-slate-300 border-slate-600"
-                          }`}
-                        >
-                          {exercise.muscle}
-                        </div>
-                        <h3 className="font-semibold text-white text-sm leading-tight">
-                          {exercise.name}
-                        </h3>
-                        {exercise.nameAr && (
-                          <p className="text-[11px] text-slate-400 truncate" dir="rtl">
-                            {exercise.nameAr}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                /* List View */
-                <div className="space-y-3">
-                  {group.map((exercise) => (
-                    <div
-                      key={exercise.id}
-                      className="flex items-center gap-4 bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50 hover:border-slate-600/80 transition-all active:scale-[0.99]"
-                    >
-                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1 flex items-center justify-center">
-                        <img
-                          src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
-                          alt={exercise.name}
-                          className="w-full h-full object-contain"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = getImageUrl("/icons/dumbbell.svg");
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white truncate text-sm">
-                          {exercise.name}
-                        </h3>
-                        {exercise.nameAr && (
-                          <p className="text-[11px] text-slate-400 truncate" dir="rtl">
-                            {exercise.nameAr}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 mt-1">
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                              muscleColors[exercise.muscle] ||
-                              "bg-slate-700 text-slate-300 border-slate-600"
-                            }`}
-                          >
-                            {exercise.muscle}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+        {Object.entries(groupedExercises).map(([muscle, group]) => (
+          <section
+            key={muscle}
+            aria-label={`${muscle} exercises`}
+            className="space-y-3"
+          >
+            <h2 className="flex items-center gap-3 text-lg font-semibold text-white">
+              {muscle}
+              <span className="text-xs font-normal text-slate-400">
+                {group.length} exercises
+              </span>
+            </h2>
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3"
+                  : "grid gap-3"
+              }
+            >
+              {group.map((exercise) => (
+                <button
+                  key={exercise.id}
+                  type="button"
+                  onClick={() => setSelectedId(exercise.id)}
+                  aria-label={`View ${exercise.name} details`}
+                  aria-haspopup="dialog"
+                  className={`group overflow-hidden rounded-2xl border border-slate-700/70 bg-bg-surface text-left transition-colors hover:border-neon-cyan/50 ${viewMode === "list" ? "flex items-center gap-4 p-3" : "flex flex-col"}`}
+                >
+                  <ExerciseImage
+                    exercise={exercise}
+                    compact={viewMode === "list"}
+                    className={
+                      viewMode === "grid"
+                        ? "aspect-[4/3] w-full border-b border-slate-700/50 p-2"
+                        : "h-20 w-24 shrink-0 rounded-xl p-1"
+                    }
+                  />
+                  <div
+                    className={`min-w-0 flex-1 ${viewMode === "grid" ? "p-3 sm:p-4" : "py-1"}`}
+                  >
+                    <p className="font-semibold leading-snug text-white group-hover:text-neon-cyan text-sm">
+                      {exercise.name}
+                    </p>
+                    {exercise.nameAr && (
+                      <p
+                        lang="ar"
+                        dir="rtl"
+                        className="mt-1 text-xs leading-relaxed text-slate-400"
+                      >
+                        {exercise.nameAr}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-slate-400 capitalize">
+                      {exercise.equipment || "No equipment specified"}
+                    </p>
+                  </div>
+                  {viewMode === "list" && (
+                    <ChevronRight
+                      size={18}
+                      className="shrink-0 text-slate-400"
+                      aria-hidden="true"
+                    />
+                  )}
+                </button>
+              ))}
             </div>
-          );
-        })}
-
+          </section>
+        ))}
         {filteredExercises.length === 0 && (
-          <div className="text-center py-12 px-4 rounded-2xl bg-slate-800/20 border border-dashed border-slate-700/50">
-            <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-500">
-              <Search size={20} />
-            </div>
-            <p className="text-slate-400 font-medium">No exercises found</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Try adjusting your search or filter
+          <div className="rounded-2xl border border-dashed border-slate-700 px-4 py-16 text-center">
+            <Search
+              size={28}
+              className="mx-auto mb-4 text-slate-400"
+              aria-hidden="true"
+            />
+            <h2 className="font-semibold text-white">No exercises found</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Try another name, muscle group or equipment type.
             </p>
             <button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedMuscle("All");
-              }}
-              className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs rounded-xl transition-colors border border-slate-700"
+              type="button"
+              onClick={clearFilters}
+              className="mt-5 min-h-11 rounded-xl border border-slate-700 bg-slate-800 px-5 py-2 text-sm text-white"
             >
               Clear filters
             </button>
           </div>
         )}
       </div>
+      <ExerciseDetails
+        exercise={selectedExercise}
+        isOpen={Boolean(selectedExercise)}
+        onClose={() => setSelectedId(null)}
+      />
     </div>
   );
 }

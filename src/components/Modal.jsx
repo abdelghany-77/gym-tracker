@@ -1,5 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+
+let scrollLocks = 0;
+let previousOverflow = "";
 
 /**
  * Shared Modal component with consistent animations, backdrop, and focus trap.
@@ -21,83 +25,116 @@ export default function Modal({
   maxWidth = "max-w-sm",
   showClose = true,
   position = "center",
+  ariaLabel,
 }) {
   const modalRef = useRef(null);
+  const titleId = useId();
+  const close = useEffectEvent(() => onClose());
 
-  // Trap focus inside modal
+  // Query on each keystroke: forms can add, remove or disable controls while open.
   useEffect(() => {
     if (!isOpen) return;
 
     const modal = modalRef.current;
     if (!modal) return;
 
-    const focusableEls = modal.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-    const first = focusableEls[0];
-    const last = focusableEls[focusableEls.length - 1];
+    const opener = document.activeElement;
+    const getFocusable = () =>
+      [
+        ...modal.querySelectorAll(
+          'button:not(:disabled), a[href], input:not(:disabled):not([type="hidden"]), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"]):not(:disabled)',
+        ),
+      ].filter(
+        (el) =>
+          el.tabIndex >= 0 &&
+          !el.closest('[hidden], [aria-hidden="true"], [inert]'),
+      );
+    const isTopmost = () =>
+      [...document.querySelectorAll("[data-modal-panel]")].at(-1) === modal;
 
-    const handleTab = (e) => {
-      if (e.key === "Tab") {
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
-            e.preventDefault();
-            last?.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first?.focus();
-          }
-        }
-      }
+    const handleKey = (e) => {
+      if (!isTopmost()) return;
       if (e.key === "Escape") {
-        onClose();
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+      }
+      if (e.key !== "Tab") return;
+      const elements = getFocusable();
+      const first = elements[0];
+      const last = elements.at(-1);
+      if (!first) {
+        e.preventDefault();
+        modal.focus();
+      } else if (
+        !modal.contains(document.activeElement) ||
+        document.activeElement === modal
+      ) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
+    const containFocus = (e) => {
+      if (isTopmost() && !modal.contains(e.target))
+        (getFocusable()[0] || modal).focus();
+    };
 
-    document.addEventListener("keydown", handleTab);
-    first?.focus();
-
-    // Prevent body scroll
+    if (scrollLocks++ === 0) previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKey);
+    document.addEventListener("focusin", containFocus);
+    (getFocusable()[0] || modal).focus();
 
     return () => {
-      document.removeEventListener("keydown", handleTab);
-      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener("focusin", containFocus);
+      if (--scrollLocks === 0) document.body.style.overflow = previousOverflow;
+      if (opener?.isConnected) opener.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex ${
+      className={`fixed inset-0 z-[100] flex ${
         position === "bottom" ? "items-end sm:items-center" : "items-center"
       } justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn`}
       onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={title || "Dialog"}
     >
       <div
         ref={modalRef}
-        className={`bg-slate-900 rounded-2xl border border-slate-700 w-full ${maxWidth} shadow-2xl overflow-hidden`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={!title ? ariaLabel || "Dialog" : undefined}
+        tabIndex={-1}
+        data-modal-panel=""
+        className={`bg-slate-900 rounded-2xl border border-slate-700 w-full ${maxWidth} shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || showClose) && (
           <div className="flex items-center justify-between p-4 border-b border-slate-800">
             {title && (
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">
+              <h2
+                id={titleId}
+                className="text-base font-semibold text-white flex items-center gap-2"
+              >
                 {titleIcon}
                 {title}
-              </h3>
+              </h2>
             )}
             {showClose && (
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors text-slate-400 hover:text-white ml-auto"
+                className="w-11 h-11 shrink-0 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors text-slate-400 hover:text-white ml-auto"
                 aria-label="Close dialog"
               >
                 <X size={16} />
@@ -109,7 +146,8 @@ export default function Modal({
         {/* Content */}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -146,7 +184,12 @@ export function ConfirmDialog({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} showClose={false}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      showClose={false}
+      ariaLabel={title}
+    >
       <div className="p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
         <p className="text-sm text-slate-400">{description}</p>

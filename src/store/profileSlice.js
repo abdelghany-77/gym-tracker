@@ -14,11 +14,27 @@ export const createProfileSlice = (set, get) => ({
   // Actions
   updateUserProfile: (profile) => {
     set((state) => {
-      const updatedProfile = { ...state.userProfile, ...profile };
+      const validProfile = Object.fromEntries(
+        Object.entries(profile).filter(([key, value]) =>
+          key === "name"
+            ? typeof value === "string"
+            : ["weight", "height", "age"].includes(key) &&
+              Number.isFinite(value) &&
+              value >= 0 &&
+              (key !== "age" || Number.isInteger(value)),
+        ),
+      );
+      const updatedProfile = { ...state.userProfile, ...validProfile };
       saveToStorage("gym_profile", updatedProfile);
 
       // Auto-update nutrition targets based on new profile
-      if (updatedProfile.weight && updatedProfile.height) {
+      if (
+        ["weight", "height", "age"].some(
+          (key) => updatedProfile[key] !== state.userProfile[key],
+        ) &&
+        updatedProfile.weight > 0 &&
+        updatedProfile.height > 0
+      ) {
         const newTargets = calculateMacros(updatedProfile);
         saveToStorage("gym_nutrition", newTargets);
         return { userProfile: updatedProfile, nutritionTargets: newTargets };
@@ -31,7 +47,12 @@ export const createProfileSlice = (set, get) => ({
   // Getters
   getBMI: () => {
     const { userProfile } = get();
-    if (!userProfile.weight || !userProfile.height) return null;
+    if (
+      ![userProfile.weight, userProfile.height].every(
+        (value) => Number.isFinite(value) && value > 0,
+      )
+    )
+      return null;
     const heightM = userProfile.height / 100;
     const value = parseFloat(
       (userProfile.weight / (heightM * heightM)).toFixed(1),
@@ -53,7 +74,12 @@ export const createProfileSlice = (set, get) => ({
 
   getSuggestedCalories: () => {
     const { userProfile } = get();
-    if (!userProfile.weight || !userProfile.height) return null;
+    if (
+      ![userProfile.weight, userProfile.height].every(
+        (value) => Number.isFinite(value) && value > 0,
+      )
+    )
+      return null;
     const age = userProfile.age || 24;
     const bmr =
       10 * userProfile.weight + 6.25 * userProfile.height - 5 * age + 5;

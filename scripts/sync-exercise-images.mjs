@@ -1,129 +1,215 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import process from "node:process";
 import sharp from "sharp";
+import { exercisesDatabase } from "../src/data/exercises.js";
 
-const sourceRoot = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main";
-const outputDir = path.resolve("public/exercises");
-
-const imageSources = {
-  chest_bb_flat_bench: "Barbell_Bench_Press_-_Medium_Grip",
-  chest_db_flat_press: "Dumbbell_Bench_Press",
-  chest_bb_incline_press: "Barbell_Incline_Bench_Press_-_Medium_Grip",
-  chest_db_incline_press: "Incline_Dumbbell_Press",
-  chest_machine_flat_press: "Leverage_Chest_Press",
-  chest_bb_decline_press: "Decline_Barbell_Bench_Press",
-  chest_db_decline_press: "Decline_Dumbbell_Bench_Press",
-  chest_dips: "Dips_-_Chest_Version",
-  back_wide_lat_pulldown: "Wide-Grip_Lat_Pulldown",
-  back_close_grip_pulldown: "V-Bar_Pulldown",
-  back_pullups: "Pullups",
-  back_bb_bent_over_row: "Bent_Over_Barbell_Row",
-  back_tbar_row: "T-Bar_Row_with_Handle",
-  back_seated_cable_row: "Seated_Cable_Rows",
-  back_db_single_arm_row: "One-Arm_Dumbbell_Row",
-  back_straight_arm_pulldown: "Straight-Arm_Pulldown",
-  back_db_pullover: "Bent-Arm_Dumbbell_Pullover",
-  back_face_pulls: "Face_Pull",
-  back_hyperextension: "Hyperextensions_Back_Extensions",
-  sh_seated_db_press: "Seated_Dumbbell_Press",
-  sh_standing_bb_ohp: "Standing_Military_Press",
-  sh_machine_shoulder_press: "Machine_Shoulder_Military_Press",
-  sh_arnold_press: "Arnold_Dumbbell_Press",
-  sh_db_lateral_raise: "Side_Lateral_Raise",
-  sh_cable_lateral_raise: "Cable_Seated_Lateral_Raise",
-  sh_reverse_pec_deck: "Reverse_Machine_Flyes",
-  sh_bent_over_db_raise: "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench",
-  sh_cable_rear_delt_fly: "Cable_Rear_Delt_Fly",
-  sh_db_shrugs: "Dumbbell_Shrug",
-  sh_bb_shrugs: "Barbell_Shrug",
-  leg_bb_back_squat: "Barbell_Squat",
-  leg_hack_squat: "Hack_Squat",
-  leg_45_press: "Leg_Press",
-  leg_extension: "Leg_Extensions",
-  leg_bulgarian_split_squat: "Split_Squat_with_Dumbbells",
-  leg_walking_lunges: "Dumbbell_Lunges",
-  leg_bb_rdl: "Romanian_Deadlift",
-  leg_db_rdl: "Romanian_Deadlift",
-  leg_lying_curl: "Lying_Leg_Curls",
-  leg_seated_curl: "Seated_Leg_Curl",
-  leg_standing_calf_raise: "Standing_Dumbbell_Calf_Raise",
-  leg_seated_calf_raise: "Seated_Calf_Raise",
-  arm_bb_bicep_curl: "Barbell_Curl",
-  arm_db_incline_curl: "Incline_Dumbbell_Curl",
-  arm_preacher_curl: "Preacher_Curl",
-  arm_db_hammer_curl: "Alternate_Hammer_Curl",
-  arm_concentration_curl: "Concentration_Curls",
-  arm_rope_pushdown: "Triceps_Pushdown_-_Rope_Attachment",
-  arm_ez_skull_crushers: "EZ-Bar_Skullcrusher",
-  arm_overhead_cable_ext: "Triceps_Overhead_Extension_with_Rope",
-  arm_close_grip_bench: "Close-Grip_Barbell_Bench_Press",
-  core_hanging_leg_raise: "Hanging_Leg_Raise",
-  core_cable_kneeling_crunch: "Cable_Crunch",
-  core_decline_crunch: "Decline_Crunch",
-  core_ab_wheel_rollout: "Barbell_Ab_Rollout_-_On_Knees",
-  core_russian_twist: "Russian_Twist",
-  core_lying_leg_raise: "Flat_Bench_Lying_Leg_Raise",
-};
-
-const catalog = await fetch(`${sourceRoot}/dist/exercises.json`).then((response) => {
-  if (!response.ok) throw new Error(`Could not read source catalog (${response.status})`);
-  return response.json();
-});
-
-const catalogIds = new Set(catalog.map((exercise) => exercise.id));
-const missingSourceEntries = Object.entries(imageSources).filter(([, sourceId]) => !catalogIds.has(sourceId));
-if (missingSourceEntries.length > 0) {
-  throw new Error(`Unknown source IDs: ${missingSourceEntries.map(([id, sourceId]) => `${id}=${sourceId}`).join(", ")}`);
+const root = fileURLToPath(new URL("../", import.meta.url));
+const outputDir = path.join(root, "public/exercises");
+const manifest = JSON.parse(
+  await fs.readFile(path.join(outputDir, "manifest.json"), "utf8"),
+);
+const args = process.argv.slice(2);
+const onlyArg = args.find((arg) => arg.startsWith("--only="));
+if (
+  args.some(
+    (arg) => !["--check", "--contact-sheets"].includes(arg) && arg !== onlyArg,
+  ) ||
+  args.length > 1
+) {
+  throw new Error(
+    "Use no arguments, --check, --contact-sheets, or --only=<exercise-id>.",
+  );
+}
+const digest = (buffer) => createHash("sha256").update(buffer).digest("hex");
+const byId = new Map(manifest.images.map((entry) => [entry.id, entry]));
+if (
+  manifest.schemaVersion !== 1 ||
+  byId.size !== manifest.images.length ||
+  byId.size !== exercisesDatabase.length
+) {
+  throw new Error(
+    "Image manifest must cover every catalog exercise exactly once.",
+  );
+}
+for (const exercise of exercisesDatabase) {
+  const entry = byId.get(exercise.id);
+  if (
+    !entry ||
+    entry.name !== exercise.name ||
+    !entry.note ||
+    entry.status !== exercise.imageStatus ||
+    entry.path !== exercise.image
+  ) {
+    throw new Error(`Image audit/catalog mismatch: ${exercise.id}`);
+  }
+  if (entry.status === "available") {
+    if (
+      entry.path !== `/exercises/${entry.id}.png` ||
+      !/^[a-zA-Z0-9_-]+$/.test(entry.id) ||
+      !/^[a-zA-Z0-9_-]+$/.test(entry.sourceId) ||
+      !/^[a-f0-9]{64}$/.test(entry.sha256)
+    ) {
+      throw new Error(`Incomplete image provenance: ${entry.id}`);
+    }
+  } else if (
+    entry.status !== "unavailable" ||
+    entry.path !== null ||
+    entry.sourceId !== null ||
+    entry.sha256 !== null ||
+    !exercise.imageUnavailableReason
+  ) {
+    throw new Error(
+      `Unavailable image must have no asset/source/hash: ${entry.id}`,
+    );
+  }
 }
 
-await fs.mkdir(outputDir, { recursive: true });
-
-for (const [exerciseId, sourceId] of Object.entries(imageSources)) {
-  const [start, finish] = await Promise.all(
-    [0, 1].map(async (stage) => {
-      const response = await fetch(`${sourceRoot}/exercises/${sourceId}/${stage}.jpg`);
-      if (!response.ok) throw new Error(`Could not download ${sourceId}/${stage}.jpg (${response.status})`);
-      return Buffer.from(await response.arrayBuffer());
-    }),
-  );
-
-  const [startImage, finishImage] = await Promise.all(
-    [start, finish].map((image) =>
-      sharp(image)
-        .resize(384, 384, { fit: "contain", background: "#0B0F17" })
-        .png({ compressionLevel: 9, palette: true })
-        .toBuffer(),
-    ),
-  );
-
-  const outputPath = path.join(outputDir, `${exerciseId}.png`);
-  const temporaryPath = `${outputPath}.tmp`;
-  await sharp({
-    create: {
-      width: 768,
-      height: 384,
-      channels: 3,
-      background: "#0B0F17",
-    },
-  })
-    .composite([
-      { input: startImage, left: 0, top: 0 },
-      { input: finishImage, left: 384, top: 0 },
-    ])
-    .png()
-    .toFile(temporaryPath);
-  await fs.rename(temporaryPath, outputPath);
+async function checkImages() {
+  const hashes = new Set();
+  for (const entry of manifest.images) {
+    const filename = path.join(outputDir, `${entry.id}.png`);
+    if (entry.status === "unavailable") {
+      try {
+        await fs.access(filename);
+      } catch (error) {
+        if (error.code === "ENOENT") continue;
+        throw error;
+      }
+      throw new Error(`Remove misleading unavailable asset: ${entry.id}`);
+    }
+    const buffer = await fs.readFile(filename);
+    const metadata = await sharp(buffer).metadata();
+    if (digest(buffer) !== entry.sha256)
+      throw new Error(`Unaudited image bytes: ${entry.id}`);
+    if (
+      metadata.format !== "png" ||
+      metadata.width !== 768 ||
+      metadata.height !== 384 ||
+      buffer.length > 2 * 1024 * 1024
+    )
+      throw new Error(`Invalid image format/size: ${entry.id}`);
+    if (hashes.has(entry.sha256))
+      throw new Error(`Duplicate exercise picture: ${entry.id}`);
+    hashes.add(entry.sha256);
+  }
 }
 
-const attribution = `# Exercise image attribution
-
-The exercise illustrations in this directory are sourced from
-[yuhonas/free-exercise-db](https://github.com/yuhonas/free-exercise-db), distributed
-under [The Unlicense](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md).
-
-Each replacement image is a local side-by-side composition of the source
-exercise's \`0.jpg\` starting position and \`1.jpg\` finishing position.
-`;
-await fs.writeFile(path.join(outputDir, "SOURCE.md"), attribution);
-
-console.log(`Updated ${Object.keys(imageSources).length} exercise images.`);
+if (args.includes("--check") || args.includes("--contact-sheets")) {
+  await checkImages();
+  if (args.includes("--contact-sheets")) {
+    // Never open full-size assets or base64 SVG sources during visual review.
+    const sheetsDir = path.join(
+      root,
+      "node_modules/.cache/exercise-image-audit",
+    );
+    await fs.mkdir(sheetsDir, { recursive: true });
+    for (let offset = 0; offset < manifest.images.length; offset += 12) {
+      const inputs = [];
+      for (const [index, entry] of manifest.images
+        .slice(offset, offset + 12)
+        .entries()) {
+        const left = (index % 4) * 160;
+        const top = Math.floor(index / 4) * 164;
+        if (entry.status === "available") {
+          inputs.push({
+            input: await sharp(path.join(outputDir, `${entry.id}.png`))
+              .resize(160, 140, { fit: "contain", background: "white" })
+              .png()
+              .toBuffer(),
+            left,
+            top,
+          });
+        }
+        const label = `${offset + index + 1}: ${entry.status === "unavailable" ? "UNAVAILABLE" : entry.id}`;
+        inputs.push({
+          input: Buffer.from(
+            `<svg width="160" height="24"><rect width="160" height="24" fill="white"/><text x="4" y="16" font-size="11">${label}</text></svg>`,
+          ),
+          left,
+          top: top + 140,
+        });
+      }
+      await sharp({
+        create: { width: 640, height: 492, channels: 3, background: "white" },
+      })
+        .composite(inputs)
+        .png()
+        .toFile(path.join(sheetsDir, `review-${offset}.png`));
+    }
+    console.log(`Small review sheets: ${sheetsDir}`);
+  }
+} else {
+  const selected = onlyArg
+    ? [byId.get(onlyArg.slice("--only=".length))]
+    : manifest.images;
+  if (onlyArg && (!selected[0] || selected[0].status !== "available")) {
+    throw new Error("--only must identify an available, audited exercise.");
+  }
+  const catalogResponse = await fetch(
+    `${manifest.sourceRoot}/dist/exercises.json`,
+    { signal: AbortSignal.timeout(30000) },
+  );
+  if (!catalogResponse.ok)
+    throw new Error(
+      `Could not read source catalog (${catalogResponse.status})`,
+    );
+  const sourceIds = new Set(
+    (await catalogResponse.json()).map((exercise) => exercise.id),
+  );
+  for (const entry of selected) {
+    // Explicitly unavailable entries never borrow a different exercise's illustration.
+    if (entry.status === "unavailable") continue;
+    if (!sourceIds.has(entry.sourceId))
+      throw new Error(`Unknown source ID: ${entry.sourceId}`);
+    const inputs = await Promise.all(
+      [0, 1].map(async (stage) => {
+        const response = await fetch(
+          `${manifest.sourceRoot}/exercises/${entry.sourceId}/${stage}.jpg`,
+          { signal: AbortSignal.timeout(30000) },
+        );
+        if (!response.ok)
+          throw new Error(
+            `Could not download ${entry.sourceId}/${stage}.jpg (${response.status})`,
+          );
+        return {
+          input: await sharp(Buffer.from(await response.arrayBuffer()))
+            .resize(384, 384, { fit: "contain", background: "#0B0F17" })
+            .png({ compressionLevel: 9, palette: true })
+            .toBuffer(),
+          left: stage * 384,
+          top: 0,
+        };
+      }),
+    );
+    const image = await sharp({
+      create: { width: 768, height: 384, channels: 3, background: "#0B0F17" },
+    })
+      .composite(inputs)
+      .png()
+      .toBuffer();
+    // Upstream main can change. Do not silently bless new bytes (including encoder changes).
+    if (digest(image) !== entry.sha256) {
+      throw new Error(
+        `Source/encoder changed for ${entry.id}; visually re-audit small contact sheets before updating its manifest hash.`,
+      );
+    }
+    const destination = path.join(outputDir, `${entry.id}.png`);
+    const temporary = `${destination}.tmp`;
+    try {
+      await fs.writeFile(temporary, image);
+      await fs.rename(temporary, destination);
+    } finally {
+      await fs.rm(temporary, { force: true });
+    }
+  }
+  await checkImages();
+}
+const available = manifest.images.filter(
+  (entry) => entry.status === "available",
+).length;
+console.log(
+  `Image audit: ${manifest.images.length} catalog entries; ${available} available, ${manifest.images.length - available} explicitly unavailable.`,
+);

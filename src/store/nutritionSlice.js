@@ -11,10 +11,25 @@ const defaultNutritionTargets = {
   age: 24,
 };
 
+const emptyChecklist = () => ({
+  vitamin: false,
+  water: 0,
+  mealPlanFollowed: false,
+  caloriesConsumed: 0,
+  mealsEaten: [],
+  mealCalories: {},
+});
+
+const currentChecklist = (state) =>
+  state.dailyChecklistDate === todayKey()
+    ? state.dailyChecklist
+    : loadFromStorage("gym_checklist_" + todayKey(), emptyChecklist());
+
 // ── Helper: Calculate Macros ──
 export const calculateMacros = (profile) => {
   const { weight, height, age } = profile;
-  if (!weight || !height) return defaultNutritionTargets;
+  if (![weight, height].every((value) => Number.isFinite(value) && value > 0))
+    return { ...defaultNutritionTargets };
 
   // Mifflin-St Jeor (Male)
   const bmr = 10 * weight + 6.25 * height - 5 * (age || 24) + 5;
@@ -41,24 +56,41 @@ export const calculateMacros = (profile) => {
 export const createNutritionSlice = (set, get) => ({
   // State
   nutritionTargets: loadFromStorage("gym_nutrition", defaultNutritionTargets),
-  dailyChecklist: loadFromStorage("gym_checklist_" + todayKey(), {
-    vitamin: false,
-    water: 0,
-    mealPlanFollowed: false,
-    caloriesConsumed: 0,
-    mealsEaten: [],
-  }),
+  dailyChecklistDate: todayKey(),
+  dailyChecklist: loadFromStorage(
+    "gym_checklist_" + todayKey(),
+    emptyChecklist(),
+  ),
 
   // Actions
+  ensureDailyChecklist: () => {
+    if (get().dailyChecklistDate !== todayKey()) {
+      set({
+        dailyChecklist: currentChecklist(get()),
+        dailyChecklistDate: todayKey(),
+      });
+    }
+  },
+
   updateNutritionTargets: (targets) => {
     set((state) => {
-      const updated = { ...state.nutritionTargets, ...targets };
+      const validTargets = Object.fromEntries(
+        Object.entries(targets).filter(
+          ([key, value]) =>
+            Object.hasOwn(defaultNutritionTargets, key) &&
+            Number.isFinite(value) &&
+            (key === "calories" ? value > 0 : value >= 0),
+        ),
+      );
+      const updated = { ...state.nutritionTargets, ...validTargets };
       saveToStorage("gym_nutrition", updated);
       return { nutritionTargets: updated };
     });
   },
 
   updateCaloriesConsumed: (calories) => {
+    if (!Number.isFinite(calories) || calories < 0) return;
+    get().ensureDailyChecklist();
     set((state) => {
       const updated = { ...state.dailyChecklist, caloriesConsumed: calories };
       saveToStorage("gym_checklist_" + todayKey(), updated);
@@ -67,6 +99,7 @@ export const createNutritionSlice = (set, get) => ({
   },
 
   toggleMealPlan: () => {
+    get().ensureDailyChecklist();
     set((state) => {
       const updated = {
         ...state.dailyChecklist,
@@ -77,30 +110,40 @@ export const createNutritionSlice = (set, get) => ({
     });
   },
 
-  toggleMealEaten: (mealIndex, mealCalories) => {
+  toggleMealEaten: (mealIndex) => {
+    const meals = get().getMealPlan();
+    if (!Number.isInteger(mealIndex) || !meals[mealIndex]) return;
+    get().ensureDailyChecklist();
     set((state) => {
-      const mealsEaten = [...(state.dailyChecklist.mealsEaten || [])];
+      const mealCalories = meals[mealIndex].calories;
+      const loggedCalories = { ...state.dailyChecklist.mealCalories };
+      const mealsEaten = [...new Set(state.dailyChecklist.mealsEaten || [])];
       const alreadyEaten = mealsEaten.includes(mealIndex);
 
       let newMeals;
       let caloriesDelta;
       if (alreadyEaten) {
         newMeals = mealsEaten.filter((i) => i !== mealIndex);
-        caloriesDelta = -mealCalories;
+        // Undo the amount actually logged, not a newly calculated target.
+        caloriesDelta = -(loggedCalories[mealIndex] ?? mealCalories);
+        delete loggedCalories[mealIndex];
       } else {
         newMeals = [...mealsEaten, mealIndex];
         caloriesDelta = mealCalories;
+        loggedCalories[mealIndex] = mealCalories;
       }
 
       const newCalories = Math.max(
         0,
         (state.dailyChecklist.caloriesConsumed || 0) + caloriesDelta,
       );
-      const allMealsEaten = newMeals.length >= 6;
+      const allMealsEaten =
+        meals.length > 0 && meals.every((_, index) => newMeals.includes(index));
 
       const updated = {
         ...state.dailyChecklist,
         mealsEaten: newMeals,
+        mealCalories: loggedCalories,
         caloriesConsumed: newCalories,
         mealPlanFollowed: allMealsEaten,
       };
@@ -110,6 +153,8 @@ export const createNutritionSlice = (set, get) => ({
   },
 
   toggleChecklistItem: (item) => {
+    if (item !== "vitamin") return;
+    get().ensureDailyChecklist();
     set((state) => {
       const updated = {
         ...state.dailyChecklist,
@@ -121,6 +166,7 @@ export const createNutritionSlice = (set, get) => ({
   },
 
   incrementWater: () => {
+    get().ensureDailyChecklist();
     set((state) => {
       const updated = {
         ...state.dailyChecklist,
@@ -132,6 +178,7 @@ export const createNutritionSlice = (set, get) => ({
   },
 
   decrementWater: () => {
+    get().ensureDailyChecklist();
     set((state) => {
       const updated = {
         ...state.dailyChecklist,
@@ -144,15 +191,15 @@ export const createNutritionSlice = (set, get) => ({
 
   getWaterGoal: () => {
     const { userProfile } = get();
-    if (!userProfile.weight) return 8;
+    if (!Number.isFinite(userProfile.weight) || userProfile.weight <= 0)
+      return 8;
     const dailyMl = userProfile.weight * 33;
     return Math.ceil(dailyMl / 250);
   },
 
-  getMealPlan: () => {
-    const { nutritionTargets } = get();
-    const totalCal = nutritionTargets.calories || 3500;
-    const totalProtein = nutritionTargets.protein || 200;
+  getMealPlan: (nutritionTargets = get().nutritionTargets) => {
+    const totalCal = Math.round(nutritionTargets.calories || 3500);
+    const totalProtein = Math.round(nutritionTargets.protein ?? 200);
 
     const mealRatios = [
       {
@@ -218,10 +265,19 @@ export const createNutritionSlice = (set, get) => ({
       },
     ];
 
-    return mealRatios.map((meal) => ({
-      ...meal,
-      calories: Math.round(totalCal * meal.ratio),
-      protein: Math.round(totalProtein * meal.proteinRatio),
-    }));
+    // Round cumulative shares so meal totals exactly match the daily targets.
+    let calorieShare = 0;
+    let proteinShare = 0;
+    return mealRatios.map((meal) => {
+      const previousCalories = Math.round(totalCal * calorieShare);
+      const previousProtein = Math.round(totalProtein * proteinShare);
+      calorieShare += meal.ratio;
+      proteinShare += meal.proteinRatio;
+      return {
+        ...meal,
+        calories: Math.round(totalCal * calorieShare) - previousCalories,
+        protein: Math.round(totalProtein * proteinShare) - previousProtein,
+      };
+    });
   },
 });

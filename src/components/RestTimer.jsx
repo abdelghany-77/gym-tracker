@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { X, Play, Pause, RotateCcw, Plus, Minus, Settings, Timer } from "lucide-react";
+import {
+  X,
+  Play,
+  Pause,
+  RotateCcw,
+  Plus,
+  Minus,
+  Settings,
+  Timer,
+} from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 
 const RADIUS = 32;
@@ -19,35 +28,25 @@ export default function RestTimer({ inline = false }) {
   const restTimerTrigger = useWorkoutStore((s) => s.restTimerTrigger);
   const exerciseRestTimes = useWorkoutStore((s) => s.exerciseRestTimes);
   const setExerciseRestTime = useWorkoutStore((s) => s.setExerciseRestTime);
-  const previousTriggerRef = useRef(0);
-  const intervalRef = useRef(null);
+  const restTimerExerciseId = useWorkoutStore((s) => s.restTimerExerciseId);
+  const previousTriggerRef = useRef(restTimerTrigger);
+  const [deadline, setDeadline] = useState(null);
 
   // Auto-start timer when a set is marked as done
   useEffect(() => {
-    if (restTimerTrigger && restTimerTrigger > previousTriggerRef.current) {
-      let restDuration = totalTime;
-      if (activeWorkout?.exercises) {
-        for (let i = activeWorkout.exercises.length - 1; i >= 0; i--) {
-          const ex = activeWorkout.exercises[i];
-          const hasDoneSet = ex.sets.some((s) => s.done);
-          if (hasDoneSet) {
-            const exerciseRest = exerciseRestTimes[ex.exerciseId];
-            if (exerciseRest) restDuration = exerciseRest;
-            break;
-          }
-        }
-      }
-
+    if (activeWorkout && restTimerTrigger > previousTriggerRef.current) {
+      const restDuration = exerciseRestTimes[restTimerExerciseId] || 60;
       const timerId = setTimeout(() => {
+        previousTriggerRef.current = restTimerTrigger;
+        setDeadline(Date.now() + restDuration * 1000);
         setTotalTime(restDuration);
         setIsOpen(true);
         setTimeLeft(restDuration);
         setIsRunning(true);
       }, 0);
-      previousTriggerRef.current = restTimerTrigger;
       return () => clearTimeout(timerId);
     }
-  }, [restTimerTrigger, totalTime, activeWorkout, exerciseRestTimes]);
+  }, [restTimerTrigger, restTimerExerciseId, activeWorkout, exerciseRestTimes]);
 
   // Audio Context Ref
   const audioContextRef = useRef(null);
@@ -87,23 +86,53 @@ export default function RestTimer({ inline = false }) {
     }
   }, []);
 
-  // Timer Logic
+  // Use wall-clock time so background-tab throttling does not extend a rest.
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((t) => {
-          if (t <= 1) {
-            setIsRunning(false);
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-            playBeep();
-            return 0;
-          }
-          return t - 1;
-        });
-      }, 1000);
+    if (!isRunning || deadline === null || !activeWorkout) return;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining === 0) {
+        setIsRunning(false);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        playBeep();
+      }
+    };
+    const intervalId = setInterval(tick, 1000);
+    return () => clearInterval(intervalId);
+  }, [isRunning, deadline, activeWorkout, playBeep]);
+
+  const toggleRunning = () => {
+    if (isRunning) {
+      setTimeLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+      setIsRunning(false);
+    } else {
+      const remaining = timeLeft || totalTime;
+      setTimeLeft(remaining);
+      setDeadline(Date.now() + remaining * 1000);
+      setIsRunning(true);
     }
-    return () => clearInterval(intervalRef.current);
-  }, [isRunning, timeLeft, playBeep]);
+  };
+
+  const adjustTime = (delta) => {
+    const newTotal = Math.max(10, totalTime + delta);
+    setTotalTime(newTotal);
+    if (isRunning) {
+      const newDeadline = deadline + delta * 1000;
+      setDeadline(newDeadline);
+      setTimeLeft(Math.max(0, Math.ceil((newDeadline - Date.now()) / 1000)));
+    } else {
+      setTimeLeft(newTotal);
+    }
+  };
+
+  const selectPreset = (seconds) => {
+    setTotalTime(seconds);
+    setTimeLeft(seconds);
+    setIsRunning(false);
+    if (restTimerExerciseId) setExerciseRestTime(restTimerExerciseId, seconds);
+    setShowPresets(false);
+  };
 
   // Progress Offset
   const progress = timeLeft / totalTime;
@@ -201,7 +230,9 @@ export default function RestTimer({ inline = false }) {
               aria-live="assertive"
               aria-atomic="true"
             >
-              <span className={`text-2xl font-bold font-mono block leading-none ${getTextColor()}`}>
+              <span
+                className={`text-2xl font-bold font-mono block leading-none ${getTextColor()}`}
+              >
                 {timeLeft}
               </span>
               <span className="text-[8px] text-slate-500 font-medium uppercase">
@@ -215,10 +246,7 @@ export default function RestTimer({ inline = false }) {
             {/* Play/Pause + Reset row */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  if (!isRunning && timeLeft === 0) setTimeLeft(totalTime);
-                  setIsRunning(!isRunning);
-                }}
+                onClick={toggleRunning}
                 className={`flex-1 h-10 rounded-xl flex items-center justify-center gap-2 transition-all btn-press text-sm font-medium ${
                   isRunning
                     ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
@@ -227,9 +255,14 @@ export default function RestTimer({ inline = false }) {
                 aria-label={isRunning ? "Pause" : "Start"}
               >
                 {isRunning ? (
-                  <><Pause size={14} fill="currentColor" /> Pause</>
+                  <>
+                    <Pause size={14} fill="currentColor" /> Pause
+                  </>
                 ) : (
-                  <><Play size={14} fill="currentColor" /> {timeLeft === 0 ? "Start" : "Resume"}</>
+                  <>
+                    <Play size={14} fill="currentColor" />{" "}
+                    {timeLeft === 0 ? "Start" : "Resume"}
+                  </>
                 )}
               </button>
               <button
@@ -247,23 +280,13 @@ export default function RestTimer({ inline = false }) {
             {/* +/- buttons */}
             <div className="flex items-center gap-1.5">
               <button
-                onClick={() => {
-                  const newTime = Math.max(10, totalTime - 10);
-                  setTotalTime(newTime);
-                  if (isRunning) setTimeLeft((l) => Math.max(0, l - 10));
-                  else setTimeLeft(newTime);
-                }}
+                onClick={() => adjustTime(-10)}
                 className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
               >
                 <Minus size={12} /> 10s
               </button>
               <button
-                onClick={() => {
-                  const newTime = totalTime + 10;
-                  setTotalTime(newTime);
-                  if (isRunning) setTimeLeft((l) => l + 10);
-                  else setTimeLeft(newTime);
-                }}
+                onClick={() => adjustTime(10)}
                 className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
               >
                 <Plus size={12} /> 10s
@@ -286,20 +309,7 @@ export default function RestTimer({ inline = false }) {
               {PRESETS.map((s) => (
                 <button
                   key={s}
-                  onClick={() => {
-                    setTotalTime(s);
-                    setTimeLeft(s);
-                    setIsRunning(false);
-                    if (activeWorkout?.exercises) {
-                      for (let i = activeWorkout.exercises.length - 1; i >= 0; i--) {
-                        if (activeWorkout.exercises[i].sets.some((st) => st.done)) {
-                          setExerciseRestTime(activeWorkout.exercises[i].exerciseId, s);
-                          break;
-                        }
-                      }
-                    }
-                    setShowPresets(false);
-                  }}
+                  onClick={() => selectPreset(s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     totalTime === s
                       ? "bg-neon-blue text-slate-950"
@@ -357,24 +367,14 @@ export default function RestTimer({ inline = false }) {
         <div className="flex items-center justify-between gap-6">
           <div className="flex flex-col gap-2">
             <button
-              onClick={() => {
-                const newTime = totalTime + 10;
-                setTotalTime(newTime);
-                if (isRunning) setTimeLeft((l) => l + 10);
-                else setTimeLeft(newTime);
-              }}
+              onClick={() => adjustTime(10)}
               className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
               aria-label="Add 10 seconds"
             >
               <Plus size={18} />
             </button>
             <button
-              onClick={() => {
-                const newTime = Math.max(10, totalTime - 10);
-                setTotalTime(newTime);
-                if (isRunning) setTimeLeft((l) => Math.max(0, l - 10));
-                else setTimeLeft(newTime);
-              }}
+              onClick={() => adjustTime(-10)}
               className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
               aria-label="Subtract 10 seconds"
             >
@@ -391,32 +391,62 @@ export default function RestTimer({ inline = false }) {
 
           <div className="relative w-28 h-28 flex items-center justify-center">
             <svg className="absolute inset-0 w-full h-full -rotate-90">
-              <circle cx="50%" cy="50%" r={RADIUS} className="stroke-slate-800" strokeWidth="6" fill="none" />
               <circle
-                cx="50%" cy="50%" r={RADIUS}
+                cx="50%"
+                cy="50%"
+                r={RADIUS}
+                className="stroke-slate-800"
+                strokeWidth="6"
+                fill="none"
+              />
+              <circle
+                cx="50%"
+                cy="50%"
+                r={RADIUS}
                 className={`transition-all duration-1000 ease-linear ${getColor()}`}
-                strokeWidth="6" fill="none" strokeLinecap="round"
-                strokeDasharray={CIRCUMFERENCE} strokeDashoffset={dashOffset}
+                strokeWidth="6"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={CIRCUMFERENCE}
+                strokeDashoffset={dashOffset}
               />
             </svg>
-            <div className="relative z-10 text-center" role="timer" aria-live="assertive" aria-atomic="true">
-              <span className="text-3xl font-bold font-mono text-white block leading-none">{timeLeft}</span>
-              <span className="text-[10px] text-slate-500 font-medium uppercase mt-1">Seconds</span>
+            <div
+              className="relative z-10 text-center"
+              role="timer"
+              aria-live="assertive"
+              aria-atomic="true"
+            >
+              <span className="text-3xl font-bold font-mono text-white block leading-none">
+                {timeLeft}
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium uppercase mt-1">
+                Seconds
+              </span>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
             <button
-              onClick={() => setIsRunning(!isRunning)}
+              onClick={toggleRunning}
               className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all btn-press ${
-                isRunning ? "bg-amber-500/10 text-amber-500" : "bg-neon-blue/10 text-neon-blue"
+                isRunning
+                  ? "bg-amber-500/10 text-amber-500"
+                  : "bg-neon-blue/10 text-neon-blue"
               }`}
               aria-label={isRunning ? "Pause" : "Start"}
             >
-              {isRunning ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+              {isRunning ? (
+                <Pause size={24} fill="currentColor" />
+              ) : (
+                <Play size={24} fill="currentColor" />
+              )}
             </button>
             <button
-              onClick={() => { setIsRunning(false); setTimeLeft(totalTime); }}
+              onClick={() => {
+                setIsRunning(false);
+                setTimeLeft(totalTime);
+              }}
               className="w-14 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center transition-all btn-press hover:text-white"
               aria-label="Reset"
             >
@@ -427,25 +457,18 @@ export default function RestTimer({ inline = false }) {
 
         {showPresets && (
           <div className="mt-3 pt-3 border-t border-slate-800">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 text-center">Quick Set</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 text-center">
+              Quick Set
+            </p>
             <div className="flex flex-wrap gap-1.5 justify-center">
               {PRESETS.map((s) => (
                 <button
                   key={s}
-                  onClick={() => {
-                    setTotalTime(s); setTimeLeft(s); setIsRunning(false);
-                    if (activeWorkout?.exercises) {
-                      for (let i = activeWorkout.exercises.length - 1; i >= 0; i--) {
-                        if (activeWorkout.exercises[i].sets.some((st) => st.done)) {
-                          setExerciseRestTime(activeWorkout.exercises[i].exerciseId, s);
-                          break;
-                        }
-                      }
-                    }
-                    setShowPresets(false);
-                  }}
+                  onClick={() => selectPreset(s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    totalTime === s ? "bg-neon-blue text-slate-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                    totalTime === s
+                      ? "bg-neon-blue text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                   }`}
                 >
                   {s >= 60 ? `${s / 60}m` : `${s}s`}

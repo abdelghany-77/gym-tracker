@@ -8,6 +8,7 @@ const defaultState = () => ({
   notificationsGranted: false,
   soundEnabled: true,
   lastWaterReminderTime: null,
+  lastVitaminReminderDate: null,
   lastResetDate: todayKey(),
 });
 
@@ -20,6 +21,7 @@ const persist = (state) => {
     notificationsGranted,
     soundEnabled,
     lastWaterReminderTime,
+    lastVitaminReminderDate,
     lastResetDate,
   } = state;
   saveToStorage(STORAGE_KEY, {
@@ -28,6 +30,7 @@ const persist = (state) => {
     notificationsGranted,
     soundEnabled,
     lastWaterReminderTime,
+    lastVitaminReminderDate,
     lastResetDate,
   });
 };
@@ -36,6 +39,9 @@ const persist = (state) => {
 export const createReminderSlice = (set) => {
   const saved = load();
   const merged = { ...defaultState(), ...saved };
+  merged.waterIntervalMinutes = Number.isFinite(merged.waterIntervalMinutes)
+    ? Math.min(180, Math.max(10, merged.waterIntervalMinutes))
+    : 60;
 
   return {
     // ─── Reminder Settings State ───
@@ -44,12 +50,24 @@ export const createReminderSlice = (set) => {
     notificationsGranted: merged.notificationsGranted,
     soundEnabled: merged.soundEnabled,
     lastWaterReminderTime: merged.lastWaterReminderTime,
+    lastVitaminReminderDate: merged.lastVitaminReminderDate,
     lastResetDate: merged.lastResetDate,
 
     // ─── Actions ───
-    setWaterInterval: (minutes) => {
+    markVitaminReminderSent: () => {
       set((s) => {
-        const next = { ...s, waterIntervalMinutes: Math.max(10, minutes) };
+        const next = { ...s, lastVitaminReminderDate: todayKey() };
+        persist(next);
+        return { lastVitaminReminderDate: next.lastVitaminReminderDate };
+      });
+    },
+    setWaterInterval: (minutes) => {
+      if (!Number.isFinite(minutes)) return;
+      set((s) => {
+        const next = {
+          ...s,
+          waterIntervalMinutes: Math.min(180, Math.max(10, minutes)),
+        };
         persist(next);
         return { waterIntervalMinutes: next.waterIntervalMinutes };
       });

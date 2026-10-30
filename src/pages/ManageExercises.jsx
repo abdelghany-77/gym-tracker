@@ -12,7 +12,7 @@ import {
   Settings2,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import { getImageUrl } from "../utils/imageUtil";
+import ExerciseImage from "../components/ExerciseImage";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../components/Modal";
 import AngleBadge from "../components/AngleBadge";
@@ -92,7 +92,10 @@ export default function ManageExercises() {
   const deleteExercise = useWorkoutStore((s) => s.deleteExercise);
 
   // Sanitize exercise list from store to avoid any duplicates
-  const exercises = useMemo(() => sanitizeExerciseList(rawExercises), [rawExercises]);
+  const exercises = useMemo(
+    () => sanitizeExerciseList(rawExercises),
+    [rawExercises],
+  );
 
   // Which program is being edited
   const programList = useMemo(() => Object.values(programs), [programs]);
@@ -122,7 +125,10 @@ export default function ManageExercises() {
   });
 
   // Get the relevant muscle for the selected program
-  const programMuscles = useMemo(() => selectedProgram?.muscles || [], [selectedProgram]);
+  const programMuscles = useMemo(
+    () => selectedProgram?.muscles || [],
+    [selectedProgram],
+  );
 
   // Exercise objects for selected program to feed Biomechanical Validator
   const currentProgramExerciseObjs = useMemo(() => {
@@ -435,8 +441,7 @@ export default function ManageExercises() {
           <div className="space-y-1.5">
             {availableExercises.map((ex) => {
               const selected = isInProgram(ex.id);
-              const colors =
-                muscleColors[ex.muscle] || muscleColors.Chest;
+              const colors = muscleColors[ex.muscle] || muscleColors.Chest;
               return (
                 <button
                   key={ex.id}
@@ -458,16 +463,10 @@ export default function ManageExercises() {
                     <Check size={14} strokeWidth={3} />
                   </div>
 
-                  {/* Image with fallback */}
-                  <img
-                    src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
-                    alt={ex.name}
+                  <ExerciseImage
+                    exercise={ex}
                     className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 shrink-0"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = getImageUrl("/icons/dumbbell.svg");
-                    }}
+                    compact
                   />
 
                   {/* Info */}
@@ -480,7 +479,10 @@ export default function ManageExercises() {
                       {ex.name}
                     </p>
                     {ex.nameAr && (
-                      <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                      <p
+                        className="text-[11px] text-slate-400 truncate"
+                        dir="rtl"
+                      >
                         {ex.nameAr}
                       </p>
                     )}
@@ -492,7 +494,8 @@ export default function ManageExercises() {
                         <AngleBadge angle={ex.targetAngle} size="xs" />
                       )}
                       <span className="text-[10px] text-slate-500">
-                        {ex.default_sets || ex.defaultSets || 3}×{ex.default_reps || ex.defaultReps || 10}
+                        {ex.default_sets || ex.defaultSets || 3}×
+                        {ex.default_reps || ex.defaultReps || 10}
                       </span>
                     </div>
                   </div>
@@ -542,9 +545,7 @@ export default function ManageExercises() {
               return (
                 <div key={muscle} className="space-y-1.5">
                   <div className="flex items-center gap-2 px-1 mb-2">
-                    <span
-                      className={`w-2 h-2 rounded-full ${colors.dot}`}
-                    />
+                    <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
                     <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       {muscle}
                     </h2>
@@ -559,23 +560,20 @@ export default function ManageExercises() {
                       key={ex.id}
                       className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 hover:border-slate-700 transition-all group"
                     >
-                      {/* Image with fallback */}
-                      <img
-                        src={getImageUrl(ex.image || `/exercises/${ex.id}.png`)}
-                        alt={ex.name}
+                      <ExerciseImage
+                        exercise={ex}
                         className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 shrink-0"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = getImageUrl("/icons/dumbbell.svg");
-                        }}
+                        compact
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white truncate">
                           {ex.name}
                         </p>
                         {ex.nameAr && (
-                          <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                          <p
+                            className="text-[11px] text-slate-400 truncate"
+                            dir="rtl"
+                          >
                             {ex.nameAr}
                           </p>
                         )}
@@ -705,11 +703,13 @@ export default function ManageExercises() {
                     className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50"
                     title="Select equipment"
                   >
-                    {equipmentOptions.filter(e => e.id !== 'all').map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.label}
-                      </option>
-                    ))}
+                    {equipmentOptions
+                      .filter((e) => e.id !== "all")
+                      .map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.label}
+                        </option>
+                      ))}
                   </select>
                   <ChevronDown
                     size={12}
@@ -780,7 +780,7 @@ export default function ManageExercises() {
         onClose={() => setDeleteConfirm(null)}
         onConfirm={() => handleDelete(deleteConfirm)}
         title="Delete Exercise?"
-        message="This exercise will be removed from all programs. This cannot be undone."
+        description="This exercise will be removed from all programs. This cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"

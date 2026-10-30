@@ -2,23 +2,20 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
-  CheckCircle2,
   X,
   Clock,
   Dumbbell,
-  Check,
-  SkipForward,
   Flag,
-  Zap,
+  ChevronDown,
+  Layers,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import ExerciseCard from "../components/ExerciseCard";
 import RestTimer from "../components/RestTimer";
 import AngleCoverageBadge from "../components/AngleCoverageBadge";
 import SwapExerciseModal from "../components/SwapExerciseModal";
-import { ConfirmDialog } from "../components/Modal";
+import Modal, { ConfirmDialog } from "../components/Modal";
 import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
-import { haptics } from "../utils/haptics";
 import { useState, useMemo, useEffect, useRef } from "react";
 
 export default function ActiveWorkout() {
@@ -28,12 +25,10 @@ export default function ActiveWorkout() {
   const cancelWorkout = useWorkoutStore((s) => s.cancelWorkout);
   const exercises = useWorkoutStore((s) => s.exercises);
   const personalRecords = useWorkoutStore((s) => s.personalRecords);
-  const updateSet = useWorkoutStore((s) => s.updateSet);
-  const toggleSetDone = useWorkoutStore((s) => s.toggleSetDone);
-  const getGhostData = useWorkoutStore((s) => s.getGhostData);
 
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [showCoverage, setShowCoverage] = useState(false);
   const [completedSession, setCompletedSession] = useState(null);
   const [previousPRsSnapshot, setPreviousPRsSnapshot] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -75,7 +70,9 @@ export default function ActiveWorkout() {
   const activeWorkoutExerciseObjs = useMemo(() => {
     if (!activeWorkout?.exercises) return [];
     const map = new Map(exercises.map((e) => [e.id, e]));
-    return activeWorkout.exercises.map((ex) => map.get(ex.exerciseId)).filter(Boolean);
+    return activeWorkout.exercises
+      .map((ex) => map.get(ex.exerciseId))
+      .filter(Boolean);
   }, [activeWorkout, exercises]);
 
   const formatTime = (s) => {
@@ -120,9 +117,6 @@ export default function ActiveWorkout() {
 
   const totalExercises = activeWorkout.exercises.length;
   const currentExercise = activeWorkout.exercises[currentIndex];
-  const ghostData = currentExercise ? getGhostData(currentExercise.exerciseId) : null;
-  const nextUnfinishedSetIndex = currentExercise ? currentExercise.sets.findIndex((s) => !s.done) : -1;
-
   const handleFinish = () => {
     setPreviousPRsSnapshot({ ...personalRecords });
     const session = finishWorkout();
@@ -135,126 +129,139 @@ export default function ActiveWorkout() {
     navigate("/workout", { replace: true });
   };
 
-  // Single-tap fast set completion from bottom action bar
-  const handleLogCurrentSet = () => {
-    if (!currentExercise) return;
-    const si = currentExercise.sets.findIndex((s) => !s.done);
-    if (si !== -1) {
-      const targetSet = currentExercise.sets[si];
-      if (!targetSet.weight && ghostData?.sets[si]?.weight) {
-        updateSet(currentIndex, si, "weight", ghostData.sets[si].weight);
-      }
-      if (!targetSet.reps) {
-        const exerciseObj = exercises.find((e) => e.id === currentExercise.exerciseId);
-        updateSet(currentIndex, si, "reps", ghostData?.sets[si]?.reps || exerciseObj?.default_reps || 10);
-      }
-      toggleSetDone(currentIndex, si);
-      navigator.vibrate?.(50);
-      haptics.light();
-
-    } else {
-      if (currentIndex < totalExercises - 1) {
-        setCurrentIndex((i) => i + 1);
-      } else {
-        setShowConfirmFinish(true);
-      }
-    }
-  };
-
-  const handleSkipExercise = () => {
-    if (currentIndex < totalExercises - 1) {
-      setCurrentIndex((i) => i + 1);
-    }
-  };
-
   const handleSelectAngleSuggestion = (angleId) => {
     setSwapTargetAngle(angleId);
     setShowAngleSwapModal(true);
   };
 
   return (
-    <div className="max-w-lg mx-auto flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-bg-deep">
+    <div className="max-w-2xl mx-auto flex flex-col h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] lg:h-[calc(100dvh-2rem)] overflow-hidden bg-bg-deep">
       {/* ═══ TOP FIXED HEADER ═══ */}
-      <div className="shrink-0 bg-bg-deep px-3 pt-2.5 pb-1 space-y-1.5 border-b border-border-slate/40">
+      <header className="shrink-0 bg-bg-surface/70 px-3 pt-2 pb-1.5 space-y-2">
         {/* Row 1: Back, Program Name, Elapsed Timer, Cancel */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => navigate("/workout")}
-            className="w-8 h-8 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all text-slate-300"
+            className="w-9 h-9 shrink-0 rounded-full bg-slate-800/60 flex items-center justify-center hover:bg-slate-700 transition-colors text-slate-300"
             aria-label="Go back"
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={18} />
           </button>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-xs font-bold text-white truncate">
+            <h1 className="text-sm font-semibold tracking-tight text-white truncate">
               {activeWorkout.programName || "Active Routine"}
-            </h2>
-            <div className="flex items-center gap-2 text-[10px] text-slate-400">
-              <span>{progress.doneSets}/{progress.totalSets} sets ({progress.percent}%)</span>
-              {progress.percent === 100 && (
-                <span className="text-neon-green font-bold flex items-center gap-0.5">
-                  <Zap size={10} /> 100%
-                </span>
-              )}
-            </div>
+            </h1>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-400">
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-neon-emerald"
+                aria-hidden="true"
+              />
+              {progress.doneSets}/{progress.totalSets} sets · {progress.percent}
+              %
+            </p>
           </div>
 
           <div
-            className="flex items-center gap-1 text-xs text-neon-cyan font-mono font-bold bg-neon-cyan/8 px-2 py-0.5 rounded-lg border border-neon-cyan/15 shrink-0"
-            aria-live="polite"
+            className="flex items-center gap-1 text-xs font-medium tabular-nums text-neon-cyan shrink-0"
+            aria-label="Workout elapsed time"
           >
-            <Clock size={11} />
+            <Clock size={14} aria-hidden="true" />
             <span>{formatTime(elapsed)}</span>
           </div>
 
           <button
             type="button"
+            onClick={() => setShowCoverage(true)}
+            aria-label="Training coverage"
+            title="Training coverage"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-neon-cyan transition-colors"
+          >
+            <Layers size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
             onClick={() => setShowConfirmCancel(true)}
-            className="w-8 h-8 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition-all text-slate-400"
+            className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center hover:bg-red-500/10 hover:text-red-400 transition-colors text-slate-400"
             aria-label="Cancel workout"
           >
-            <X size={15} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Row 2: Real-Time Biomechanical Angle Audit Badge */}
-        <AngleCoverageBadge
-          exercises={activeWorkoutExerciseObjs}
-          programContext={activeWorkout.programName || activeWorkout.programId}
-          onSelectSuggestion={handleSelectAngleSuggestion}
-          compact
-        />
-      </div>
+        <div
+          className="h-0.5 overflow-hidden rounded-full bg-slate-800/80"
+          role="progressbar"
+          aria-label="Workout progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress.percent}
+        >
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-neon-cyan to-neon-emerald transition-[width] duration-300"
+            style={{ width: `${progress.percent}%` }}
+          />
+        </div>
+      </header>
 
       {/* ═══ EXERCISE ARROW NAVIGATION ═══ */}
-      <div className="shrink-0 border-b border-border-slate/40 bg-bg-surface/30 px-3 py-2">
-        <div className="flex items-center gap-3">
+      <div className="shrink-0 px-3 pb-1.5 bg-bg-surface/70 border-b border-border-slate/50">
+        <div className="flex items-center gap-1 rounded-xl bg-slate-800/40 p-0.5">
           <button
             type="button"
             onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
             disabled={currentIndex === 0}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/70 text-slate-300 disabled:cursor-not-allowed disabled:opacity-25"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-700/60 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
             aria-label="Previous exercise"
           >
             <ArrowLeft size={18} />
           </button>
 
-          <div className="min-w-0 flex-1 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-              Exercise {currentIndex + 1} of {totalExercises}
-            </p>
-            <p className="truncate text-sm font-bold text-white">
-              {exercises.find((exercise) => exercise.id === currentExercise?.exerciseId)?.name || "Exercise"}
-            </p>
+          <div className="relative min-w-0 flex-1">
+            <label htmlFor="workout-exercise" className="sr-only">
+              Jump to exercise
+            </label>
+            <select
+              id="workout-exercise"
+              value={currentIndex}
+              onChange={(event) => setCurrentIndex(Number(event.target.value))}
+              disabled={!totalExercises}
+              className="w-full min-h-9 cursor-pointer appearance-none rounded-lg border-0 bg-transparent pl-2 pr-7 text-xs font-medium text-white truncate focus-visible:ring-1 focus-visible:ring-neon-cyan/40"
+            >
+              {!totalExercises && <option value={0}>No exercises</option>}
+              {activeWorkout.exercises.map((entry, index) => (
+                <option
+                  key={`${entry.exerciseId}-${index}`}
+                  value={index}
+                  className="bg-bg-surface text-white"
+                >
+                  {index + 1}/{totalExercises} ·{" "}
+                  {exercises.find(
+                    (exercise) => exercise.id === entry.exerciseId,
+                  )?.name || "Exercise"}
+                  {entry.sets.length > 0 && entry.sets.every((set) => set.done)
+                    ? " ✓"
+                    : ""}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-neon-cyan"
+              aria-hidden="true"
+            />
           </div>
 
           <button
             type="button"
-            onClick={() => setCurrentIndex((index) => Math.min(totalExercises - 1, index + 1))}
+            onClick={() =>
+              setCurrentIndex((index) =>
+                Math.min(totalExercises - 1, index + 1),
+              )
+            }
             disabled={currentIndex >= totalExercises - 1}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/70 text-slate-300 disabled:cursor-not-allowed disabled:opacity-25"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
             aria-label="Next exercise"
           >
             <ArrowRight size={18} />
@@ -263,7 +270,7 @@ export default function ActiveWorkout() {
       </div>
 
       {/* ═══ CENTER WORKOUT EXECUTION AREA (Zero Scroll Optimized) ═══ */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 space-y-3 custom-scrollbar">
         {currentExercise && (
           <div key={currentExercise.exerciseId} className="animate-fadeIn">
             <ExerciseCard
@@ -273,61 +280,49 @@ export default function ActiveWorkout() {
           </div>
         )}
 
+        {(totalExercises === 0 || currentIndex === totalExercises - 1) && (
+          <button
+            type="button"
+            onClick={() => setShowConfirmFinish(true)}
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-neon-emerald px-4 py-3 text-sm font-semibold text-bg-deep"
+          >
+            <Flag size={17} /> Finish workout
+          </button>
+        )}
+
         {/* Rest timer stays below the exercise card and never changes exercise selection. */}
         <section aria-label="Rest timer">
           <RestTimer inline />
         </section>
       </div>
 
-      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
-      <div className="shrink-0 p-3 bg-bg-surface/95 backdrop-blur-md border-t border-border-slate flex items-center gap-2 z-20">
-        {/* Primary Log Set Button */}
-        <button
-          type="button"
-          onClick={handleLogCurrentSet}
-          className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-neon-cyan to-neon-green text-bg-deep shadow-[0_0_16px_rgba(0,240,255,0.3)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-press"
-        >
-          <Check size={18} strokeWidth={3} />
-          <span>
-            {nextUnfinishedSetIndex !== -1
-              ? `Log Set ${nextUnfinishedSetIndex + 1}`
-              : currentIndex < totalExercises - 1
-                ? "Next Exercise →"
-                : "Finish Workout ✓"}
-          </span>
-        </button>
-
-        {/* Skip to Next Exercise Button */}
-        <button
-          type="button"
-          onClick={handleSkipExercise}
-          disabled={currentIndex >= totalExercises - 1}
-          className="py-3 px-3.5 rounded-xl font-semibold text-xs bg-slate-800/90 text-slate-300 hover:text-white hover:bg-slate-700/80 disabled:opacity-30 border border-slate-700/60 transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
-          title="Skip to next exercise"
-        >
-          <SkipForward size={15} />
-          <span className="hidden sm:inline">Skip</span>
-        </button>
-
-        {/* Finish Workout Action */}
-        <button
-          type="button"
-          onClick={() => setShowConfirmFinish(true)}
-          className="py-3 px-3 rounded-xl font-semibold text-xs bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
-          title="Finish Workout"
-        >
-          <Flag size={15} />
-          <span>{progress.percent}%</span>
-        </button>
-      </div>
-
       {/* ═══ DIALOGS & MODALS ═══ */}
+      <Modal
+        isOpen={showCoverage}
+        onClose={() => setShowCoverage(false)}
+        title="Training coverage"
+        maxWidth="max-w-lg"
+      >
+        <div className="p-4">
+          <AngleCoverageBadge
+            exercises={activeWorkoutExerciseObjs}
+            programContext={
+              activeWorkout.programName || activeWorkout.programId
+            }
+            onSelectSuggestion={(angleId) => {
+              setShowCoverage(false);
+              handleSelectAngleSuggestion(angleId);
+            }}
+            compact
+          />
+        </div>
+      </Modal>
       <ConfirmDialog
         isOpen={showConfirmFinish}
         onClose={() => setShowConfirmFinish(false)}
         onConfirm={handleFinish}
         title="Finish Workout?"
-        message={`You've completed ${progress.doneSets} of ${progress.totalSets} sets (${progress.percent}%). Only completed sets will be saved.`}
+        description={`You've completed ${progress.doneSets} of ${progress.totalSets} sets (${progress.percent}%). Only completed sets will be saved.`}
         confirmText="Save & Finish"
         cancelText="Keep Going"
         variant="success"
@@ -338,7 +333,7 @@ export default function ActiveWorkout() {
         onClose={() => setShowConfirmCancel(false)}
         onConfirm={handleCancel}
         title="Cancel Workout?"
-        message="All progress from this session will be lost. This cannot be undone."
+        description="All progress from this session will be lost. This cannot be undone."
         confirmText="Discard"
         cancelText="Go Back"
         variant="danger"

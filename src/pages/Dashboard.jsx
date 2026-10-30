@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   Flame,
   Edit2,
-  X,
   Coffee,
   Moon,
   Target,
@@ -23,6 +22,8 @@ import { getImageUrl } from "../utils/imageUtil";
 import ReminderWidget from "../components/ReminderWidget";
 import { trainingPlans } from "../data/exercises";
 import AngleRadarChart from "../components/AngleRadarChart";
+import Modal from "../components/Modal";
+import { parseLocalDate } from "../utils/dateUtils";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
   const weeklySchedule = useWorkoutStore((s) => s.weeklySchedule);
   const activeProgram = useWorkoutStore((s) => s.activeProgram);
+  const programs = useWorkoutStore((s) => s.programs);
   const activePlan = trainingPlans[activeProgram] || trainingPlans.ppl_upper;
 
   const heatmapData = useMemo(
@@ -45,7 +47,7 @@ export default function Dashboard() {
   const nextWorkout = useMemo(
     () => useWorkoutStore.getState().getNextWorkout(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [history, weeklySchedule],
+    [history, weeklySchedule, programs, activeProgram],
   );
 
   const lastSession = useMemo(() => {
@@ -56,12 +58,12 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     const totalSessions = history.length;
     const thisWeek = history.filter((s) => {
-      const d = new Date(s.date);
+      const d = parseLocalDate(s.date);
       const now = new Date();
       const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay() + 1);
+      weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       weekStart.setHours(0, 0, 0, 0);
-      return d >= weekStart;
+      return d >= weekStart && d <= now;
     }).length;
 
     let streak = 0;
@@ -112,12 +114,18 @@ export default function Dashboard() {
                 : "bg-vivid-purple/10 border-vivid-purple/25 text-vivid-purple"
             }`}
           >
-            {activeProgram === "ppl_upper" ? <Zap size={10} /> : <Crown size={10} />}
+            {activeProgram === "ppl_upper" ? (
+              <Zap size={10} />
+            ) : (
+              <Crown size={10} />
+            )}
             {activePlan.name}
           </div>
           <div className="flex items-center gap-1 bg-slate-900 rounded-full px-2.5 py-1 border border-slate-800">
             <Flame size={13} className="text-orange-400 fill-orange-400/20" />
-            <span className="text-xs font-bold text-white">{stats.streak}d</span>
+            <span className="text-xs font-bold text-white">
+              {stats.streak}d
+            </span>
           </div>
         </div>
       </div>
@@ -168,17 +176,36 @@ export default function Dashboard() {
                     : "bg-neon-cyan text-bg-deep font-bold"
                 }`}
               >
-                {nextWorkout.isRest ? <Coffee size={18} /> : <Dumbbell size={18} />}
+                {nextWorkout.isRest ? (
+                  <Coffee size={18} />
+                ) : (
+                  <Dumbbell size={18} />
+                )}
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium mb-0.5">
-                  <Calendar size={10} className={nextWorkout.isRest ? "text-slate-400" : "text-neon-cyan"} />
-                  <span className={nextWorkout.daysUntil === 0 ? "text-neon-cyan font-bold" : "text-slate-400"}>
-                    {nextWorkout.daysUntil === 0 ? "Today's Target" : `In ${nextWorkout.daysUntil} day${nextWorkout.daysUntil > 1 ? "s" : ""}`}
+                  <Calendar
+                    size={10}
+                    className={
+                      nextWorkout.isRest ? "text-slate-400" : "text-neon-cyan"
+                    }
+                  />
+                  <span
+                    className={
+                      nextWorkout.daysUntil === 0
+                        ? "text-neon-cyan font-bold"
+                        : "text-slate-400"
+                    }
+                  >
+                    {nextWorkout.daysUntil === 0
+                      ? "Today's Target"
+                      : `In ${nextWorkout.daysUntil} day${nextWorkout.daysUntil > 1 ? "s" : ""}`}
                   </span>
                 </p>
                 <p className="text-sm font-bold text-white truncate">
-                  {nextWorkout.isRest ? "Rest & Recovery" : nextWorkout.program?.name}
+                  {nextWorkout.isRest
+                    ? "Rest & Recovery"
+                    : nextWorkout.program?.name}
                 </p>
                 <p className="text-[11px] text-slate-400 truncate">
                   {nextWorkout.isRest
@@ -204,7 +231,9 @@ export default function Dashboard() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    useWorkoutStore.getState().startWorkout(nextWorkout.program.id);
+                    useWorkoutStore
+                      .getState()
+                      .startWorkout(nextWorkout.program.id);
                     navigate("/workout/active");
                   }}
                   className="bg-neon-cyan text-bg-deep px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-neon-cyan/90 active:scale-95 transition-all flex items-center gap-1 btn-press shadow-sm"
@@ -215,6 +244,7 @@ export default function Dashboard() {
               ) : (
                 <button
                   onClick={() => navigate("/workout")}
+                  aria-label="Choose a workout"
                   className="w-8 h-8 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-400 hover:text-white"
                 >
                   <ChevronRight size={15} />
@@ -228,17 +258,37 @@ export default function Dashboard() {
       {/* ── Quick Stats: Compact 3-Column Row ── */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: "This Week", value: stats.thisWeek, icon: Calendar, color: "text-neon-cyan" },
-          { label: "Total Done", value: stats.totalSessions, icon: TrendingUp, color: "text-neon-green" },
-          { label: "Streak", value: `${stats.streak}d`, icon: Flame, color: "text-orange-400" },
+          {
+            label: "This Week",
+            value: stats.thisWeek,
+            icon: Calendar,
+            color: "text-neon-cyan",
+          },
+          {
+            label: "Total Done",
+            value: stats.totalSessions,
+            icon: TrendingUp,
+            color: "text-neon-green",
+          },
+          {
+            label: "Streak",
+            value: `${stats.streak}d`,
+            icon: Flame,
+            color: "text-orange-400",
+          },
         ].map(({ label, value, icon, color }) => {
           const Icon = icon;
           return (
-            <div key={label} className="glass-card p-2.5 text-center border border-border-slate">
+            <div
+              key={label}
+              className="glass-card p-2.5 text-center border border-border-slate"
+            >
               <div className="w-6 h-6 rounded-md bg-slate-800/60 flex items-center justify-center mx-auto mb-1">
                 <Icon size={12} className={color} />
               </div>
-              <p className="text-base font-bold text-white leading-tight">{value}</p>
+              <p className="text-base font-bold text-white leading-tight">
+                {value}
+              </p>
               <p className="text-[10px] text-slate-400 font-medium">{label}</p>
             </div>
           );
@@ -271,7 +321,13 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 text-[10px] text-slate-400">
               <span>{lastSession.exercises.length} exercises</span>
               <span>•</span>
-              <span>{lastSession.exercises.reduce((acc, e) => acc + e.sets.length, 0)} sets</span>
+              <span>
+                {lastSession.exercises.reduce(
+                  (acc, e) => acc + e.sets.length,
+                  0,
+                )}{" "}
+                sets
+              </span>
             </div>
           </div>
         </div>
@@ -285,7 +341,8 @@ export default function Dashboard() {
           </div>
           <h3 className="text-sm font-bold text-white">Start Your Journey</h3>
           <p className="text-xs text-slate-400 max-w-[240px] mx-auto leading-relaxed">
-            Select a workout routine to log your sets, reps, and track progressive overload.
+            Select a workout routine to log your sets, reps, and track
+            progressive overload.
           </p>
           <button
             onClick={() => navigate("/workout")}
@@ -310,7 +367,9 @@ export default function Dashboard() {
                 Activity Heatmap & Muscle Angles
               </span>
               <span className="text-[10px] text-slate-400">
-                {showAnalytics ? "Tap to collapse" : "Tap to view charts & training coverage"}
+                {showAnalytics
+                  ? "Tap to collapse"
+                  : "Tap to view charts & training coverage"}
               </span>
             </div>
           </div>
@@ -326,12 +385,18 @@ export default function Dashboard() {
           <div className="p-3.5 pt-1 border-t border-border-slate animate-fadeIn space-y-4">
             {/* Heatmap Month Picker */}
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white">Monthly Consistency</span>
+              <span className="text-xs font-bold text-white">
+                Monthly Consistency
+              </span>
               <div className="flex items-center gap-1 bg-slate-900 rounded-lg border border-slate-800 p-0.5">
                 <button
                   onClick={() =>
                     setActivityDate(
-                      new Date(activityDate.getFullYear(), activityDate.getMonth() - 1, 1),
+                      new Date(
+                        activityDate.getFullYear(),
+                        activityDate.getMonth() - 1,
+                        1,
+                      ),
                     )
                   }
                   className="p-1 rounded text-slate-400 hover:text-white transition-colors"
@@ -340,12 +405,19 @@ export default function Dashboard() {
                   <ChevronLeft size={12} />
                 </button>
                 <span className="text-[10px] font-semibold text-white min-w-[70px] text-center select-none">
-                  {activityDate.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                  {activityDate.toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </span>
                 <button
                   onClick={() =>
                     setActivityDate(
-                      new Date(activityDate.getFullYear(), activityDate.getMonth() + 1, 1),
+                      new Date(
+                        activityDate.getFullYear(),
+                        activityDate.getMonth() + 1,
+                        1,
+                      ),
                     )
                   }
                   className="p-1 rounded text-slate-400 hover:text-white transition-colors"
@@ -361,100 +433,86 @@ export default function Dashboard() {
             <div className="h-px bg-border-slate/60" />
 
             {/* Biomechanical Radar Chart */}
-            <AngleRadarChart />
+            <AngleRadarChart showRecommendations={false} />
           </div>
         )}
       </div>
 
       {/* ── Edit Today's Schedule Modal ── */}
-      {editingSchedule && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn"
-          onClick={() => setEditingSchedule(false)}
-        >
-          <div
-            className="bg-slate-900 rounded-2xl w-full max-w-sm border border-slate-700 overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Change today's schedule"
+      <Modal
+        isOpen={editingSchedule}
+        onClose={() => setEditingSchedule(false)}
+        title="Change day's workout"
+      >
+        <div className="p-2.5 space-y-1.5 max-h-[60vh] overflow-y-auto custom-scrollbar">
+          <button
+            onClick={() => {
+              const dayIndex = nextWorkout?.dayIndex;
+              if (dayIndex !== undefined) {
+                useWorkoutStore.getState().setSchedule(dayIndex, "rest");
+                setEditingSchedule(false);
+              }
+            }}
+            className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
+              nextWorkout?.isRest
+                ? "bg-slate-800 border-neon-cyan/40"
+                : "border-slate-800 hover:bg-slate-800/50"
+            }`}
           >
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="font-bold text-white text-sm">Change Today&apos;s Workout</h3>
-              <button
-                onClick={() => setEditingSchedule(false)}
-                className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-                aria-label="Close modal"
-              >
-                <X size={14} />
-              </button>
+            <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
+              <Moon size={15} />
             </div>
-            <div className="p-2.5 space-y-1.5 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <div className="text-left flex-1">
+              <p className="text-xs font-semibold text-white">Rest Day</p>
+              <p className="text-[10px] text-slate-400">Take time to recover</p>
+            </div>
+          </button>
+
+          {Object.values(programs).map((program) => {
+            const isCurrent =
+              !nextWorkout?.isRest && nextWorkout?.program?.id === program.id;
+            return (
               <button
+                key={program.id}
                 onClick={() => {
                   const dayIndex = nextWorkout?.dayIndex;
                   if (dayIndex !== undefined) {
-                    useWorkoutStore.getState().setSchedule(dayIndex, "rest");
+                    useWorkoutStore
+                      .getState()
+                      .setSchedule(dayIndex, program.id);
                     setEditingSchedule(false);
                   }
                 }}
                 className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
-                  nextWorkout?.isRest
-                    ? "bg-slate-800 border-neon-cyan/40"
+                  isCurrent
+                    ? "bg-neon-cyan/10 border-neon-cyan/40"
                     : "border-slate-800 hover:bg-slate-800/50"
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
-                  <Moon size={15} />
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    isCurrent
+                      ? "bg-neon-cyan text-bg-deep font-bold"
+                      : "bg-slate-800 text-slate-400"
+                  }`}
+                >
+                  <Dumbbell size={15} />
                 </div>
-                <div className="text-left flex-1">
-                  <p className="text-xs font-semibold text-white">Rest Day</p>
-                  <p className="text-[10px] text-slate-400">Take time to recover</p>
+                <div className="text-left flex-1 min-w-0">
+                  <p
+                    className={`text-xs font-semibold truncate ${isCurrent ? "text-neon-cyan" : "text-white"}`}
+                  >
+                    {program.name}
+                  </p>
+                  <p className="text-[10px] text-slate-400 truncate">
+                    {program.muscles.join(", ")}
+                  </p>
                 </div>
               </button>
-
-              {Object.values(useWorkoutStore.getState().getPrograms()).map((program) => {
-                const isCurrent = !nextWorkout?.isRest && nextWorkout?.program?.id === program.id;
-                return (
-                  <button
-                    key={program.id}
-                    onClick={() => {
-                      const dayIndex = nextWorkout?.dayIndex;
-                      if (dayIndex !== undefined) {
-                        useWorkoutStore.getState().setSchedule(dayIndex, program.id);
-                        setEditingSchedule(false);
-                      }
-                    }}
-                    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
-                      isCurrent
-                        ? "bg-neon-cyan/10 border-neon-cyan/40"
-                        : "border-slate-800 hover:bg-slate-800/50"
-                    }`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        isCurrent
-                          ? "bg-neon-cyan text-bg-deep font-bold"
-                          : "bg-slate-800 text-slate-400"
-                      }`}
-                    >
-                      <Dumbbell size={15} />
-                    </div>
-                    <div className="text-left flex-1 min-w-0">
-                      <p className={`text-xs font-semibold truncate ${isCurrent ? "text-neon-cyan" : "text-white"}`}>
-                        {program.name}
-                      </p>
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {program.muscles.join(", ")}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+            );
+          })}
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

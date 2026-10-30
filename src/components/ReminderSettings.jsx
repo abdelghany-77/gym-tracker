@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Bell,
   BellOff,
@@ -21,13 +22,31 @@ export default function ReminderSettings() {
     (s) => s.setNotificationsGranted,
   );
 
+  const [permissionError, setPermissionError] = useState("");
+  const [requestingPermission, setRequestingPermission] = useState(false);
+
   const requestNotificationPermission = async () => {
+    setPermissionError("");
     if (!("Notification" in window)) {
-      alert("This browser does not support notifications.");
+      setPermissionError("This browser does not support notifications.");
       return;
     }
-    const perm = await Notification.requestPermission();
-    setNotificationsGranted(perm === "granted");
+    setRequestingPermission(true);
+    try {
+      const perm = await Notification.requestPermission();
+      setNotificationsGranted(perm === "granted");
+      if (perm === "denied")
+        setPermissionError(
+          "Notifications are blocked. Enable them in your browser settings.",
+        );
+    } catch {
+      setNotificationsGranted(false);
+      setPermissionError(
+        "Could not enable notifications. Try again in your browser settings.",
+      );
+    } finally {
+      setRequestingPermission(false);
+    }
   };
 
   return (
@@ -46,6 +65,8 @@ export default function ReminderSettings() {
               : "bg-slate-700"
           }`}
           aria-label="Toggle reminders"
+          role="switch"
+          aria-checked={remindersEnabled}
         >
           <div
             className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 ${
@@ -71,17 +92,18 @@ export default function ReminderSettings() {
                 </p>
                 <p className="text-[10px] text-slate-500">
                   {notificationsGranted
-                    ? "Enabled — works even when app is closed"
-                    : "Get notified even outside the app"}
+                    ? "Enabled while the app is running"
+                    : "Get notifications while the app is running"}
                 </p>
               </div>
             </div>
             {!notificationsGranted ? (
               <button
                 onClick={requestNotificationPermission}
+                disabled={requestingPermission}
                 className="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 text-[11px] font-bold border border-cyan-500/30 hover:bg-cyan-500/30 transition-all active:scale-95"
               >
-                Enable
+                {requestingPermission ? "Enabling…" : "Enable"}
               </button>
             ) : (
               <span className="text-[10px] text-emerald-400 font-bold bg-emerald-400/10 px-2 py-0.5 rounded-full">
@@ -89,6 +111,12 @@ export default function ReminderSettings() {
               </span>
             )}
           </div>
+
+          {permissionError && (
+            <p role="alert" className="text-xs text-amber-400">
+              {permissionError}
+            </p>
+          )}
 
           {/* Sound Toggle */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
@@ -115,6 +143,8 @@ export default function ReminderSettings() {
                   : "bg-slate-700"
               }`}
               aria-label="Toggle notification sound"
+              role="switch"
+              aria-checked={soundEnabled}
             >
               <div
                 className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 ${
@@ -136,12 +166,23 @@ export default function ReminderSettings() {
               <div className="flex items-center gap-2">
                 <input
                   type="number"
+                  aria-label="Water reminder interval in minutes"
                   inputMode="numeric"
                   min="10"
                   max="180"
                   step="10"
-                  value={waterIntervalMinutes}
-                  onChange={(e) => setWaterInterval(Number(e.target.value))}
+                  key={waterIntervalMinutes}
+                  defaultValue={waterIntervalMinutes}
+                  onBlur={(e) => {
+                    const value = e.target.valueAsNumber;
+                    if (Number.isFinite(value)) setWaterInterval(value);
+                    e.target.value = String(
+                      useWorkoutStore.getState().waterIntervalMinutes,
+                    );
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
                   className="w-16 bg-slate-700 text-white rounded-lg px-2 py-1.5 border border-slate-600 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400/30 transition-colors text-sm text-center"
                 />
                 <span className="text-xs text-slate-500">min</span>

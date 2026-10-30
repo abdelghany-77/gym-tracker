@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Utensils,
-  Check,
-  ChevronRight,
-  Apple,
-} from "lucide-react";
+import { Utensils, Check, ChevronRight, Apple } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import MealPlanModal from "../components/MealPlanModal";
 import NutritionCard from "../components/NutritionCard";
@@ -14,9 +9,8 @@ export default function Nutrition() {
   const toggleMealEaten = useWorkoutStore((s) => s.toggleMealEaten);
   const nutritionTargets = useWorkoutStore((s) => s.nutritionTargets);
   const meals = useMemo(
-    () => useWorkoutStore.getState().getMealPlan(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nutritionTargets?.calories],
+    () => useWorkoutStore.getState().getMealPlan(nutritionTargets),
+    [nutritionTargets],
   );
   const [showMealPlan, setShowMealPlan] = useState(false);
 
@@ -68,7 +62,8 @@ export default function Nutrition() {
             return (
               <button
                 key={i}
-                onClick={() => toggleMealEaten(i, meal.calories)}
+                onClick={() => toggleMealEaten(i)}
+                aria-pressed={isEaten}
                 className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl border transition-all active:scale-[0.98] btn-press ${
                   isEaten
                     ? "bg-emerald-500/10 border-emerald-500/30"

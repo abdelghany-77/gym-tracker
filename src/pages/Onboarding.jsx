@@ -12,14 +12,27 @@ export default function Onboarding({ onComplete }) {
   const [step, setStep] = useState(0);
   const updateUserProfile = useWorkoutStore((s) => s.updateUserProfile);
   const completeOnboarding = useWorkoutStore((s) => s.completeOnboarding);
-  const [form, setForm] = useState({ name: "", weight: "", height: "", age: "" });
-  const [prefs, setPrefs] = useState({ reminders: true, sound: true });
+  const [form, setForm] = useState({
+    name: "",
+    weight: "",
+    height: "",
+    age: "",
+  });
+  const [prefs, setPrefs] = useState(() => ({
+    reminders: useWorkoutStore.getState().remindersEnabled,
+    sound: useWorkoutStore.getState().soundEnabled,
+  }));
 
   const handleFinish = () => {
-    if (form.name) updateUserProfile({ name: form.name });
-    if (form.weight) updateUserProfile({ weight: Number(form.weight) });
-    if (form.height) updateUserProfile({ height: Number(form.height) });
-    if (form.age) updateUserProfile({ age: Number(form.age) });
+    const profile = {};
+    if (form.name.trim()) profile.name = form.name.trim();
+    for (const key of ["weight", "height", "age"]) {
+      if (form[key]) profile[key] = Number(form[key]);
+    }
+    if (Object.keys(profile).length) updateUserProfile(profile);
+    const store = useWorkoutStore.getState();
+    if (prefs.reminders !== store.remindersEnabled) store.toggleReminders();
+    if (prefs.sound !== store.soundEnabled) store.toggleSound();
     completeOnboarding();
     onComplete?.();
   };
@@ -68,7 +81,13 @@ export default function Onboarding({ onComplete }) {
 
         {/* Step 1: Profile */}
         {step === 1 && (
-          <div className="space-y-6 animate-fadeIn">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              setStep(2);
+            }}
+            className="space-y-6 animate-fadeIn"
+          >
             <div className="text-center">
               <div className="w-14 h-14 mx-auto rounded-2xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center mb-3">
                 <User size={24} className="text-neon-blue" />
@@ -83,38 +102,67 @@ export default function Onboarding({ onComplete }) {
               <input
                 type="text"
                 placeholder="Your Name"
+                aria-label="Your Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full bg-slate-800 text-white rounded-xl px-4 py-3 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors placeholder:text-slate-500"
               />
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[10px] text-slate-500 mb-1 block">Weight (kg)</label>
+                  <label
+                    htmlFor="onboarding-weight"
+                    className="text-[10px] text-slate-500 mb-1 block"
+                  >
+                    Weight (kg)
+                  </label>
                   <input
                     type="number"
                     inputMode="decimal"
+                    id="onboarding-weight"
+                    min="0.1"
+                    step="any"
                     placeholder="70"
                     value={form.weight}
-                    onChange={(e) => setForm({ ...form, weight: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, weight: e.target.value })
+                    }
                     className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-500 mb-1 block">Height (cm)</label>
+                  <label
+                    htmlFor="onboarding-height"
+                    className="text-[10px] text-slate-500 mb-1 block"
+                  >
+                    Height (cm)
+                  </label>
                   <input
                     type="number"
                     inputMode="decimal"
+                    id="onboarding-height"
+                    min="0.1"
+                    step="any"
                     placeholder="175"
                     value={form.height}
-                    onChange={(e) => setForm({ ...form, height: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, height: e.target.value })
+                    }
                     className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-green focus:outline-none focus:ring-1 focus:ring-neon-green/30 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-500 mb-1 block">Age</label>
+                  <label
+                    htmlFor="onboarding-age"
+                    className="text-[10px] text-slate-500 mb-1 block"
+                  >
+                    Age
+                  </label>
                   <input
                     type="number"
                     inputMode="numeric"
+                    id="onboarding-age"
+                    min="1"
+                    step="1"
                     placeholder="24"
                     value={form.age}
                     onChange={(e) => setForm({ ...form, age: e.target.value })}
@@ -126,19 +174,20 @@ export default function Onboarding({ onComplete }) {
 
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setStep(0)}
                 className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors text-sm"
               >
                 Back
               </button>
               <button
-                onClick={() => setStep(2)}
+                type="submit"
                 className="flex-[2] bg-neon-blue text-slate-950 py-3 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20 flex items-center justify-center gap-2"
               >
                 Continue <ChevronRight size={14} strokeWidth={3} />
               </button>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Step 2: Preferences */}
@@ -156,7 +205,12 @@ export default function Onboarding({ onComplete }) {
 
             <div className="space-y-3">
               <button
-                onClick={() => setPrefs((p) => ({ ...p, reminders: !p.reminders }))}
+                role="switch"
+                aria-label="Water Reminders"
+                aria-checked={prefs.reminders}
+                onClick={() =>
+                  setPrefs((p) => ({ ...p, reminders: !p.reminders }))
+                }
                 className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
                   prefs.reminders
                     ? "bg-cyan-500/10 border-cyan-500/30"
@@ -164,18 +218,34 @@ export default function Onboarding({ onComplete }) {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Droplets size={18} className={prefs.reminders ? "text-cyan-400" : "text-slate-500"} />
+                  <Droplets
+                    size={18}
+                    className={
+                      prefs.reminders ? "text-cyan-400" : "text-slate-500"
+                    }
+                  />
                   <div className="text-left">
-                    <p className="text-sm font-medium text-white">Water Reminders</p>
-                    <p className="text-[10px] text-slate-500">Stay hydrated throughout the day</p>
+                    <p className="text-sm font-medium text-white">
+                      Water Reminders
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      Stay hydrated throughout the day
+                    </p>
                   </div>
                 </div>
-                <div className={`w-10 h-5 rounded-full transition-all ${prefs.reminders ? "bg-cyan-500" : "bg-slate-700"}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all mt-0.5 ${prefs.reminders ? "ml-[22px]" : "ml-0.5"}`} />
+                <div
+                  className={`w-10 h-5 rounded-full transition-all ${prefs.reminders ? "bg-cyan-500" : "bg-slate-700"}`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all mt-0.5 ${prefs.reminders ? "ml-[22px]" : "ml-0.5"}`}
+                  />
                 </div>
               </button>
 
               <button
+                role="switch"
+                aria-label="Notification Sounds"
+                aria-checked={prefs.sound}
                 onClick={() => setPrefs((p) => ({ ...p, sound: !p.sound }))}
                 className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
                   prefs.sound
@@ -184,14 +254,27 @@ export default function Onboarding({ onComplete }) {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Bell size={18} className={prefs.sound ? "text-violet-400" : "text-slate-500"} />
+                  <Bell
+                    size={18}
+                    className={
+                      prefs.sound ? "text-violet-400" : "text-slate-500"
+                    }
+                  />
                   <div className="text-left">
-                    <p className="text-sm font-medium text-white">Notification Sounds</p>
-                    <p className="text-[10px] text-slate-500">Play a chime for reminders</p>
+                    <p className="text-sm font-medium text-white">
+                      Notification Sounds
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      Play a chime for reminders
+                    </p>
                   </div>
                 </div>
-                <div className={`w-10 h-5 rounded-full transition-all ${prefs.sound ? "bg-violet-500" : "bg-slate-700"}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all mt-0.5 ${prefs.sound ? "ml-[22px]" : "ml-0.5"}`} />
+                <div
+                  className={`w-10 h-5 rounded-full transition-all ${prefs.sound ? "bg-violet-500" : "bg-slate-700"}`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all mt-0.5 ${prefs.sound ? "ml-[22px]" : "ml-0.5"}`}
+                  />
                 </div>
               </button>
             </div>
@@ -215,7 +298,10 @@ export default function Onboarding({ onComplete }) {
 
         {/* Skip link */}
         <button
-          onClick={handleFinish}
+          onClick={() => {
+            completeOnboarding();
+            onComplete?.();
+          }}
           className="block mx-auto text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
         >
           Skip Setup →
