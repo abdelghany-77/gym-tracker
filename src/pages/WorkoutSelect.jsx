@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { trainingPlans } from "../data/exercises";
+import { getImageUrl } from "../utils/imageUtil";
 
 const categories = ["All", "Strength", "Hypertrophy", "Conditioning"];
 
@@ -151,7 +152,7 @@ export default function WorkoutSelect() {
                 {/* Exercise Movement Illustrated Thumbnail */}
                 <div className="w-14 h-14 rounded-xl bg-[#192C3C] border border-[#223348] overflow-hidden flex items-center justify-center shrink-0 p-1">
                   <img
-                    src={illustrationSrc}
+                    src={getImageUrl(illustrationSrc)}
                     alt={program.name}
                     className="w-full h-full object-contain"
                     onError={(e) => {
@@ -167,16 +168,16 @@ export default function WorkoutSelect() {
                   </h3>
 
                   {/* Muscle / Goal Tags */}
-                  <div className="flex flex-wrap items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {(program.muscles || ["Strength"]).slice(0, 2).map((m) => (
                       <span
                         key={m}
-                        className="text-[9px] font-semibold text-[#8E9FA5] bg-[#192C3C] border border-[#223348] px-2 py-0.5 rounded-full"
+                        className="text-[9px] font-semibold text-[#A8B7C5] bg-[#192C3C] border border-[#223348] px-2.5 py-0.5 rounded-lg"
                       >
                         {m}
                       </span>
                     ))}
-                    <span className="text-[9px] font-semibold text-[#73C8B4] bg-[#73C8B4]/10 border border-[#73C8B4]/20 px-2 py-0.5 rounded-full">
+                    <span className="text-[9px] font-semibold text-[#A8B7C5] bg-[#192C3C] border border-[#223348] px-2.5 py-0.5 rounded-lg">
                       Muscle Building
                     </span>
                   </div>

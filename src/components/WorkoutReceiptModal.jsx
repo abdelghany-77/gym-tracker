@@ -371,7 +371,7 @@ export default function WorkoutReceiptModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-xl bg-[#73C8B4]/15 text-[#73C8B4] border border-neon-cyan/30">
+            <span className="p-1.5 rounded-xl bg-[#73C8B4]/15 text-[#73C8B4] border border-[#73C8B4]/30">
               <Zap size={16} />
             </span>
             <div>

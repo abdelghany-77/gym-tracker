@@ -398,7 +398,7 @@ export default function BodyMeasurementsTab() {
 
             <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/50">
               <p className="text-[10px] text-slate-400 font-medium">BMR (Metabolic)</p>
-              <p className="text-sm font-bold text-cyan-400 mt-0.5">
+              <p className="text-sm font-bold text-[#73C8B4] mt-0.5">
                 {latestEntry.bmr ? `${latestEntry.bmr} kcal` : "—"}
               </p>
               {latestBmi && <p className={`text-[9px] font-medium ${latestBmi.color}`}>BMI: {latestBmi.value}</p>}

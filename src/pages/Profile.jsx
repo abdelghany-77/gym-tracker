@@ -37,7 +37,7 @@ export default function Profile() {
   }, [userProfile.weight, userProfile.height]);
 
   const userName = userProfile.name?.trim() || "Ahmed Mohamed";
-  const userEmail = userProfile.email?.trim() || "ahmed@example.com";
+  const userEmail = userProfile.email?.trim() || "";
   const userWeight = userProfile.weight || 78;
   const userHeight = userProfile.height || 180;
   const userBodyFat = userProfile.bodyFat || 14;
