@@ -16,6 +16,7 @@ import { getImageUrl } from "../utils/imageUtil";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../components/Modal";
 import AngleBadge from "../components/AngleBadge";
+import AngleCoverageBadge from "../components/AngleCoverageBadge";
 import { angleLabels } from "../data/exercises";
 import { sanitizeExerciseList } from "../store/helpers";
 
@@ -122,6 +123,13 @@ export default function ManageExercises() {
 
   // Get the relevant muscle for the selected program
   const programMuscles = useMemo(() => selectedProgram?.muscles || [], [selectedProgram]);
+
+  // Exercise objects for selected program to feed Biomechanical Validator
+  const currentProgramExerciseObjs = useMemo(() => {
+    if (!selectedProgram?.exercises) return [];
+    const map = new Map(exercises.map((e) => [e.id, e]));
+    return selectedProgram.exercises.map((id) => map.get(id)).filter(Boolean);
+  }, [selectedProgram, exercises]);
 
   // Multi-attribute search matching function
   const matchExercise = (ex, query, equipment) => {
@@ -369,6 +377,13 @@ export default function ManageExercises() {
               );
             })}
           </div>
+
+          {/* Biomechanical Angle Coverage Badge */}
+          <AngleCoverageBadge
+            exercises={currentProgramExerciseObjs}
+            programContext={selectedProgram?.id || selectedProgram?.name}
+            className="my-1"
+          />
 
           {/* Search */}
           <div className="relative">

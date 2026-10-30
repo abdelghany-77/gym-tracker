@@ -10,6 +10,7 @@ export default function SwapExerciseModal({
   onClose,
   exerciseIndex,
   currentExerciseId,
+  filterAngle = null,
 }) {
   const exercises = useWorkoutStore((s) => s.exercises);
   const swapExercise = useWorkoutStore((s) => s.swapExercise);
@@ -22,20 +23,22 @@ export default function SwapExerciseModal({
     return isOpen ? getExerciseById(currentExerciseId) : null;
   }, [isOpen, getExerciseById, currentExerciseId]);
 
+  const targetAngle = filterAngle || currentExercise?.targetAngle || "";
   const targetMuscle = currentExercise?.primaryMuscle || currentExercise?.muscle?.toLowerCase() || "";
-  const targetAngle = currentExercise?.targetAngle || "";
 
-  // Filter: by default only same primaryMuscle + same targetAngle
-  // Toggle: show all for the same primaryMuscle
+  // Filter: by default only same targetAngle when filterAngle is present, or same primaryMuscle + angle
   const alternatives = useMemo(() => {
     if (!isOpen) return [];
     return exercises.filter((ex) => {
       if (ex.id === currentExerciseId) return false;
 
-      const exMuscle = ex.primaryMuscle || ex.muscle?.toLowerCase() || "";
-      if (exMuscle !== targetMuscle) return false;
-
-      if (!showAllMuscle && targetAngle && ex.targetAngle !== targetAngle) return false;
+      if (filterAngle) {
+        if (ex.targetAngle !== filterAngle) return false;
+      } else {
+        const exMuscle = ex.primaryMuscle || ex.muscle?.toLowerCase() || "";
+        if (exMuscle !== targetMuscle) return false;
+        if (!showAllMuscle && targetAngle && ex.targetAngle !== targetAngle) return false;
+      }
 
       if (search) {
         const q = search.toLowerCase();
@@ -46,7 +49,7 @@ export default function SwapExerciseModal({
       }
       return true;
     });
-  }, [exercises, currentExerciseId, targetMuscle, targetAngle, showAllMuscle, search, isOpen]);
+  }, [exercises, currentExerciseId, targetMuscle, targetAngle, showAllMuscle, search, isOpen, filterAngle]);
 
   if (!isOpen) return null;
 
@@ -79,9 +82,11 @@ export default function SwapExerciseModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
-                تبديل التمرين
+                {filterAngle ? "Missing Angle Candidates" : "تبديل التمرين"}
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium">Smart Angle-Matched Swap</p>
+              <p className={`text-[11px] font-medium ${filterAngle ? "text-amber-400" : "text-slate-400"}`}>
+                {filterAngle ? `Targeting: ${angleLabel.en} (${angleLabel.ar})` : "Smart Angle-Matched Swap"}
+              </p>
             </div>
           </div>
           <button
@@ -94,35 +99,37 @@ export default function SwapExerciseModal({
         </div>
 
         {/* ═══ Current exercise info ═══ */}
-        <div className="px-5 pt-3 pb-2 bg-bg-deep/40">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">
-            Replacing Target Exercise
-          </p>
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-border-slate">
-            <div className="w-11 h-11 rounded-lg overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] flex items-center justify-center p-1">
-              <img
-                src={getImageUrl(currentExercise?.image || (currentExercise?.id ? `/exercises/${currentExercise.id}.png` : "/exercises/default.png"))}
-                alt=""
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = getImageUrl("/icons/dumbbell.svg");
-                }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {currentExercise?.name}
-              </p>
-              {currentExercise?.nameAr && (
-                <p className="text-[11px] text-slate-400 truncate" dir="rtl">
-                  {currentExercise.nameAr}
+        {currentExercise && (
+          <div className="px-5 pt-3 pb-2 bg-bg-deep/40">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">
+              Replacing Current Exercise
+            </p>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-border-slate">
+              <div className="w-11 h-11 rounded-lg overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] flex items-center justify-center p-1">
+                <img
+                  src={getImageUrl(currentExercise.image || `/exercises/${currentExercise.id}.png`)}
+                  alt=""
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = getImageUrl("/icons/dumbbell.svg");
+                  }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">
+                  {currentExercise.name}
                 </p>
-              )}
+                {currentExercise.nameAr && (
+                  <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                    {currentExercise.nameAr}
+                  </p>
+                )}
+              </div>
+              {currentExercise.targetAngle && <AngleBadge angle={currentExercise.targetAngle} />}
             </div>
-            {targetAngle && <AngleBadge angle={targetAngle} />}
           </div>
-        </div>
+        )}
 
         {/* ═══ Search & Angle Filter Controls ═══ */}
         <div className="px-5 py-2.5 space-y-2.5">
@@ -141,28 +148,30 @@ export default function SwapExerciseModal({
           </div>
 
           {/* Toggle: show all for muscle */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowAllMuscle(!showAllMuscle)}
-              className={`flex items-center gap-2 text-xs font-semibold transition-all px-3 py-1.5 rounded-lg border ${
-                showAllMuscle
-                  ? "text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30"
-                  : "text-slate-400 bg-slate-800/60 border-slate-700/60 hover:text-white"
-              }`}
-            >
-              <Filter size={12} />
-              {showAllMuscle
-                ? `Showing all ${targetMuscle.toUpperCase()} exercises`
-                : `Showing ${angleLabel.en} only`}
-              <ChevronDown
-                size={12}
-                className={`transition-transform ${showAllMuscle ? "rotate-180" : ""}`}
-              />
-            </button>
-            <span className="text-[11px] text-slate-500 font-mono">
-              {alternatives.length} match{alternatives.length === 1 ? "" : "es"}
-            </span>
-          </div>
+          {!filterAngle && (
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowAllMuscle(!showAllMuscle)}
+                className={`flex items-center gap-2 text-xs font-semibold transition-all px-3 py-1.5 rounded-lg border ${
+                  showAllMuscle
+                    ? "text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30"
+                    : "text-slate-400 bg-slate-800/60 border-slate-700/60 hover:text-white"
+                }`}
+              >
+                <Filter size={12} />
+                {showAllMuscle
+                  ? `Showing all ${targetMuscle.toUpperCase()} exercises`
+                  : `Showing ${angleLabel.en} only`}
+                <ChevronDown
+                  size={12}
+                  className={`transition-transform ${showAllMuscle ? "rotate-180" : ""}`}
+                />
+              </button>
+              <span className="text-[11px] text-slate-500 font-mono">
+                {alternatives.length} match{alternatives.length === 1 ? "" : "es"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ═══ Alternatives list ═══ */}
@@ -173,7 +182,7 @@ export default function SwapExerciseModal({
               <p className="text-sm text-slate-400 font-medium">
                 No direct alternatives found for this angle
               </p>
-              {!showAllMuscle && (
+              {!showAllMuscle && !filterAngle && (
                 <button
                   onClick={() => setShowAllMuscle(true)}
                   className="text-xs text-neon-cyan hover:underline font-semibold"

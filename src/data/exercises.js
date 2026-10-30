@@ -3,6 +3,8 @@
 // ════════════════════════════════════════════════════════════════════════════════
 
 // Human-readable labels for target angles (EN + AR)
+import { exerciseBiomechanics } from "./biomechanicsData";
+
 export const angleLabels = {
   // Back
   vertical_pull:        { en: "Vertical Pull",           ar: "سحب عمودي" },
@@ -38,7 +40,7 @@ export const angleLabels = {
   core_abs:             { en: "Core & Abs",               ar: "بطن و Core" },
 };
 
-export const exercisesDatabase = [
+const baseExercisesDatabase = [
   // ==========================================
   // 1. CHEST (الصدر - 12 Exercises)
   // ==========================================
@@ -1217,6 +1219,19 @@ export const exercisesDatabase = [
 ];
 
 // ════════════════════════════════════════════════════════════════════════════════
+export const exercisesDatabase = baseExercisesDatabase.map((ex) => {
+  const bio = exerciseBiomechanics[ex.id] || {};
+  return {
+    ...ex,
+    primaryTarget: bio.primaryTarget || ex.name,
+    secondaryMuscles: bio.secondaryMuscles || [],
+    jointAction: bio.jointAction || "",
+    setupAlignment: bio.setupAlignment || "",
+    executionCues: bio.executionCues || (ex.tips ? [ex.tips] : []),
+    commonMistakes: bio.commonMistakes || [],
+  };
+});
+
 // TRAINING PLANS — Multi-Program System (PPL + Upper & Bro Split)
 // ════════════════════════════════════════════════════════════════════════════════
 
