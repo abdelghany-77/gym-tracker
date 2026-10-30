@@ -70,14 +70,14 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           <button
             type="button"
             onClick={() => setShowTechniqueModal(true)}
-            className="w-14 h-14 rounded-2xl overflow-hidden bg-[#121824] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 transition-transform active:scale-95 border border-[#1E293B] shadow-md flex items-center justify-center relative group"
+            className="w-16 h-12 rounded-xl overflow-hidden bg-[#121824] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 transition-transform active:scale-95 border border-[#1E293B] shadow-md flex items-center justify-center relative group"
             aria-label={`View ${exercise.name} technique and anatomy`}
             title="Click to view technique & anatomy"
           >
             <img
               src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
               alt={exercise.name}
-              className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 group-hover:scale-105 transition-transform"
+              className="w-full h-full rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 group-hover:scale-105 transition-transform"
               loading="lazy"
               onError={(e) => {
                 e.target.onerror = null;
@@ -192,9 +192,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               {/* Weight Input + Steppers */}
               <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 focus-within:border-neon-cyan/60 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
                 <input
-                  type="number"
+                  type="text"
                   inputMode="decimal"
-                  step="any"
+                  autoComplete="off"
                   placeholder={ghostData?.sets[si]?.weight ? `${ghostData.sets[si].weight}` : "0"}
                   value={set.weight}
                   disabled={set.done}
@@ -227,8 +227,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               {/* Reps Input + Steppers */}
               <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 focus-within:border-neon-cyan/60 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
                 <input
-                  type="number"
+                  type="text"
                   inputMode="numeric"
+                  autoComplete="off"
                   placeholder={ghostData?.sets[si]?.reps ? `${ghostData.sets[si].reps}` : `${exercise.default_reps || 10}`}
                   value={set.reps}
                   disabled={set.done}
@@ -273,9 +274,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   }
                   toggleSetDone(exerciseIndex, si);
                   if (!set.done) {
-                    try {
-                      navigator.vibrate?.(50);
-                    } catch {}
+                    navigator.vibrate?.(50);
                     haptics.light();
                   }
                 }}
@@ -375,7 +374,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               {/* Scrollable Anatomy & Biomechanics Body */}
               <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar text-xs">
                 {/* 1. Large High-Clarity Anatomical Illustration */}
-                <div className="w-full aspect-[4/3] rounded-2xl bg-[#0B0F17] border border-border-slate flex items-center justify-center p-3 overflow-hidden shadow-inner relative">
+                <div className="w-full aspect-[2/1] rounded-2xl bg-[#0B0F17] border border-border-slate flex items-center justify-center p-2 overflow-hidden shadow-inner relative">
                   <img
                     src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
                     alt={exercise.name}
@@ -390,6 +389,14 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                       <AngleBadge angle={exercise.targetAngle} />
                     </div>
                   )}
+                  <div className="absolute bottom-2 left-2 right-2 flex justify-between pointer-events-none">
+                    <span className="rounded-md bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                      Start
+                    </span>
+                    <span className="rounded-md bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                      Finish
+                    </span>
+                  </div>
                 </div>
 
                 {/* 2. Target Muscle Head & Synergists Badges */}

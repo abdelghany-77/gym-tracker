@@ -21,7 +21,6 @@ export default function AngleCoverageBadge({
   programContext = "",
   onSelectSuggestion, // Callback when user taps suggestion: (missingAngle, suggestedEx) => void
   className = "",
-  compact = false,
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -31,7 +30,7 @@ export default function AngleCoverageBadge({
 
   if (!audit || audit.totalRequired === 0) return null;
 
-  const { isComplete, missingAngles, coveredAngles, coveragePercent } = audit;
+  const { isComplete, missingAngles, coveragePercent } = audit;
   const primaryMissing = missingAngles[0];
 
   return (

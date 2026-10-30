@@ -160,9 +160,7 @@ export default function ActiveWorkout() {
         updateSet(currentIndex, si, "reps", ghostData?.sets[si]?.reps || exerciseObj?.default_reps || 10);
       }
       toggleSetDone(currentIndex, si);
-      try {
-        navigator.vibrate?.(50);
-      } catch {}
+      navigator.vibrate?.(50);
       haptics.light();
 
       // Check if all sets for this exercise are now done
@@ -193,7 +191,7 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <div className="max-w-lg mx-auto flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-bg-deep select-none">
+    <div className="max-w-lg mx-auto flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-bg-deep">
       {/* ═══ TOP FIXED HEADER ═══ */}
       <div className="shrink-0 bg-bg-deep px-3 pt-2.5 pb-1 space-y-1.5 border-b border-border-slate/40">
         {/* Row 1: Back, Program Name, Elapsed Timer, Cancel */}
@@ -249,7 +247,7 @@ export default function ActiveWorkout() {
       </div>
 
       {/* ═══ HORIZONTAL SWIPEABLE EXERCISE PILL CAROUSEL ═══ */}
-      <div className="shrink-0 px-3 py-1.5 overflow-x-auto no-scrollbar flex items-center gap-1.5 border-b border-border-slate/40 bg-bg-surface/30">
+      <div className="shrink-0 px-3 py-1.5 overflow-x-auto no-scrollbar flex items-center gap-1.5 border-b border-border-slate/40 bg-bg-surface/30 snap-x">
         {activeWorkout.exercises.map((exData, i) => {
           const exInfo = exercises.find((e) => e.id === exData.exerciseId);
           const allDone = exData.sets.length > 0 && exData.sets.every((s) => s.done);
@@ -262,7 +260,7 @@ export default function ActiveWorkout() {
               ref={isCurrent ? activePillRef : null}
               type="button"
               onClick={() => setCurrentIndex(i)}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold shrink-0 transition-all active:scale-95 border ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold shrink-0 transition-colors active:scale-95 border snap-start ${
                 isCurrent
                   ? "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/50 shadow-[0_0_10px_rgba(0,240,255,0.2)]"
                   : allDone
