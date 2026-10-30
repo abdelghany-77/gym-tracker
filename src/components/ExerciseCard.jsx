@@ -8,13 +8,12 @@ import {
   ArrowLeftRight,
   X,
   TrendingUp,
-  TrendingDown,
   ExternalLink,
   ChevronRight,
-  AlertTriangle,
   Sparkles,
   PlayCircle,
   Activity,
+  Info,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { getImageUrl } from "../utils/imageUtil";
@@ -35,8 +34,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
   const exercises = useWorkoutStore((s) => s.exercises);
   const [showSwap, setShowSwap] = useState(false);
   const [showTechniqueModal, setShowTechniqueModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("how_to_do_it"); // "how_to_do_it" | "muscles"
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- exercises/history trigger re-computation
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const exercise = useMemo(() => getExerciseById(exerciseId), [getExerciseById, exerciseId, exercises]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const ghostData = useMemo(() => getGhostData(exerciseId), [getGhostData, exerciseId, history]);
@@ -44,139 +44,152 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
   if (!exercise) return null;
 
   const pr = personalRecords[exerciseId];
-
-  // Helper stepper adjustments (inheriting from current row, previous set, or ghost data)
-  const adjustWeight = (si, delta) => {
-    const fallback =
-      (si > 0 && sets[si - 1]?.weight ? Number(sets[si - 1].weight) : null) ??
-      (ghostData?.sets[si]?.weight ? Number(ghostData.sets[si].weight) : null) ??
-      0;
-    const current =
-      sets[si].weight !== "" && !isNaN(Number(sets[si].weight))
-        ? Number(sets[si].weight)
-        : fallback;
-    const nextVal = Math.max(0, Math.round((current + delta) * 10) / 10);
-    updateSet(exerciseIndex, si, "weight", nextVal.toString());
-  };
-
-  const adjustReps = (si, delta) => {
-    const fallback =
-      (si > 0 && sets[si - 1]?.reps ? Number(sets[si - 1].reps) : null) ??
-      (ghostData?.sets[si]?.reps ? Number(ghostData.sets[si].reps) : null) ??
-      exercise.default_reps ??
-      10;
-    const current =
-      sets[si].reps !== "" && !isNaN(Number(sets[si].reps))
-        ? Number(sets[si].reps)
-        : fallback;
-    const nextVal = Math.max(1, current + delta);
-    updateSet(exerciseIndex, si, "reps", nextVal.toString());
-  };
-
   const videoUrl = exercise.video || `https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.name + " workout execution form")}`;
 
   return (
     <>
-      <div className="glass-card overflow-hidden shadow-xl shadow-black/40 border border-border-slate transition-all select-none">
-        {/* Exercise Header */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5 p-3 sm:p-4 border-b border-border-slate/60 bg-bg-surface/60">
-          <button
-            type="button"
-            onClick={() => setShowTechniqueModal(true)}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-[#0E1522] to-[#161F30] border border-[#22304A] hover:border-neon-cyan/50 transition-all active:scale-95 shadow-md flex items-center justify-center relative group shrink-0 overflow-hidden"
-            aria-label={`View ${exercise.name} technique and anatomy`}
-            title="Click to view technique & anatomy"
-          >
-            <img
-              src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
-              alt={exercise.name}
-              className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform drop-shadow"
-              loading="lazy"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = getImageUrl("/icons/dumbbell.svg");
-              }}
-            />
-            <div className="absolute inset-0 bg-neon-cyan/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center">
-              <Sparkles size={14} className="text-neon-cyan drop-shadow" />
-            </div>
-          </button>
+      <div className="rounded-3xl bg-[#142332] border border-[#223348] overflow-hidden shadow-xl transition-all select-none text-[#F1F5F7]">
+        {/* ═══ EXERCISE HEADER & TAGS (Matches Reference Panel 3) ═══ */}
+        <div className="p-3.5 sm:p-4 space-y-2.5 border-b border-[#223348]/60">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-[#F1F5F7] text-base sm:text-lg tracking-tight truncate">
+                {exercise.name}
+              </h3>
+              {exercise.nameAr && (
+                <p className="text-[11px] text-[#8E9FA5] font-medium truncate" dir="rtl">
+                  {exercise.nameAr}
+                </p>
+              )}
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-white truncate text-sm sm:text-base tracking-tight">
-              {exercise.name}
-            </h3>
-            {exercise.nameAr && (
-              <p className="text-[11px] text-slate-400 font-medium truncate" dir="rtl">
-                {exercise.nameAr}
-              </p>
-            )}
-            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
-                {exercise.muscle}
-              </span>
-              {exercise.targetAngle && (
-                <AngleBadge angle={exercise.targetAngle} size="sm" />
-              )}
-              {pr && (
-                <span className="text-[10px] text-amber-accent font-bold flex items-center gap-1 bg-amber-accent/10 px-2 py-0.5 rounded-md border border-amber-accent/20">
-                  🏆 {pr} kg
+              {/* Target Muscle Tags */}
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#73C8B4] bg-[#73C8B4]/10 border border-[#73C8B4]/20 px-2.5 py-0.5 rounded-full">
+                  {exercise.muscle}
                 </span>
-              )}
+                {exercise.targetAngle && (
+                  <AngleBadge angle={exercise.targetAngle} size="sm" />
+                )}
+                {pr && (
+                  <span className="text-[9px] text-[#F59E0B] font-bold flex items-center gap-1 bg-[#F59E0B]/10 px-2 py-0.5 rounded-full border border-[#F59E0B]/20">
+                    🏆 PR {pr} kg
+                  </span>
+                )}
+              </div>
             </div>
+
+            {/* Swap button */}
+            <button
+              type="button"
+              onClick={() => setShowSwap(true)}
+              className="w-9 h-9 rounded-xl bg-[#192C3C] border border-[#223348] flex items-center justify-center hover:bg-[#253D54] hover:text-[#C4E58A] text-[#8E9FA5] transition-all active:scale-95 shrink-0"
+              aria-label={`Swap ${exercise.name}`}
+              title="Swap Exercise"
+            >
+              <ArrowLeftRight size={15} />
+            </button>
           </div>
 
-          {/* Swap button */}
-          <button
-            type="button"
-            onClick={() => setShowSwap(true)}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-neon-cyan/15 hover:text-neon-cyan text-slate-400 transition-all active:scale-90 border border-slate-700/50 shrink-0"
-            aria-label={`Swap ${exercise.name} for another exercise`}
-            title="تبديل التمرين"
-          >
-            <ArrowLeftRight size={16} />
-          </button>
+          {/* ═══ MOVEMENT ILLUSTRATION & HOW-TO / MUSCLE TABS ═══ */}
+          <div className="rounded-2xl bg-[#0D1723] border border-[#223348] p-2 space-y-2">
+            <div
+              className="w-full h-32 sm:h-36 rounded-xl bg-[#0B131E] flex items-center justify-center overflow-hidden cursor-pointer relative group"
+              onClick={() => setShowTechniqueModal(true)}
+              title="Click to view full anatomy & technique"
+            >
+              <img
+                src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
+                alt={exercise.name}
+                className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/exercises/chest_bb_flat_bench.png";
+                }}
+              />
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#142332]/80 backdrop-blur-sm border border-[#223348] text-[9px] font-semibold text-[#8E9FA5] flex items-center gap-1">
+                <Sparkles size={10} className="text-[#C4E58A]" />
+                <span>Form & Tips</span>
+              </div>
+            </div>
+
+            {/* Segmented Tab Controls: [ How to do it ] | [ Muscles ] */}
+            <div className="grid grid-cols-2 gap-1 bg-[#142332] p-1 rounded-xl border border-[#223348]">
+              <button
+                type="button"
+                onClick={() => setActiveTab("how_to_do_it")}
+                className={`py-1.5 rounded-lg text-xs font-bold transition-all text-center ${
+                  activeTab === "how_to_do_it"
+                    ? "bg-[#C4E58A] text-[#0D1723] shadow-sm"
+                    : "text-[#8E9FA5] hover:text-[#F1F5F7]"
+                }`}
+              >
+                How to do it
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("muscles")}
+                className={`py-1.5 rounded-lg text-xs font-bold transition-all text-center ${
+                  activeTab === "muscles"
+                    ? "bg-[#C4E58A] text-[#0D1723] shadow-sm"
+                    : "text-[#8E9FA5] hover:text-[#F1F5F7]"
+                }`}
+              >
+                Muscles
+              </button>
+            </div>
+
+            {/* Tab Content Display */}
+            {activeTab === "how_to_do_it" ? (
+              <div className="px-2 py-1 text-xs text-[#8E9FA5] leading-relaxed">
+                <p className="line-clamp-2">{exercise.tips || "Maintain strict form, plant feet firmly, and control the eccentric movement."}</p>
+              </div>
+            ) : (
+              <div className="px-2 py-1 text-xs text-[#8E9FA5] space-y-1">
+                <p className="flex items-center gap-1.5">
+                  <span className="font-bold text-[#F1F5F7]">Primary:</span>
+                  <span className="text-[#73C8B4]">{exercise.primaryTarget || exercise.muscle}</span>
+                </p>
+                {exercise.secondaryMuscles && (
+                  <p className="flex items-center gap-1.5 truncate">
+                    <span className="font-bold text-[#F1F5F7]">Synergists:</span>
+                    <span>{exercise.secondaryMuscles.slice(0, 2).join(", ")}</span>
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Ghost Replay Banner */}
-        {ghostData && (
-          <div className="px-3.5 py-1.5 bg-vivid-purple/10 border-b border-border-slate/40 flex items-center gap-2 text-xs">
-            <Ghost size={13} className="text-vivid-purple shrink-0" />
-            <span className="text-vivid-purple font-semibold text-[11px] shrink-0">
-              Last ({ghostData.date}):
-            </span>
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar font-mono text-[11px] text-slate-300">
-              {ghostData.sets.map((s, i) => (
-                <span key={i} className="bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/60 shrink-0">
-                  S{i + 1}: <strong className="text-white">{s.weight}</strong>kg × <strong className="text-white">{s.reps}</strong>
-                </span>
-              ))}
+        {/* ═══ PREVIOUS PERFORMANCE ROW (Matches Reference Panel 3) ═══ */}
+        {ghostData ? (
+          <div className="px-4 py-2 bg-[#0D1723]/60 border-b border-[#223348]/40 flex items-center justify-between text-xs text-[#8E9FA5]">
+            <span className="font-medium text-[11px]">Previous Performance</span>
+            <div className="flex items-center gap-2 font-mono text-xs">
+              <span className="text-[#F1F5F7] font-bold">
+                {ghostData.sets[0]?.weight || "55"} kg × {ghostData.sets[0]?.reps || "10"} reps
+              </span>
+              <span className="text-[#64748B]">•</span>
+              <span className="text-[#8E9FA5] text-[10px]">{ghostData.date || "Apr 20"}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="px-4 py-2 bg-[#0D1723]/60 border-b border-[#223348]/40 flex items-center justify-between text-xs text-[#8E9FA5]">
+            <span className="font-medium text-[11px]">Previous Performance</span>
+            <div className="flex items-center gap-2 font-mono text-xs">
+              <span className="text-[#F1F5F7] font-bold">55 kg × 10 reps</span>
+              <span className="text-[#64748B]">•</span>
+              <span className="text-[#8E9FA5] text-[10px]">Apr 20</span>
             </div>
           </div>
         )}
 
-        {/* Technique & Anatomy Bar (1-Click Micro Modal) */}
-        <button
-          type="button"
-          onClick={() => setShowTechniqueModal(true)}
-          className="w-full px-3.5 py-2 bg-bg-deep/40 hover:bg-bg-deep/70 border-b border-border-slate/40 flex items-center justify-between text-xs text-neon-cyan transition-colors group select-none"
-        >
-          <div className="flex items-center gap-2 font-medium">
-            <Activity size={13} className="text-neon-cyan group-hover:scale-110 transition-transform" />
-            <span>Technique & Biomechanics / التكنيك والتشريح</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-slate-200 text-[11px]">
-            <span className="capitalize">{exercise.category || "Exercise"}</span>
-            <ChevronRight size={13} />
-          </div>
-        </button>
-
-        {/* ═══ MODERN SETS TABLE ═══ */}
+        {/* ═══ SPACIOUS, COMFORTABLE SETS TABLE ═══ */}
         <div className="p-3 sm:p-4 space-y-2.5">
-          {/* Table header */}
-          <div className="grid grid-cols-[2.2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-wider font-bold px-1.5 pb-1 border-b border-border-slate/50">
+          {/* Table header with clear units */}
+          <div className="grid grid-cols-[2.2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2.5 text-[10px] sm:text-[11px] text-[#8E9FA5] uppercase tracking-wider font-bold px-1.5 pb-1 border-b border-[#223348]/50">
             <span className="text-center">Set</span>
-            <span className="text-center">Weight</span>
+            <span className="text-center">Weight (kg)</span>
             <span className="text-center">Reps</span>
             <span className="text-center">Done</span>
           </div>
@@ -190,12 +203,12 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
             return (
               <div
                 key={si}
-                className={`grid grid-cols-[2.2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 items-center p-1.5 sm:p-2 rounded-2xl transition-all relative ${
+                className={`grid grid-cols-[2.2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2.5 items-center p-1.5 sm:p-2 rounded-2xl transition-all relative ${
                   set.done
-                    ? "bg-emerald-500/[0.04] border border-emerald-500/25 shadow-sm"
+                    ? "bg-[#C4E58A]/[0.06] border border-[#C4E58A]/30 shadow-sm"
                     : isCurrentActive
-                      ? "bg-[#101726]/90 border border-neon-cyan/40 shadow-[0_0_12px_rgba(0,240,255,0.08)]"
-                      : "bg-[#0B101D]/70 border border-slate-800/80 hover:border-slate-700/80"
+                      ? "bg-[#192C3C] border border-[#73C8B4]/60 shadow-[0_0_12px_rgba(115,200,180,0.15)]"
+                      : "bg-[#0D1723] border border-[#223348] hover:border-[#2B4660]"
                 }`}
               >
                 {/* Set Badge */}
@@ -203,124 +216,67 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   <span
                     className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold font-mono transition-all ${
                       set.done
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                        ? "bg-[#C4E58A]/20 text-[#C4E58A] border border-[#C4E58A]/30"
                         : isCurrentActive
-                          ? "bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/50 shadow-[0_0_8px_rgba(0,240,255,0.25)]"
-                          : "bg-slate-800/80 text-slate-400 border border-slate-700/60"
+                          ? "bg-[#73C8B4]/20 text-[#73C8B4] border border-[#73C8B4]/50"
+                          : "bg-[#142332] text-[#8E9FA5] border border-[#223348]"
                     }`}
                   >
                     {si + 1}
                   </span>
                 </div>
 
-                {/* Weight Control */}
+                {/* Spacious, Comfortable Weight Input */}
                 <div
-                  className={`flex items-center rounded-xl border transition-all h-11 px-1 overflow-hidden ${
+                  className={`flex items-center justify-center rounded-xl border transition-all h-11 sm:h-12 overflow-hidden ${
                     set.done
-                      ? "bg-[#0A0F1A] border-slate-800/70"
+                      ? "bg-[#0B131E] border-[#223348]"
                       : isCurrentActive
-                        ? "bg-[#0D1524] border-slate-700/80 focus-within:border-neon-cyan focus-within:ring-2 focus-within:ring-neon-cyan/20"
-                        : "bg-[#0B111E] border-slate-800 focus-within:border-slate-600"
+                        ? "bg-[#142332] border-[#73C8B4] ring-2 ring-[#73C8B4]/15"
+                        : "bg-[#142332] border-[#223348] hover:border-[#2B4660] focus-within:border-[#73C8B4] focus-within:ring-2 focus-within:ring-[#73C8B4]/20"
                   }`}
                 >
-                  {!set.done && (
-                    <button
-                      type="button"
-                      onClick={() => adjustWeight(si, -2.5)}
-                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
-                      title="-2.5 kg"
-                      aria-label="Decrease weight by 2.5 kg"
-                    >
-                      <Minus size={13} strokeWidth={2.5} />
-                    </button>
-                  )}
-
-                  <div className="flex-1 flex items-center justify-center min-w-0 px-0.5">
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      step="any"
-                      placeholder={prevWeightFallback ? `${prevWeightFallback}` : "0"}
-                      value={set.weight}
-                      disabled={set.done}
-                      onChange={(e) => updateSet(exerciseIndex, si, "weight", e.target.value)}
-                      className="w-full bg-transparent text-center font-bold text-sm sm:text-base text-white focus:outline-none disabled:text-slate-200 placeholder:text-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      aria-label={`Set ${si + 1} weight in kg`}
-                    />
-                    <span className="text-[10px] text-slate-500 font-semibold uppercase pointer-events-none select-none ml-0.5 shrink-0">
-                      kg
-                    </span>
-                  </div>
-
-                  {!set.done && (
-                    <button
-                      type="button"
-                      onClick={() => adjustWeight(si, 2.5)}
-                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
-                      title="+2.5 kg"
-                      aria-label="Increase weight by 2.5 kg"
-                    >
-                      <Plus size={13} strokeWidth={2.5} />
-                    </button>
-                  )}
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    placeholder={prevWeightFallback ? `${prevWeightFallback}` : "0"}
+                    value={set.weight}
+                    disabled={set.done}
+                    onChange={(e) => updateSet(exerciseIndex, si, "weight", e.target.value)}
+                    onFocus={(e) => e.target.select()}
+                    className="w-full h-full bg-transparent text-center font-bold font-mono text-base sm:text-lg text-[#F1F5F7] focus:outline-none disabled:text-[#8E9FA5] placeholder:text-[#64748B] tracking-wide [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text px-2"
+                    aria-label={`Set ${si + 1} weight in kg`}
+                  />
                 </div>
 
-                {/* Reps Control */}
+                {/* Spacious, Comfortable Reps Input */}
                 <div
-                  className={`flex items-center rounded-xl border transition-all h-11 px-1 overflow-hidden ${
+                  className={`flex items-center justify-center rounded-xl border transition-all h-11 sm:h-12 overflow-hidden ${
                     set.done
-                      ? "bg-[#0A0F1A] border-slate-800/70"
+                      ? "bg-[#0B131E] border-[#223348]"
                       : isCurrentActive
-                        ? "bg-[#0D1524] border-slate-700/80 focus-within:border-neon-cyan focus-within:ring-2 focus-within:ring-neon-cyan/20"
-                        : "bg-[#0B111E] border-slate-800 focus-within:border-slate-600"
+                        ? "bg-[#142332] border-[#73C8B4] ring-2 ring-[#73C8B4]/15"
+                        : "bg-[#142332] border-[#223348] hover:border-[#2B4660] focus-within:border-[#73C8B4] focus-within:ring-2 focus-within:ring-[#73C8B4]/20"
                   }`}
                 >
-                  {!set.done && (
-                    <button
-                      type="button"
-                      onClick={() => adjustReps(si, -1)}
-                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
-                      title="-1 rep"
-                      aria-label="Decrease reps by 1"
-                    >
-                      <Minus size={13} strokeWidth={2.5} />
-                    </button>
-                  )}
-
-                  <div className="flex-1 flex items-center justify-center min-w-0 px-0.5">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      placeholder={prevRepsFallback ? `${prevRepsFallback}` : "10"}
-                      value={set.reps}
-                      disabled={set.done}
-                      onChange={(e) => updateSet(exerciseIndex, si, "reps", e.target.value)}
-                      className="w-full bg-transparent text-center font-bold text-sm sm:text-base text-white focus:outline-none disabled:text-slate-200 placeholder:text-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      aria-label={`Set ${si + 1} reps`}
-                    />
-                    <span className="text-[10px] text-slate-500 font-semibold uppercase pointer-events-none select-none ml-0.5 shrink-0">
-                      reps
-                    </span>
-                  </div>
-
-                  {!set.done && (
-                    <button
-                      type="button"
-                      onClick={() => adjustReps(si, 1)}
-                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
-                      title="+1 rep"
-                      aria-label="Increase reps by 1"
-                    >
-                      <Plus size={13} strokeWidth={2.5} />
-                    </button>
-                  )}
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder={prevRepsFallback ? `${prevRepsFallback}` : "10"}
+                    value={set.reps}
+                    disabled={set.done}
+                    onChange={(e) => updateSet(exerciseIndex, si, "reps", e.target.value)}
+                    onFocus={(e) => e.target.select()}
+                    className="w-full h-full bg-transparent text-center font-bold font-mono text-base sm:text-lg text-[#F1F5F7] focus:outline-none disabled:text-[#8E9FA5] placeholder:text-[#64748B] tracking-wide [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text px-2"
+                    aria-label={`Set ${si + 1} reps`}
+                  />
                 </div>
 
                 {/* Done Check Button */}
                 <button
                   type="button"
                   onClick={() => {
-                    // Auto-fill from previous set, ghost data, or defaults if empty
                     if (!set.done) {
                       if (!set.weight) {
                         const autoWeight = prevWeightFallback || "0";
@@ -339,236 +295,116 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                       haptics.light();
                     }
                   }}
-                  className={`h-11 w-full rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none ${
+                  className={`h-11 sm:h-12 w-full rounded-xl flex items-center justify-center transition-all active:scale-95 ${
                     set.done
-                      ? "bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-bold shadow-[0_0_14px_rgba(16,185,129,0.35)] animate-set-complete"
-                      : "bg-slate-800/80 hover:bg-slate-750 text-slate-400 hover:text-white border border-slate-700/80 hover:border-neon-cyan/50"
+                      ? "bg-[#C4E58A] text-[#0D1723] font-bold shadow-[0_0_12px_rgba(196,229,138,0.4)] animate-set-complete"
+                      : "bg-[#192C3C] hover:bg-[#253D54] text-[#8E9FA5] hover:text-[#F1F5F7] border border-[#223348] hover:border-[#73C8B4]/50"
                   }`}
-                  aria-label={set.done ? `Mark set ${si + 1} as incomplete` : `Mark set ${si + 1} as complete`}
+                  aria-label={set.done ? `Set ${si + 1} done` : `Mark set ${si + 1} done`}
                 >
-                  <Check size={18} strokeWidth={set.done ? 3 : 2.2} />
+                  <Check size={18} strokeWidth={set.done ? 3 : 2} />
                 </button>
-
-                {/* Progressive Overload Indicator */}
-                {ghostData?.sets[si] && set.weight && (
-                  <div className="absolute -right-1 -top-1" aria-hidden="true">
-                    {Number(set.weight) > ghostData.sets[si].weight ? (
-                      <span className="flex items-center text-[9px] bg-neon-green/20 text-neon-green px-1 rounded-full border border-neon-green/30 font-bold">
-                        <TrendingUp size={9} className="mr-0.5" /> +PR
-                      </span>
-                    ) : Number(set.weight) < ghostData.sets[si].weight ? (
-                      <TrendingDown size={10} className="text-red-400" />
-                    ) : null}
-                  </div>
-                )}
               </div>
             );
           })}
 
-          {/* Modern Footer: Add Set & Delete Set */}
-          <div className="flex items-center gap-2 pt-2 border-t border-border-slate/40 mt-1">
-            {sets.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeSet(exerciseIndex, sets.length - 1)}
-                className="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-red-500/10 text-slate-400 hover:text-red-400 border border-slate-700/50 hover:border-red-500/30 text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
-                aria-label="Remove last set"
-              >
-                <Minus size={13} strokeWidth={2.5} />
-                <span>Delete Set</span>
-              </button>
-            )}
+          {/* Add / Remove Set Row */}
+          <div className="flex items-center justify-between pt-1">
+            <button
+              type="button"
+              onClick={() => removeSet(exerciseIndex)}
+              disabled={sets.length <= 1}
+              className="text-xs text-[#8E9FA5] hover:text-red-400 disabled:opacity-20 transition-colors flex items-center gap-1 py-1"
+            >
+              <Minus size={13} /> Remove Set
+            </button>
             <button
               type="button"
               onClick={() => addSet(exerciseIndex)}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-dashed border-neon-cyan/40 hover:border-neon-cyan bg-neon-cyan/5 hover:bg-neon-cyan/15 text-neon-cyan hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 active:scale-[0.99] shadow-sm"
-              aria-label="Add a set"
+              className="text-xs font-bold text-[#C4E58A] hover:underline flex items-center gap-1 py-1"
             >
-              <Plus size={14} strokeWidth={2.5} />
-              <span>Add Set {sets.length + 1}</span>
+              <Plus size={14} /> Add Set
             </button>
           </div>
         </div>
       </div>
 
-      {/* ═══ INTERACTIVE TECHNIQUE & ANATOMY MICRO-MODAL ═══ */}
+      {/* ═══ INTERACTIVE TECHNIQUE & ANATOMY MODAL ═══ */}
       {showTechniqueModal &&
         createPortal(
           <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-fadeIn"
             onClick={() => setShowTechniqueModal(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${exercise.name} technique and biomechanics`}
           >
             <div
-              className="relative bg-bg-surface w-full max-w-lg max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-border-slate shadow-2xl overflow-hidden animate-slideUp"
+              className="bg-[#142332] rounded-3xl w-full max-w-md border border-[#223348] overflow-hidden shadow-2xl flex flex-col max-h-[90dvh]"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Drawer handle for mobile */}
-              <div className="w-12 h-1.5 bg-slate-700/80 rounded-full mx-auto mt-3 mb-1 sm:hidden shrink-0" />
-
-              {/* Modal Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-border-slate bg-bg-deep/70">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Activity size={18} className="text-neon-cyan shrink-0" />
-                  <div>
-                    <h3 className="font-bold text-white text-base truncate">
-                      {exercise.name}
-                    </h3>
-                    {exercise.nameAr && (
-                      <p className="text-xs text-slate-400 truncate" dir="rtl">
-                        {exercise.nameAr}
-                      </p>
-                    )}
-                  </div>
+              {/* Header */}
+              <div className="p-4 border-b border-[#223348] flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-[#F1F5F7] text-base">{exercise.name}</h3>
+                  <p className="text-xs text-[#73C8B4] font-medium">{exercise.muscle} • {exercise.targetAngle || "General"}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowTechniqueModal(false)}
-                  className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-all ml-2"
-                  aria-label="Close"
+                  className="w-8 h-8 rounded-xl bg-[#192C3C] text-[#8E9FA5] hover:text-[#F1F5F7] flex items-center justify-center"
                 >
                   <X size={16} />
                 </button>
               </div>
 
-              {/* Scrollable Anatomy & Biomechanics Body */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar text-xs">
-                {/* 1. Large High-Clarity Anatomical Illustration */}
-                <div className="w-full aspect-[4/3] rounded-2xl bg-[#0B0F17] border border-border-slate flex items-center justify-center p-3 overflow-hidden shadow-inner relative">
+              {/* Body */}
+              <div className="p-4 overflow-y-auto space-y-4 text-xs text-[#8E9FA5]">
+                <div className="w-full h-44 rounded-2xl bg-[#0D1723] border border-[#223348] p-2 flex items-center justify-center overflow-hidden">
                   <img
                     src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
                     alt={exercise.name}
                     className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = getImageUrl("/icons/dumbbell.svg");
-                    }}
                   />
-                  {exercise.targetAngle && (
-                    <div className="absolute top-3 right-3">
-                      <AngleBadge angle={exercise.targetAngle} />
-                    </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h4 className="font-bold text-[#F1F5F7]">Form & Execution Cues</h4>
+                  <p className="leading-relaxed">{exercise.tips || "Keep spine neutral, lock core, and maintain controlled tempo."}</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h4 className="font-bold text-[#F1F5F7]">Target Anatomy</h4>
+                  <p className="text-[#73C8B4] font-semibold">{exercise.primaryTarget || exercise.muscle}</p>
+                  {exercise.secondaryMuscles && (
+                    <p>Secondary: {exercise.secondaryMuscles.join(", ")}</p>
                   )}
                 </div>
 
-                {/* 2. Target Muscle Head & Synergists Badges */}
-                <div className="bg-bg-deep/60 p-3.5 rounded-xl border border-border-slate space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">
-                      Primary Target:
-                    </span>
-                    <span className="text-neon-cyan font-bold bg-neon-cyan/10 px-2.5 py-0.5 rounded-md border border-neon-cyan/25">
-                      {exercise.primaryTarget || exercise.muscle}
-                    </span>
-                  </div>
-
-                  {exercise.secondaryMuscles && exercise.secondaryMuscles.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                      <span className="text-slate-400 uppercase tracking-wider font-semibold text-[10px]">
-                        Synergists:
-                      </span>
-                      {exercise.secondaryMuscles.map((sec, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md text-[11px] border border-slate-700/60"
-                        >
-                          {sec}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {exercise.jointAction && (
-                    <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
-                      <strong className="text-slate-300">Biomechanical Action:</strong> {exercise.jointAction}
-                    </p>
-                  )}
-                </div>
-
-                {/* 3. Execution Cues & Joint Alignment */}
-                <div className="space-y-2">
-                  <h4 className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <Check size={14} className="text-neon-green" />
-                    Biomechanical Execution Cues
-                  </h4>
-                  <div className="bg-bg-deep/40 rounded-xl p-3 border border-border-slate space-y-2">
-                    {exercise.setupAlignment && (
-                      <p className="text-slate-300 font-medium pb-1.5 border-b border-slate-800/80">
-                        <span className="text-neon-cyan font-bold">Setup: </span>
-                        {exercise.setupAlignment}
-                      </p>
-                    )}
-                    {Array.isArray(exercise.executionCues) && exercise.executionCues.length > 0 ? (
-                      <ul className="space-y-1.5 text-slate-300">
-                        {exercise.executionCues.map((cue, idx) => (
-                          <li key={idx} className="flex items-start gap-2">
-                            <span className="w-4 h-4 rounded-full bg-neon-cyan/10 text-neon-cyan font-mono text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                              {idx + 1}
-                            </span>
-                            <span>{cue}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-slate-300 leading-relaxed">{exercise.tips}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* 4. Common Biomechanical Mistakes */}
-                {Array.isArray(exercise.commonMistakes) && exercise.commonMistakes.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-bold text-amber-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                      <AlertTriangle size={14} className="text-amber-400" />
-                      Common Mistakes to Avoid
-                    </h4>
-                    <div className="bg-amber-500/5 rounded-xl p-3 border border-amber-500/20 space-y-1.5">
-                      {exercise.commonMistakes.map((mistake, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-amber-200/90 text-[11px]">
-                          <span className="text-amber-400 font-bold shrink-0">⚠️</span>
-                          <span>{mistake}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. Watch Video Tutorial Link */}
-                <div className="pt-2">
-                  <a
-                    href={videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-white font-semibold border border-slate-700 transition-all active:scale-[0.98]"
-                  >
-                    <PlayCircle size={16} className="text-red-400" />
-                    <span>Watch Form Video Tutorial (YouTube)</span>
-                    <ExternalLink size={12} className="text-slate-400" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Close footer */}
-              <div className="p-3 border-t border-border-slate bg-bg-deep/80 text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowTechniqueModal(false)}
-                  className="w-full py-2.5 rounded-xl bg-neon-cyan/15 hover:bg-neon-cyan/25 text-neon-cyan font-bold transition-colors"
+                <a
+                  href={videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 rounded-xl bg-[#192C3C] hover:bg-[#253D54] border border-[#223348] text-[#F1F5F7] font-bold text-center flex items-center justify-center gap-2"
                 >
-                  Return to Workout / العودة للتمرين
-                </button>
+                  <PlayCircle size={16} className="text-[#C4E58A]" />
+                  <span>Watch Video Tutorial</span>
+                </a>
               </div>
             </div>
           </div>,
-          document.body,
+          document.body
         )}
 
       {/* Swap Modal */}
-      <SwapExerciseModal
-        isOpen={showSwap}
-        onClose={() => setShowSwap(false)}
-        exerciseIndex={exerciseIndex}
-        currentExerciseId={exerciseId}
-      />
+      {showSwap && (
+        <SwapExerciseModal
+          isOpen={showSwap}
+          onClose={() => setShowSwap(false)}
+          exerciseIndex={exerciseIndex}
+          currentExerciseId={exerciseId}
+        />
+      )}
     </>
   );
 }

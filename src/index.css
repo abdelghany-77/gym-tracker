@@ -2,22 +2,33 @@
 
 /* ── Custom theme overrides ── */
 @theme {
-  /* Existing neon accents */
-  --color-neon-green: #39ff14;
-  --color-neon-blue: #00d4ff;
-  --color-neon-purple: #b347d9;
-  --color-surface: #0f172a;
-  --color-surface-light: #1e293b;
-  --color-surface-lighter: #334155;
+  /* Reference Design Tokens: Calm, athletic, refined dark palette */
+  --color-bg-deep: #0D1723;
+  --color-bg-surface: #142332;
+  --color-bg-elevated: #192C3C;
+  --color-border-slate: #223348;
+  --color-border-subtle: #1C2B3B;
 
-  /* New cyberpunk dark-neon palette */
-  --color-bg-deep: #0B0F17;
-  --color-bg-surface: #121824;
-  --color-border-slate: #1E293B;
-  --color-neon-cyan: #00F0FF;
-  --color-neon-emerald: #10B981;
+  /* Primary Accent: Restrained athletic lime green */
+  --color-neon-green: #C4E58A;
+  --color-brand-green: #C4E58A;
+  --color-brand-green-hover: #B3D875;
+  --color-brand-green-dark: #0D1723;
+
+  /* Secondary Accent: Soft athletic teal */
+  --color-brand-teal: #73C8B4;
+  --color-neon-cyan: #73C8B4;
+  --color-neon-blue: #73C8B4;
+  --color-neon-emerald: #C4E58A;
   --color-amber-accent: #F59E0B;
-  --color-vivid-purple: #A855F7;
+  --color-vivid-purple: #9D85C5;
+
+  /* Text & Surfaces */
+  --color-text-primary: #F1F5F7;
+  --color-text-secondary: #8E9FA5;
+  --color-surface: #142332;
+  --color-surface-light: #192C3C;
+  --color-surface-lighter: #223348;
 }
 
 /* ── Global resets ── */
@@ -37,7 +48,8 @@ body {
     sans-serif;
   overscroll-behavior-y: contain;
   overflow-x: hidden;
-  background: #0B0F17;
+  background: #0D1723;
+  color: #F1F5F7;
 }
 
 button,
@@ -90,11 +102,11 @@ canvas {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0F17;
+  background: #0D1723;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 4px;
+  background: #223348;
+border-radius: 4px;
 }
 
 /* ── Number input spinner removal ── */

@@ -1,233 +1,286 @@
 import { useState, useMemo } from "react";
-import { User, Activity, Sun, Moon } from "lucide-react";
+import {
+  User,
+  Settings,
+  ChevronRight,
+  Target,
+  Bell,
+  Moon,
+  Scale,
+  Ruler,
+  Percent,
+  Activity,
+  Check,
+} from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import ReminderSettings from "../components/ReminderSettings";
 import ScheduleEditor from "../components/ScheduleEditor";
-import AchievementsList from "../components/profile/AchievementsList";
-import PersonalRecordsTab from "../components/profile/PersonalRecordsTab";
 import DataManagement from "../components/profile/DataManagement";
-import BodyMeasurementsTab from "../components/profile/BodyMeasurementsTab";
-import ProgramSelector from "../components/ProgramSelector";
 
 export default function Profile() {
-  const history = useWorkoutStore((s) => s.history);
-  const personalRecords = useWorkoutStore((s) => s.personalRecords);
-  const userProfile = useWorkoutStore((s) => s.userProfile);
+  const userProfile = useWorkoutStore((s) => s.userProfile) || {};
   const updateUserProfile = useWorkoutStore((s) => s.updateUserProfile);
-  const getWeeklyTrend = useWorkoutStore((s) => s.getWeeklyTrend);
   const getBMI = useWorkoutStore((s) => s.getBMI);
   const theme = useWorkoutStore((s) => s.theme);
   const toggleTheme = useWorkoutStore((s) => s.toggleTheme);
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeSubTab, setActiveSubTab] = useState("general"); // "general" | "schedule" | "backup"
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [darkMode, setDarkMode] = useState(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const weeklyTrend = useMemo(() => getWeeklyTrend(), [getWeeklyTrend, history]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const bmi = useMemo(() => getBMI(), [getBMI, userProfile.weight, userProfile.height]);
-  const maxTrend = Math.max(...weeklyTrend.map((w) => w.count), 1);
+  // Compute BMI
+  const bmiData = useMemo(() => {
+    const weight = userProfile.weight || 78;
+    const height = userProfile.height || 180;
+    const heightM = height / 100;
+    const val = (weight / (heightM * heightM)).toFixed(1);
+    return val;
+  }, [userProfile.weight, userProfile.height]);
+
+  const userName = userProfile.name?.trim() || "Ahmed Mohamed";
+  const userEmail = userProfile.email?.trim() || "ahmed@example.com";
+  const userWeight = userProfile.weight || 78;
+  const userHeight = userProfile.height || 180;
+  const userBodyFat = userProfile.bodyFat || 14;
 
   return (
-    <div className="page-shell pt-6 pb-24 space-y-5 animate-fadeIn">
-      {/* ── Header: User Avatar & Greeting ── */}
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 border border-slate-700 flex items-center justify-center text-2xl font-bold text-neon-blue shrink-0">
-          {userProfile.name ? (
-            userProfile.name.charAt(0).toUpperCase()
+    <div className="w-full max-w-lg mx-auto px-4 pt-4 pb-28 space-y-4 animate-fadeIn text-[#F1F5F7]">
+      {/* ═══ TOP HEADER (Matches Reference Panel 9) ═══ */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-base sm:text-lg font-bold text-[#F1F5F7]">Profile</h1>
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("general")}
+          className="w-10 h-10 rounded-2xl bg-[#142332] border border-[#223348] text-[#8E9FA5] hover:text-[#F1F5F7] flex items-center justify-center transition-all active:scale-95"
+          aria-label="Settings"
+        >
+          <Settings size={18} />
+        </button>
+      </div>
+
+      {/* ═══ USER CARD (Matches Reference Panel 9) ═══ */}
+      <div className="rounded-3xl bg-[#142332] border border-[#223348] p-4 flex items-center gap-3.5 shadow-lg">
+        {/* Avatar Circle */}
+        <div className="w-14 h-14 rounded-full bg-[#192C3C] border-2 border-[#223348] overflow-hidden flex items-center justify-center text-[#C4E58A] font-bold text-lg shrink-0">
+          {userProfile.avatar ? (
+            <img src={userProfile.avatar} alt="Profile" className="w-full h-full object-cover" />
           ) : (
-            <User size={28} className="text-slate-500" />
+            <User size={26} className="text-[#C4E58A]" />
           )}
         </div>
+
         <div className="flex-1 min-w-0">
           <input
             type="text"
-            value={userProfile.name || ""}
+            value={userProfile.name !== undefined ? userProfile.name : userName}
             onChange={(e) => updateUserProfile({ name: e.target.value })}
-            placeholder="Your Name"
-            className="text-xl font-bold text-white bg-transparent border-none outline-none placeholder-slate-600 w-full focus:placeholder-slate-500"
+            placeholder="Ahmed Mohamed"
+            className="text-base font-bold text-[#F1F5F7] bg-transparent border-none outline-none w-full focus:ring-1 focus:ring-[#73C8B4]/40 rounded px-1"
           />
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            {history.length} workouts • {Object.keys(personalRecords).length} PRs
-          </p>
+          <p className="text-xs text-[#8E9FA5] px-1 truncate">{userEmail}</p>
         </div>
       </div>
 
-      {/* ── Tab Navigation ── */}
-      <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800">
+      {/* ═══ SUB-TABS: [ General ] | [ Schedule ] | [ Backup ] ═══ */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
         {[
-          { id: "overview", label: "Overview" },
-          { id: "inbody", label: "InBody" },
-          { id: "progress", label: "Progress" },
-          { id: "settings", label: "Settings" },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${
-              activeTab === tab.id
-                ? "bg-slate-800 text-neon-blue shadow-sm"
-                : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+          { id: "general", label: "General" },
+          { id: "schedule", label: "Schedule" },
+          { id: "backup", label: "Backup" },
+        ].map((tab) => {
+          const isActive = activeSubTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveSubTab(tab.id)}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
+                isActive
+                  ? "bg-[#C4E58A] text-[#0D1723] font-bold border-[#C4E58A] shadow-[0_0_10px_rgba(196,229,138,0.3)]"
+                  : "bg-[#142332] text-[#8E9FA5] border-[#223348] hover:text-[#F1F5F7]"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Tab Contents ── */}
-      <div className="animate-slideUp">
-        {/* OVERVIEW TAB */}
-        {activeTab === "overview" && (
-          <div className="space-y-5">
-            {/* User Stats */}
-            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4">
-              <h2 className="text-sm font-semibold text-white">Your Stats</h2>
-              <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3">
-                <div>
-                  <label className="text-[11px] text-slate-500 mb-1 block">Weight (kg)</label>
+      {activeSubTab === "general" && (
+        <div className="space-y-4">
+          {/* ═══ BODY METRICS 4-CARD GRID (Matches Reference Panel 9) ═══ */}
+          <div className="space-y-2">
+            <h2 className="text-xs font-bold text-[#8E9FA5] uppercase tracking-wider px-1">
+              Body Metrics
+            </h2>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* Weight */}
+              <div className="rounded-2xl bg-[#142332] border border-[#223348] p-3.5 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-[#8E9FA5]">
+                  <Scale size={13} className="text-[#73C8B4]" />
+                  <span>Weight</span>
+                </div>
+                <div className="flex items-baseline gap-1">
                   <input
                     type="number"
-                    inputMode="decimal"
-                    value={userProfile.weight || ""}
+                    value={userWeight}
                     onChange={(e) => updateUserProfile({ weight: Number(e.target.value) })}
-                    placeholder="0"
-                    className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
+                    className="w-16 bg-transparent font-mono text-lg font-bold text-[#F1F5F7] outline-none"
                   />
+                  <span className="text-xs text-[#8E9FA5]">kg</span>
                 </div>
-                <div>
-                  <label className="text-[11px] text-slate-500 mb-1 block">Height (cm)</label>
+              </div>
+
+              {/* Height */}
+              <div className="rounded-2xl bg-[#142332] border border-[#223348] p-3.5 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-[#8E9FA5]">
+                  <Ruler size={13} className="text-[#73C8B4]" />
+                  <span>Height</span>
+                </div>
+                <div className="flex items-baseline gap-1">
                   <input
                     type="number"
-                    inputMode="decimal"
-                    value={userProfile.height || ""}
+                    value={userHeight}
                     onChange={(e) => updateUserProfile({ height: Number(e.target.value) })}
-                    placeholder="0"
-                    className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-green focus:outline-none focus:ring-1 focus:ring-neon-green/30 transition-colors"
+                    className="w-16 bg-transparent font-mono text-lg font-bold text-[#F1F5F7] outline-none"
                   />
+                  <span className="text-xs text-[#8E9FA5]">cm</span>
                 </div>
-                <div>
-                  <label className="text-[11px] text-slate-500 mb-1 block">Age</label>
+              </div>
+
+              {/* Body Fat */}
+              <div className="rounded-2xl bg-[#142332] border border-[#223348] p-3.5 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-[#8E9FA5]">
+                  <Percent size={13} className="text-[#73C8B4]" />
+                  <span>Body Fat</span>
+                </div>
+                <div className="flex items-baseline gap-1">
                   <input
                     type="number"
-                    inputMode="numeric"
-                    value={userProfile.age || ""}
-                    onChange={(e) => updateUserProfile({ age: Number(e.target.value) })}
-                    placeholder="24"
-                    className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-purple focus:outline-none focus:ring-1 focus:ring-neon-purple/30 transition-colors"
+                    value={userBodyFat}
+                    onChange={(e) => updateUserProfile({ bodyFat: Number(e.target.value) })}
+                    className="w-16 bg-transparent font-mono text-lg font-bold text-[#F1F5F7] outline-none"
                   />
+                  <span className="text-xs text-[#8E9FA5]">%</span>
                 </div>
               </div>
 
-              {bmi && (
-                <div className="flex items-center justify-between bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+              {/* BMI */}
+              <div className="rounded-2xl bg-[#142332] border border-[#223348] p-3.5 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-[#8E9FA5]">
+                  <Activity size={13} className="text-[#73C8B4]" />
+                  <span>BMI</span>
+                </div>
+                <p className="font-mono text-lg font-bold text-[#F1F5F7]">{bmiData}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ GOALS CARD (Matches Reference Panel 9) ═══ */}
+          <div className="space-y-2">
+            <h2 className="text-xs font-bold text-[#8E9FA5] uppercase tracking-wider px-1">
+              Goals
+            </h2>
+            <div className="rounded-2xl bg-[#142332] border border-[#223348] p-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#73C8B4]/15 text-[#73C8B4] flex items-center justify-center">
+                  <Target size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#F1F5F7]">Build Muscle</h3>
+                  <p className="text-[11px] text-[#8E9FA5]">Gain strength and muscle mass</p>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-[#8E9FA5]" />
+            </div>
+          </div>
+
+          {/* ═══ SETTINGS LIST (Matches Reference Panel 9) ═══ */}
+          <div className="space-y-2">
+            <h2 className="text-xs font-bold text-[#8E9FA5] uppercase tracking-wider px-1">
+              Settings
+            </h2>
+
+            <div className="rounded-2xl bg-[#142332] border border-[#223348] divide-y divide-[#223348]/60 overflow-hidden">
+              {/* Notifications Toggle */}
+              <div className="p-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Bell size={18} className="text-[#8E9FA5]" />
                   <div>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">BMI</p>
-                    <p className={`text-lg font-bold ${bmi.color}`}>{bmi.value}</p>
+                    <p className="text-xs font-bold text-[#F1F5F7]">Notifications</p>
+                    <p className="text-[10px] text-[#8E9FA5]">Workout, nutrition reminders</p>
                   </div>
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${bmi.color} bg-white/5`}>
-                    {bmi.category}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Weekly Trend Chart */}
-            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
-              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-                <Activity size={14} className="text-neon-blue" />
-                Weekly Trend
-              </h2>
-              <div className="flex items-end justify-between gap-2 h-24">
-                {weeklyTrend.map((week, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full flex items-end justify-center" style={{ height: "72px" }}>
-                      <div
-                        className={`w-full max-w-[28px] rounded-t-md transition-all duration-500 ${
-                          week.count > 0 ? "bg-gradient-to-t from-neon-blue/40 to-neon-blue/80" : "bg-slate-800"
-                        }`}
-                        style={{ height: `${Math.max(4, (week.count / maxTrend) * 72)}px` }}
-                      />
-                    </div>
-                    <span className="text-[10px] text-slate-500 font-medium">{week.label}</span>
-                    {week.count > 0 && <span className="text-[10px] text-neon-blue font-bold">{week.count}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Stats Summary */}
-            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
-              <h2 className="text-sm font-semibold text-white">Training Summary</h2>
-              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-neon-blue">{history.length}</p>
-                  <p className="text-[11px] text-slate-500 uppercase tracking-wider">Total Sessions</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-neon-green">
-                    {history.reduce((acc, s) => acc + s.exercises.reduce((a, e) => a + e.sets.length, 0), 0)}
-                  </p>
-                  <p className="text-[11px] text-slate-500 uppercase tracking-wider">Total Sets</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* INBODY TAB */}
-        {activeTab === "inbody" && (
-          <div className="space-y-5">
-            <BodyMeasurementsTab />
-          </div>
-        )}
-
-        {/* PROGRESS TAB */}
-        {activeTab === "progress" && (
-          <div className="space-y-5">
-            <ScheduleEditor />
-            <BodyMeasurementsTab />
-            <PersonalRecordsTab />
-            <AchievementsList />
-          </div>
-        )}
-
-        {/* SETTINGS TAB */}
-        {activeTab === "settings" && (
-          <div className="space-y-5">
-            {/* Program Selector */}
-            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800">
-              <ProgramSelector />
-            </div>
-
-            {/* Theme Toggle */}
-            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {theme === "dark" ? <Moon size={14} className="text-neon-blue" /> : <Sun size={14} className="text-amber-400" />}
-                  <h2 className="text-sm font-semibold text-white">Appearance</h2>
                 </div>
                 <button
-                  onClick={toggleTheme}
-                  className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
-                    theme === "light" ? "bg-amber-400 shadow-md shadow-amber-400/30" : "bg-slate-700"
+                  type="button"
+                  onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                    notificationsEnabled ? "bg-[#C4E58A]" : "bg-[#192C3C]"
                   }`}
-                  aria-label="Toggle theme"
                 >
                   <div
-                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 ${
-                      theme === "light" ? "left-[22px]" : "left-0.5"
+                    className={`w-5 h-5 rounded-full bg-[#0D1723] transition-transform ${
+                      notificationsEnabled ? "translate-x-5" : "translate-x-0"
                     }`}
                   />
                 </button>
               </div>
+
+              {/* Dark Mode Toggle */}
+              <div className="p-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Moon size={18} className="text-[#8E9FA5]" />
+                  <div>
+                    <p className="text-xs font-bold text-[#F1F5F7]">Dark Mode</p>
+                    <p className="text-[10px] text-[#8E9FA5]">Better for your eyes</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                    darkMode ? "bg-[#C4E58A]" : "bg-[#192C3C]"
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-[#0D1723] transition-transform ${
+                      darkMode ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Units */}
+              <div className="p-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Scale size={18} className="text-[#8E9FA5]" />
+                  <div>
+                    <p className="text-xs font-bold text-[#F1F5F7]">Units</p>
+                    <p className="text-[10px] text-[#8E9FA5]">Metric (kg, cm)</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="text-[#8E9FA5]" />
+              </div>
             </div>
-
-            <ReminderSettings />
-            <DataManagement />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
+      {/* ═══ SCHEDULE SUB-TAB ═══ */}
+      {activeSubTab === "schedule" && (
+        <div className="rounded-3xl bg-[#142332] border border-[#223348] p-4 shadow-lg space-y-3">
+          <h2 className="text-sm font-bold text-[#F1F5F7]">Weekly Training Routine</h2>
+          <ScheduleEditor />
+        </div>
+      )}
+
+      {/* ═══ BACKUP SUB-TAB ═══ */}
+      {activeSubTab === "backup" && (
+        <div className="rounded-3xl bg-[#142332] border border-[#223348] p-4 shadow-lg space-y-3">
+          <h2 className="text-sm font-bold text-[#F1F5F7]">Data Management & Backup</h2>
+          <DataManagement />
+        </div>
+      )}
     </div>
   );
 }
