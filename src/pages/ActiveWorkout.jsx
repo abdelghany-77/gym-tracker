@@ -54,20 +54,6 @@ export default function ActiveWorkout() {
     return () => clearInterval(timerRef.current);
   }, [activeWorkout]);
 
-  // Move forward as soon as the current exercise is fully completed.
-  useEffect(() => {
-    if (!activeWorkout) return;
-    const currentExercise = activeWorkout.exercises[currentIndex];
-    if (!currentExercise || currentExercise.sets.length === 0) return;
-    if (!currentExercise.sets.every((set) => set.done)) return;
-    if (currentIndex >= activeWorkout.exercises.length - 1) return;
-
-    const timeout = setTimeout(() => {
-      setCurrentIndex((index) => Math.min(activeWorkout.exercises.length - 1, index + 1));
-    }, 350);
-    return () => clearTimeout(timeout);
-  }, [activeWorkout, currentIndex]);
-
   const progress = useMemo(() => {
     if (!activeWorkout) return { totalSets: 0, doneSets: 0, percent: 0 };
     const totalSets = activeWorkout.exercises.reduce(
@@ -277,7 +263,7 @@ export default function ActiveWorkout() {
       </div>
 
       {/* ═══ CENTER WORKOUT EXECUTION AREA (Zero Scroll Optimized) ═══ */}
-      <div className="flex-1 min-h-0 overflow-y-auto sm:overflow-hidden p-3 flex flex-col justify-between gap-2 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3 custom-scrollbar">
         {currentExercise && (
           <div key={currentExercise.exerciseId} className="animate-fadeIn">
             <ExerciseCard
@@ -287,8 +273,10 @@ export default function ActiveWorkout() {
           </div>
         )}
 
-        {/* Inline Compact Rest Timer */}
-        <RestTimer inline />
+        {/* Rest timer stays below the exercise card and never changes exercise selection. */}
+        <section aria-label="Rest timer">
+          <RestTimer inline />
+        </section>
       </div>
 
       {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}

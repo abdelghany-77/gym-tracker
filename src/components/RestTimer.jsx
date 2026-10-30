@@ -131,7 +131,7 @@ export default function RestTimer({ inline = false }) {
       return (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800/60 hover:border-slate-700 transition-all active:scale-[0.98]"
+          className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800/60 active:scale-[0.98]"
           aria-label="Open rest timer"
         >
           <div className="w-9 h-9 rounded-xl bg-neon-blue/10 flex items-center justify-center shrink-0">
@@ -163,7 +163,7 @@ export default function RestTimer({ inline = false }) {
               setIsRunning(false);
               setTimeLeft(0);
             }}
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-500 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500"
             aria-label="Close rest timer"
           >
             <X size={14} />
