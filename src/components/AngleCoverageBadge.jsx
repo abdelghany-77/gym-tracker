@@ -100,10 +100,10 @@ export default function AngleCoverageBadge({
         <div className="mt-1.5 bg-slate-900/95 border border-slate-800 rounded-xl p-3 space-y-2 animate-fadeIn text-xs shadow-2xl">
           <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
             <span className="font-bold text-white text-[11px] uppercase tracking-wider flex items-center gap-1">
-              <Sparkles size={12} className="text-neon-cyan" />
+              <Sparkles size={12} className="text-[#73C8B4]" />
               <span>{audit.dayTitle} Audit</span>
             </span>
-            <span className="font-mono text-[11px] font-bold text-neon-cyan">
+            <span className="font-mono text-[11px] font-bold text-[#73C8B4]">
               {coveragePercent}% Covered ({coveredAngles.length}/{audit.totalRequired})
             </span>
           </div>

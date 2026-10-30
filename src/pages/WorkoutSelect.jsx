@@ -156,7 +156,7 @@ export default function WorkoutSelect() {
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "/exercises/chest_bb_flat_bench.png";
+                      e.target.src = getImageUrl("/exercises/chest_bb_flat_bench.png");
                     }}
                   />
                 </div>

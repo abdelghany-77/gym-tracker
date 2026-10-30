@@ -108,7 +108,7 @@ export default function ExerciseLibrary() {
       </div>
 
       {/* ═══ MUSCLE FILTER CHIPS (Matches Reference Panel 4) ═══ */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 select-none">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-0.5 select-none shrink-0">
         {muscles.map((m) => {
           const isActive = selectedMuscle === m;
           return (
@@ -116,9 +116,9 @@ export default function ExerciseLibrary() {
               key={m}
               type="button"
               onClick={() => setSelectedMuscle(m)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 border ${
+              className={`shrink-0 min-w-fit px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-95 border ${
                 isActive
-                  ? "bg-[#C4E58A] text-[#0D1723] font-bold border-[#C4E58A] shadow-[0_0_12px_rgba(196,229,138,0.3)]"
+                  ? "bg-[#C4E58A] text-[#0D1723] font-bold border-[#C4E58A] shadow-[0_0_12px_rgba(196,229,138,0.25)]"
                   : "bg-[#142332] text-[#8E9FA5] border-[#223348] hover:text-[#F1F5F7] hover:border-[#2B4660]"
               }`}
             >
@@ -148,7 +148,7 @@ export default function ExerciseLibrary() {
                       loading="lazy"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = "/exercises/chest_bb_flat_bench.png";
+                        e.target.src = getImageUrl("/exercises/chest_bb_flat_bench.png");
                       }}
                     />
                   </div>
@@ -198,7 +198,7 @@ export default function ExerciseLibrary() {
                   loading="lazy"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = "/exercises/chest_bb_flat_bench.png";
+                    e.target.src = getImageUrl("/exercises/chest_bb_flat_bench.png");
                   }}
                 />
               </div>

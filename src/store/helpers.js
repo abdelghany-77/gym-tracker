@@ -1,15 +1,91 @@
 // ── Schema Version ──
 export const DATABASE_VERSION = "3.0.0";
 
+// ── Legacy ID to Canonical ID Mapping ──
+export const LEGACY_EXERCISE_ID_MAP = {
+  // Chest
+  chest_barbell_bench: "chest_bb_flat_bench",
+  chest_flat_barbell_bench: "chest_bb_flat_bench",
+  chest_incline_db: "chest_db_incline_press",
+  chest_cable_fly: "chest_high_to_low_cable_fly",
+  chest_pec_deck: "chest_pec_deck_fly",
+  chest_flat_db_fly: "chest_db_flat_press",
+  // Back
+  back_lat_pulldown: "back_wide_lat_pulldown",
+  back_bent_row: "back_bb_bent_over_row",
+  back_cable_row: "back_seated_cable_row",
+  back_single_db_row: "back_db_single_arm_row",
+  back_face_pulls: "back_face_pulls",
+  back_extensions: "back_hyperextension",
+  back_reverse_bb_row: "back_close_grip_pulldown",
+  // Shoulders
+  sh_overhead_press: "sh_standing_bb_ohp",
+  sh_lateral_raise: "sh_db_lateral_raise",
+  sh_front_raise: "sh_standing_bb_ohp",
+  sh_reverse_fly: "sh_reverse_pec_deck",
+  sh_face_pulls_sh: "back_face_pulls",
+  sh_shrugs: "sh_bb_shrugs",
+  // Arms
+  arm_barbell_curl: "arm_bb_bicep_curl",
+  arm_hammer_curl: "arm_db_hammer_curl",
+  arm_incline_curl: "arm_db_incline_curl",
+  arm_tricep_pushdown: "arm_rope_pushdown",
+  arm_overhead_ext: "arm_overhead_cable_ext",
+  arm_wrist_curl: "arm_cable_rope_curl",
+  arm_reverse_curl: "arm_db_hammer_curl",
+  // Legs
+  leg_squat: "leg_bb_back_squat",
+  leg_press: "leg_45_press",
+  leg_lunges: "leg_walking_lunges",
+  leg_rdl: "leg_bb_rdl",
+  leg_curl: "leg_lying_curl",
+  leg_adductor: "leg_extension",
+  leg_calf_raise: "leg_standing_calf_raise",
+};
+
+// ── Normalize exercise names for semantic deduplication ──
+export const normalizeExerciseName = (name) => {
+  if (!name || typeof name !== "string") return "";
+  return name
+    .toLowerCase()
+    .replace(/^flat\s+barbell\s+bench\s+press$/, "barbell bench press")
+    .replace(/^flat\s+bench\s+press$/, "barbell bench press")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 // ── Helper: Deduplication & Sanitizer ──
 export const sanitizeExerciseList = (list) => {
   if (!Array.isArray(list)) return [];
-  const seen = new Set();
-  return list.filter((item) => {
-    if (!item || !item.id || seen.has(item.id)) return false;
-    seen.add(item.id);
-    return true;
-  });
+  const seenIds = new Set();
+  const seenNames = new Set();
+  const result = [];
+
+  for (const item of list) {
+    if (!item) continue;
+    
+    // Map legacy ID if present
+    const rawId = item.id;
+    const resolvedId = LEGACY_EXERCISE_ID_MAP[rawId] || rawId;
+    if (!resolvedId) continue;
+
+    // Check ID duplicate
+    if (seenIds.has(resolvedId)) continue;
+
+    // Check semantic name duplicate
+    const normName = normalizeExerciseName(item.name);
+    if (normName && seenNames.has(normName)) continue;
+
+    seenIds.add(resolvedId);
+    if (normName) seenNames.add(normName);
+
+    result.push({
+      ...item,
+      id: resolvedId,
+    });
+  }
+
+  return result;
 };
 
 // ── Helper: localStorage read/write ──

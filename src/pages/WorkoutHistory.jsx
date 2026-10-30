@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import useWorkoutStore from "../store/workoutStore";
 import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
 import AngleRadarChart from "../components/AngleRadarChart";
+import { getImageUrl } from "../utils/imageUtil";
 
 export default function WorkoutHistory() {
   const navigate = useNavigate();
@@ -195,9 +196,17 @@ export default function WorkoutHistory() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-12 h-12 rounded-xl bg-[#192C3C] border border-[#223348] overflow-hidden flex items-center justify-center shrink-0 p-1">
                         <img
-                          src="/exercises/chest_bb_flat_bench.png"
+                          src={getImageUrl(
+                            sess.exercises?.[0]?.exerciseId
+                              ? (getExerciseById(sess.exercises[0].exerciseId)?.image || "/exercises/chest_bb_flat_bench.png")
+                              : "/exercises/chest_bb_flat_bench.png"
+                          )}
                           alt="Session"
                           className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = getImageUrl("/exercises/chest_bb_flat_bench.png");
+                          }}
                         />
                       </div>
                       <div className="min-w-0">

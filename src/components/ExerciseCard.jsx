@@ -104,7 +104,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                 loading="lazy"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "/exercises/chest_bb_flat_bench.png";
+                  e.target.src = getImageUrl("/exercises/chest_bb_flat_bench.png");
                 }}
               />
               <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#142332]/80 backdrop-blur-sm border border-[#223348] text-[9px] font-semibold text-[#8E9FA5] flex items-center gap-1">

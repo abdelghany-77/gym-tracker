@@ -23,6 +23,7 @@ import { trainingPlans } from "../data/exercises";
 import AngleRadarChart from "../components/AngleRadarChart";
 import ReminderWidget from "../components/ReminderWidget";
 import AnatomyHero from "../components/AnatomyHero";
+import { getImageUrl } from "../utils/imageUtil";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -324,11 +325,19 @@ export default function Dashboard() {
             className="rounded-2xl bg-[#142332] border border-[#223348] p-3 flex items-center justify-between hover:border-[#2B4660] cursor-pointer transition-all active:scale-[0.99]"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-[#192C3C] border border-[#223348] overflow-hidden flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#192C3C] border border-[#223348] overflow-hidden flex items-center justify-center shrink-0 p-1">
                 <img
-                  src="/exercises/chest_bb_flat_bench.png"
+                  src={getImageUrl(
+                    lastSession.exercises?.[0]?.exerciseId
+                      ? (useWorkoutStore.getState().getExerciseById(lastSession.exercises[0].exerciseId)?.image || "/exercises/chest_bb_flat_bench.png")
+                      : "/exercises/chest_bb_flat_bench.png"
+                  )}
                   alt="Recent workout"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = getImageUrl("/exercises/chest_bb_flat_bench.png");
+                  }}
                 />
               </div>
               <div className="min-w-0">
@@ -352,11 +361,15 @@ export default function Dashboard() {
             className="rounded-2xl bg-[#142332] border border-[#223348] p-3 flex items-center justify-between hover:border-[#2B4660] cursor-pointer transition-all active:scale-[0.99]"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-[#192C3C] border border-[#223348] overflow-hidden flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#192C3C] border border-[#223348] overflow-hidden flex items-center justify-center shrink-0 p-1">
                 <img
-                  src="/exercises/chest_bb_flat_bench.png"
+                  src={getImageUrl("/exercises/chest_bb_flat_bench.png")}
                   alt="Workout"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = getImageUrl("/exercises/chest_bb_flat_bench.png");
+                  }}
                 />
               </div>
               <div className="min-w-0">

@@ -5,7 +5,7 @@ import { exercisesDatabase } from "../data/exercises";
 import { getAngleLabel } from "../utils/angleUtils";
 
 const MUSCLE_GROUPS = [
-  { id: "chest", label: "Chest", labelAr: "صدر", color: "#00F0FF" },
+  { id: "chest", label: "Chest", labelAr: "صدر", color: "#73C8B4" },
   { id: "back", label: "Back", labelAr: "ظهر", color: "#3B82F6" },
   { id: "shoulders", label: "Shoulders", labelAr: "أكتاف", color: "#A855F7" },
   { id: "legs", label: "Legs", labelAr: "أرجل", color: "#10B981" },
@@ -166,7 +166,7 @@ export default function AngleRadarChart() {
           value: val,
           sets14,
           isNeglected: sets14 < 3,
-          color: sets14 < 3 ? "#F59E0B" : "#00F0FF",
+          color: sets14 < 3 ? "#F59E0B" : "#73C8B4",
         };
       });
     }
@@ -207,14 +207,14 @@ export default function AngleRadarChart() {
   return (
     <div className="bg-[#0B0F17] rounded-3xl p-5 border border-slate-800/80 shadow-2xl relative overflow-hidden space-y-4">
       {/* Background ambient neon glow */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-[#00F0FF]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-48 h-48 bg-[#73C8B4]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#10B981]/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header & View Switcher */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-xl bg-neon-cyan/10 border border-neon-cyan/20 text-[#00F0FF]">
+            <span className="p-1.5 rounded-xl bg-[#73C8B4]/10 border border-[#73C8B4]/20 text-[#73C8B4]">
               <Crosshair size={16} />
             </span>
             <h2 className="text-base font-extrabold text-white tracking-wide">
@@ -237,7 +237,7 @@ export default function AngleRadarChart() {
             }}
             className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
               viewMode === "macro"
-                ? "bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30 shadow-[0_0_12px_rgba(0,240,255,0.2)]"
+                ? "bg-[#73C8B4]/15 text-[#73C8B4] border border-[#73C8B4]/30 shadow-[0_0_12px_rgba(0,240,255,0.2)]"
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -273,7 +273,7 @@ export default function AngleRadarChart() {
               }}
               className={`px-3 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${
                 selectedMuscle === m.id
-                  ? "bg-[#121824] text-white border-neon-cyan shadow-sm font-bold"
+                  ? "bg-[#121824] text-white border-[#73C8B4] shadow-sm font-bold"
                   : "bg-[#0B0F17] text-slate-400 border-slate-800 hover:border-slate-700"
               }`}
             >
@@ -291,7 +291,7 @@ export default function AngleRadarChart() {
         >
           <defs>
             <linearGradient id="radarNeonFill" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="#73C8B4" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#10B981" stopOpacity="0.15" />
             </linearGradient>
             <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -335,7 +335,7 @@ export default function AngleRadarChart() {
           <polygon
             points={dataPolygonPoints}
             fill="url(#radarNeonFill)"
-            stroke="#00F0FF"
+            stroke="#73C8B4"
             strokeWidth="2.5"
             strokeLinejoin="round"
             filter="url(#glow)"
@@ -374,7 +374,7 @@ export default function AngleRadarChart() {
                   cx={pt.x}
                   cy={pt.y}
                   r={isAmber ? "5" : "4"}
-                  fill={isAmber ? "#F59E0B" : "#00F0FF"}
+                  fill={isAmber ? "#F59E0B" : "#73C8B4"}
                   stroke="#0B0F17"
                   strokeWidth="2"
                   filter="url(#glow)"
@@ -426,7 +426,7 @@ export default function AngleRadarChart() {
                     )}
                   </p>
                   <p className="text-slate-400 text-[11px]">
-                    30-Day Total: <span className="text-[#00F0FF] font-semibold">{item.value} sets</span>
+                    30-Day Total: <span className="text-[#73C8B4] font-semibold">{item.value} sets</span>
                   </p>
                   {item.sets14 !== null && (
                     <p className="text-slate-400 text-[11px]">
