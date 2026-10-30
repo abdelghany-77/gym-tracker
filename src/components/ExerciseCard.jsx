@@ -10,8 +10,6 @@ import {
   TrendingUp,
   TrendingDown,
   ExternalLink,
-  ChevronUp,
-  ChevronDown,
   ChevronRight,
   AlertTriangle,
   Sparkles,
@@ -47,15 +45,30 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
 
   const pr = personalRecords[exerciseId];
 
-  // Helper stepper adjustments
+  // Helper stepper adjustments (inheriting from current row, previous set, or ghost data)
   const adjustWeight = (si, delta) => {
-    const current = Number(sets[si].weight) || (ghostData?.sets[si]?.weight ? Number(ghostData.sets[si].weight) : 0);
-    const nextVal = Math.max(0, current + delta);
-    updateSet(exerciseIndex, si, "weight", nextVal === 0 ? "" : nextVal.toString());
+    const fallback =
+      (si > 0 && sets[si - 1]?.weight ? Number(sets[si - 1].weight) : null) ??
+      (ghostData?.sets[si]?.weight ? Number(ghostData.sets[si].weight) : null) ??
+      0;
+    const current =
+      sets[si].weight !== "" && !isNaN(Number(sets[si].weight))
+        ? Number(sets[si].weight)
+        : fallback;
+    const nextVal = Math.max(0, Math.round((current + delta) * 10) / 10);
+    updateSet(exerciseIndex, si, "weight", nextVal.toString());
   };
 
   const adjustReps = (si, delta) => {
-    const current = Number(sets[si].reps) || (ghostData?.sets[si]?.reps ? Number(ghostData.sets[si].reps) : exercise.default_reps || 10);
+    const fallback =
+      (si > 0 && sets[si - 1]?.reps ? Number(sets[si - 1].reps) : null) ??
+      (ghostData?.sets[si]?.reps ? Number(ghostData.sets[si].reps) : null) ??
+      exercise.default_reps ??
+      10;
+    const current =
+      sets[si].reps !== "" && !isNaN(Number(sets[si].reps))
+        ? Number(sets[si].reps)
+        : fallback;
     const nextVal = Math.max(1, current + delta);
     updateSet(exerciseIndex, si, "reps", nextVal.toString());
   };
@@ -158,178 +171,221 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           </div>
         </button>
 
-        {/* Sets Table */}
-        <div className="p-3 sm:p-4 space-y-2">
+        {/* ═══ MODERN SETS TABLE ═══ */}
+        <div className="p-3 sm:p-4 space-y-2.5">
           {/* Table header */}
-          <div className="grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-wider font-semibold px-1 pb-1 border-b border-border-slate/50">
+          <div className="grid grid-cols-[2.2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-wider font-bold px-1.5 pb-1 border-b border-border-slate/50">
             <span className="text-center">Set</span>
-            <span className="text-center">Weight (kg)</span>
+            <span className="text-center">Weight</span>
             <span className="text-center">Reps</span>
             <span className="text-center">Done</span>
           </div>
 
           {/* Set Rows */}
-          {sets.map((set, si) => (
-            <div
-              key={si}
-              className={`grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 items-center p-1.5 rounded-xl transition-all relative ${
-                set.done
-                  ? "bg-neon-emerald/5 border border-neon-emerald/20"
-                  : "bg-slate-900/40 border border-slate-800/50 hover:border-slate-700"
-              }`}
-            >
-              {/* Set Number */}
-              <div className="flex items-center justify-center">
-                <span
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold font-mono transition-colors ${
+          {sets.map((set, si) => {
+            const isCurrentActive = !set.done && sets.findIndex((s) => !s.done) === si;
+            const prevWeightFallback = (si > 0 && sets[si - 1]?.weight) || ghostData?.sets[si]?.weight || "";
+            const prevRepsFallback = (si > 0 && sets[si - 1]?.reps) || ghostData?.sets[si]?.reps || exercise.default_reps || "10";
+
+            return (
+              <div
+                key={si}
+                className={`grid grid-cols-[2.2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 items-center p-1.5 sm:p-2 rounded-2xl transition-all relative ${
+                  set.done
+                    ? "bg-emerald-500/[0.04] border border-emerald-500/25 shadow-sm"
+                    : isCurrentActive
+                      ? "bg-[#101726]/90 border border-neon-cyan/40 shadow-[0_0_12px_rgba(0,240,255,0.08)]"
+                      : "bg-[#0B101D]/70 border border-slate-800/80 hover:border-slate-700/80"
+                }`}
+              >
+                {/* Set Badge */}
+                <div className="flex items-center justify-center">
+                  <span
+                    className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold font-mono transition-all ${
+                      set.done
+                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                        : isCurrentActive
+                          ? "bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/50 shadow-[0_0_8px_rgba(0,240,255,0.25)]"
+                          : "bg-slate-800/80 text-slate-400 border border-slate-700/60"
+                    }`}
+                  >
+                    {si + 1}
+                  </span>
+                </div>
+
+                {/* Weight Control */}
+                <div
+                  className={`flex items-center rounded-xl border transition-all h-11 px-1 overflow-hidden ${
                     set.done
-                      ? "text-neon-emerald bg-neon-emerald/15"
-                      : "text-slate-400 bg-slate-800/80"
+                      ? "bg-[#0A0F1A] border-slate-800/70"
+                      : isCurrentActive
+                        ? "bg-[#0D1524] border-slate-700/80 focus-within:border-neon-cyan focus-within:ring-2 focus-within:ring-neon-cyan/20"
+                        : "bg-[#0B111E] border-slate-800 focus-within:border-slate-600"
                   }`}
                 >
-                  {si + 1}
-                </span>
-              </div>
-
-              {/* Weight Input + Steppers */}
-              <div className="flex items-center bg-slate-800/90 rounded-xl border border-slate-700/70 focus-within:border-neon-cyan/70 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  step="any"
-                  placeholder={ghostData?.sets[si]?.weight ? `${ghostData.sets[si].weight}` : "—"}
-                  value={set.weight}
-                  disabled={set.done}
-                  onChange={(e) => updateSet(exerciseIndex, si, "weight", e.target.value)}
-                  className="w-full bg-transparent text-center font-bold font-mono text-sm text-white focus:outline-none disabled:text-slate-400 placeholder:text-slate-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  aria-label={`Set ${si + 1} weight in kg`}
-                />
-                {!set.done && (
-                  <div className="flex flex-col border-l border-slate-700/60 pl-0.5">
-                    <button
-                      type="button"
-                      onClick={() => adjustWeight(si, 2.5)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
-                      title="+2.5 kg"
-                    >
-                      <ChevronUp size={11} strokeWidth={2.5} />
-                    </button>
+                  {!set.done && (
                     <button
                       type="button"
                       onClick={() => adjustWeight(si, -2.5)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
                       title="-2.5 kg"
+                      aria-label="Decrease weight by 2.5 kg"
                     >
-                      <ChevronDown size={11} strokeWidth={2.5} />
+                      <Minus size={13} strokeWidth={2.5} />
                     </button>
-                  </div>
-                )}
-              </div>
+                  )}
 
-              {/* Reps Input + Steppers */}
-              <div className="flex items-center bg-slate-800/90 rounded-xl border border-slate-700/70 focus-within:border-neon-cyan/70 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder={ghostData?.sets[si]?.reps ? `${ghostData.sets[si].reps}` : `${exercise.default_reps || 10}`}
-                  value={set.reps}
-                  disabled={set.done}
-                  onChange={(e) => updateSet(exerciseIndex, si, "reps", e.target.value)}
-                  className="w-full bg-transparent text-center font-bold font-mono text-sm text-white focus:outline-none disabled:text-slate-400 placeholder:text-slate-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  aria-label={`Set ${si + 1} reps`}
-                />
-                {!set.done && (
-                  <div className="flex flex-col border-l border-slate-700/60 pl-0.5">
+                  <div className="flex-1 flex items-center justify-center min-w-0 px-0.5">
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      step="any"
+                      placeholder={prevWeightFallback ? `${prevWeightFallback}` : "0"}
+                      value={set.weight}
+                      disabled={set.done}
+                      onChange={(e) => updateSet(exerciseIndex, si, "weight", e.target.value)}
+                      className="w-full bg-transparent text-center font-bold text-sm sm:text-base text-white focus:outline-none disabled:text-slate-200 placeholder:text-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      aria-label={`Set ${si + 1} weight in kg`}
+                    />
+                    <span className="text-[10px] text-slate-500 font-semibold uppercase pointer-events-none select-none ml-0.5 shrink-0">
+                      kg
+                    </span>
+                  </div>
+
+                  {!set.done && (
                     <button
                       type="button"
-                      onClick={() => adjustReps(si, 1)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
-                      title="+1 rep"
+                      onClick={() => adjustWeight(si, 2.5)}
+                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
+                      title="+2.5 kg"
+                      aria-label="Increase weight by 2.5 kg"
                     >
-                      <ChevronUp size={11} strokeWidth={2.5} />
+                      <Plus size={13} strokeWidth={2.5} />
                     </button>
+                  )}
+                </div>
+
+                {/* Reps Control */}
+                <div
+                  className={`flex items-center rounded-xl border transition-all h-11 px-1 overflow-hidden ${
+                    set.done
+                      ? "bg-[#0A0F1A] border-slate-800/70"
+                      : isCurrentActive
+                        ? "bg-[#0D1524] border-slate-700/80 focus-within:border-neon-cyan focus-within:ring-2 focus-within:ring-neon-cyan/20"
+                        : "bg-[#0B111E] border-slate-800 focus-within:border-slate-600"
+                  }`}
+                >
+                  {!set.done && (
                     <button
                       type="button"
                       onClick={() => adjustReps(si, -1)}
-                      className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
+                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
                       title="-1 rep"
+                      aria-label="Decrease reps by 1"
                     >
-                      <ChevronDown size={11} strokeWidth={2.5} />
+                      <Minus size={13} strokeWidth={2.5} />
                     </button>
+                  )}
+
+                  <div className="flex-1 flex items-center justify-center min-w-0 px-0.5">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      placeholder={prevRepsFallback ? `${prevRepsFallback}` : "10"}
+                      value={set.reps}
+                      disabled={set.done}
+                      onChange={(e) => updateSet(exerciseIndex, si, "reps", e.target.value)}
+                      className="w-full bg-transparent text-center font-bold text-sm sm:text-base text-white focus:outline-none disabled:text-slate-200 placeholder:text-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      aria-label={`Set ${si + 1} reps`}
+                    />
+                    <span className="text-[10px] text-slate-500 font-semibold uppercase pointer-events-none select-none ml-0.5 shrink-0">
+                      reps
+                    </span>
+                  </div>
+
+                  {!set.done && (
+                    <button
+                      type="button"
+                      onClick={() => adjustReps(si, 1)}
+                      className="w-7 h-8 flex items-center justify-center text-slate-400 hover:text-neon-cyan active:scale-90 rounded-lg hover:bg-slate-800/60 transition-all shrink-0"
+                      title="+1 rep"
+                      aria-label="Increase reps by 1"
+                    >
+                      <Plus size={13} strokeWidth={2.5} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Done Check Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Auto-fill from previous set, ghost data, or defaults if empty
+                    if (!set.done) {
+                      if (!set.weight) {
+                        const autoWeight = prevWeightFallback || "0";
+                        updateSet(exerciseIndex, si, "weight", autoWeight.toString());
+                      }
+                      if (!set.reps) {
+                        const autoReps = prevRepsFallback || "10";
+                        updateSet(exerciseIndex, si, "reps", autoReps.toString());
+                      }
+                    }
+                    toggleSetDone(exerciseIndex, si);
+                    if (!set.done) {
+                      try {
+                        navigator.vibrate?.(50);
+                      } catch {}
+                      haptics.light();
+                    }
+                  }}
+                  className={`h-11 w-full rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none ${
+                    set.done
+                      ? "bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-bold shadow-[0_0_14px_rgba(16,185,129,0.35)] animate-set-complete"
+                      : "bg-slate-800/80 hover:bg-slate-750 text-slate-400 hover:text-white border border-slate-700/80 hover:border-neon-cyan/50"
+                  }`}
+                  aria-label={set.done ? `Mark set ${si + 1} as incomplete` : `Mark set ${si + 1} as complete`}
+                >
+                  <Check size={18} strokeWidth={set.done ? 3 : 2.2} />
+                </button>
+
+                {/* Progressive Overload Indicator */}
+                {ghostData?.sets[si] && set.weight && (
+                  <div className="absolute -right-1 -top-1" aria-hidden="true">
+                    {Number(set.weight) > ghostData.sets[si].weight ? (
+                      <span className="flex items-center text-[9px] bg-neon-green/20 text-neon-green px-1 rounded-full border border-neon-green/30 font-bold">
+                        <TrendingUp size={9} className="mr-0.5" /> +PR
+                      </span>
+                    ) : Number(set.weight) < ghostData.sets[si].weight ? (
+                      <TrendingDown size={10} className="text-red-400" />
+                    ) : null}
                   </div>
                 )}
               </div>
+            );
+          })}
 
-              {/* Done Check Button */}
+          {/* Modern Footer: Add Set & Delete Set */}
+          <div className="flex items-center gap-2 pt-2 border-t border-border-slate/40 mt-1">
+            {sets.length > 1 && (
               <button
                 type="button"
-                onClick={() => {
-                  // If fields empty, auto-fill from ghost data or defaults for fast mobile logging
-                  if (!set.done) {
-                    if (!set.weight && ghostData?.sets[si]?.weight) {
-                      updateSet(exerciseIndex, si, "weight", ghostData.sets[si].weight);
-                    }
-                    if (!set.reps) {
-                      updateSet(exerciseIndex, si, "reps", ghostData?.sets[si]?.reps || exercise.default_reps || 10);
-                    }
-                  }
-                  toggleSetDone(exerciseIndex, si);
-                  if (!set.done) {
-                    try {
-                      navigator.vibrate?.(50);
-                    } catch {}
-                    haptics.light();
-                  }
-                }}
-                className={`w-full h-10 rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none ${
-                  set.done ? "animate-set-complete " : ""
-                }${
-                  set.done
-                    ? "bg-neon-emerald text-bg-deep font-bold shadow-[0_0_12px_rgba(16,185,129,0.4)]"
-                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-neon-cyan/50 hover:text-white"
-                }`}
-                aria-label={
-                  set.done
-                    ? `Mark set ${si + 1} as incomplete`
-                    : `Mark set ${si + 1} as complete`
-                }
+                onClick={() => removeSet(exerciseIndex, sets.length - 1)}
+                className="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-red-500/10 text-slate-400 hover:text-red-400 border border-slate-700/50 hover:border-red-500/30 text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+                aria-label="Remove last set"
               >
-                <Check size={18} strokeWidth={set.done ? 3 : 2} />
+                <Minus size={13} strokeWidth={2.5} />
+                <span>Delete Set</span>
               </button>
-
-              {/* Progressive Overload Indicator */}
-              {ghostData?.sets[si] && set.weight && (
-                <div className="absolute -right-1 -top-1" aria-hidden="true">
-                  {Number(set.weight) > ghostData.sets[si].weight ? (
-                    <span className="flex items-center text-[9px] bg-neon-green/20 text-neon-green px-1 rounded-full border border-neon-green/30 font-bold">
-                      <TrendingUp size={9} className="mr-0.5" /> +PR
-                    </span>
-                  ) : Number(set.weight) < ghostData.sets[si].weight ? (
-                    <TrendingDown size={10} className="text-red-400" />
-                  ) : null}
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Add/Remove set buttons */}
-          <div className="flex items-center justify-between pt-2 border-t border-border-slate/40 mt-1 px-1">
-            <button
-              type="button"
-              onClick={() => removeSet(exerciseIndex, sets.length - 1)}
-              className="text-xs text-slate-400 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none px-2 py-1 rounded-lg"
-              disabled={sets.length <= 1}
-              aria-label="Remove last set"
-            >
-              <Minus size={13} /> Remove Set
-            </button>
+            )}
             <button
               type="button"
               onClick={() => addSet(exerciseIndex)}
-              className="text-xs text-neon-cyan font-semibold hover:text-white flex items-center gap-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none bg-neon-cyan/10 hover:bg-neon-cyan/20 px-3 py-1 rounded-lg border border-neon-cyan/20"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-dashed border-neon-cyan/40 hover:border-neon-cyan bg-neon-cyan/5 hover:bg-neon-cyan/15 text-neon-cyan hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 active:scale-[0.99] shadow-sm"
               aria-label="Add a set"
             >
-              <Plus size={13} /> Add Set
+              <Plus size={14} strokeWidth={2.5} />
+              <span>Add Set {sets.length + 1}</span>
             </button>
           </div>
         </div>
