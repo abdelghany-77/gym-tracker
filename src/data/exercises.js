@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════════════════════════════
 
 // Human-readable labels for target angles (EN + AR)
-import { exerciseBiomechanics } from "./biomechanicsData.js";
+import { exerciseBiomechanics } from "./biomechanicsData";
 
 export const angleLabels = {
   // Back

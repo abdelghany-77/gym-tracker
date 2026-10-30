@@ -6,12 +6,11 @@ import LoadingSkeleton from "./components/LoadingSkeleton";
 import useWorkoutStore from "./store/workoutStore";
 import Onboarding from "./pages/Onboarding";
 
-// ── Lazy-loaded pages ──
+// ── Lazy-loaded pages (item 21) ──
 const WorkoutSelect = lazy(() => import("./pages/WorkoutSelect"));
 const ActiveWorkout = lazy(() => import("./pages/ActiveWorkout"));
 const ExerciseLibrary = lazy(() => import("./pages/ExerciseLibrary"));
 const ManageExercises = lazy(() => import("./pages/ManageExercises"));
-const Cardio = lazy(() => import("./pages/Cardio"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Nutrition = lazy(() => import("./pages/Nutrition"));
 const WorkoutHistory = lazy(() => import("./pages/WorkoutHistory"));
@@ -34,7 +33,6 @@ export default function App() {
             <Route path="/workout/active" element={<ActiveWorkout />} />
             <Route path="/exercises" element={<ExerciseLibrary />} />
             <Route path="/exercises/manage" element={<ManageExercises />} />
-            <Route path="/cardio" element={<Cardio />} />
             <Route path="/nutrition" element={<Nutrition />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/history" element={<WorkoutHistory />} />

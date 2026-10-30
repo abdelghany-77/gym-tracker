@@ -148,7 +148,7 @@ export default function WorkoutReceiptModal({
 
     // Glowing Cyber Borders
     const gradBorder = ctx.createLinearGradient(24, 24, width - 24, height - 24);
-    gradBorder.addColorStop(0, "#73C8B4");
+    gradBorder.addColorStop(0, "#00F0FF");
     gradBorder.addColorStop(0.5, "#3B82F6");
     gradBorder.addColorStop(1, "#10B981");
     ctx.strokeStyle = gradBorder;
@@ -161,7 +161,7 @@ export default function WorkoutReceiptModal({
     ctx.fillRect(28, 28, width - 56, 75);
 
     // Brand Watermark
-    ctx.fillStyle = "#73C8B4";
+    ctx.fillStyle = "#00F0FF";
     ctx.font = "bold 22px system-ui, sans-serif";
     ctx.fillText("GYM // RECON TX", 50, 64);
 
@@ -191,7 +191,7 @@ export default function WorkoutReceiptModal({
     const statY = 230;
 
     const stats = [
-      { label: "VOLUME", val: `${metrics.totalVolumeKg.toLocaleString()} kg`, sub: `${metrics.volumeTons} tons`, color: "#73C8B4" },
+      { label: "VOLUME", val: `${metrics.totalVolumeKg.toLocaleString()} kg`, sub: `${metrics.volumeTons} tons`, color: "#00F0FF" },
       { label: "TOTAL SETS", val: `${metrics.totalSets}`, sub: "completed", color: "#10B981" },
       { label: "TOTAL REPS", val: `${metrics.totalReps}`, sub: "reps crushed", color: "#A855F7" },
     ];
@@ -251,7 +251,7 @@ export default function WorkoutReceiptModal({
 
     // Angles Hit Section
     currentY += 50;
-    ctx.fillStyle = "#73C8B4";
+    ctx.fillStyle = "#00F0FF";
     ctx.font = "bold 16px system-ui, sans-serif";
     ctx.fillText("◈ BIOMECHANICAL ANGLES HIT", 50, currentY);
 
@@ -363,19 +363,19 @@ export default function WorkoutReceiptModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl bg-[#0B0F17] border border-[#73C8B4]/40 shadow-[0_0_40px_rgba(0,240,255,0.2)] p-5 text-white space-y-5">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl bg-[#0B0F17] border border-[#00F0FF]/40 shadow-[0_0_40px_rgba(0,240,255,0.2)] p-5 text-white space-y-5">
         {/* Top Glow Ambient */}
-        <div className="absolute top-0 right-0 w-44 h-44 bg-[#73C8B4]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-44 h-44 bg-[#00F0FF]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-44 h-44 bg-[#10B981]/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Modal Header */}
         <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-xl bg-[#73C8B4]/15 text-[#73C8B4] border border-[#73C8B4]/30">
+            <span className="p-1.5 rounded-xl bg-neon-cyan/15 text-[#00F0FF] border border-neon-cyan/30">
               <Zap size={16} />
             </span>
             <div>
-              <p className="text-[10px] uppercase font-mono tracking-widest text-[#73C8B4]">
+              <p className="text-[10px] uppercase font-mono tracking-widest text-[#00F0FF]">
                 Workout Completed
               </p>
               <h2 className="text-base font-extrabold text-white">
@@ -406,7 +406,7 @@ export default function WorkoutReceiptModal({
               <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-2">
                 <span>{metrics.dateStr}</span>
                 <span>•</span>
-                <span className="flex items-center gap-1 text-[#73C8B4]">
+                <span className="flex items-center gap-1 text-[#00F0FF]">
                   <Clock size={12} /> {metrics.durationStr}
                 </span>
               </p>
@@ -422,7 +422,7 @@ export default function WorkoutReceiptModal({
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-[#0B0F17] rounded-xl p-2.5 border border-slate-800">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Volume</p>
-              <p className="text-sm font-black text-[#73C8B4] mt-0.5">
+              <p className="text-sm font-black text-[#00F0FF] mt-0.5">
                 {metrics.totalVolumeKg.toLocaleString()}
                 <span className="text-[10px] font-normal text-slate-400 ml-0.5">kg</span>
               </p>
@@ -484,7 +484,7 @@ export default function WorkoutReceiptModal({
 
           {/* Biomechanical Angles Hit */}
           <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#73C8B4] flex items-center gap-1.5">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#00F0FF] flex items-center gap-1.5">
               <Activity size={13} />
               Angles Hit This Session
             </p>
@@ -494,7 +494,7 @@ export default function WorkoutReceiptModal({
                 return (
                   <span
                     key={angle}
-                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[#73C8B4]/10 text-[#73C8B4] border border-[#73C8B4]/30"
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30"
                   >
                     <Layers size={10} />
                     {label}
@@ -516,7 +516,7 @@ export default function WorkoutReceiptModal({
           <button
             onClick={handleShareOrSave}
             disabled={isExporting}
-            className="w-full bg-gradient-to-r from-[#73C8B4] to-[#10B981] hover:opacity-95 text-[#0B0F17] font-black py-3.5 rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+            className="w-full bg-gradient-to-r from-[#00F0FF] to-[#10B981] hover:opacity-95 text-[#0B0F17] font-black py-3.5 rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
           >
             {isExporting ? (
               <span className="animate-spin w-4 h-4 border-2 border-[#0B0F17] border-t-transparent rounded-full" />

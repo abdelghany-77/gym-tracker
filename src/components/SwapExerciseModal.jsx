@@ -77,8 +77,8 @@ export default function SwapExerciseModal({
         {/* ═══ Header ═══ */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-border-slate">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#73C8B4]/10 border border-[#73C8B4]/20 flex items-center justify-center">
-              <ArrowLeftRight size={18} className="text-[#73C8B4]" />
+            <div className="w-9 h-9 rounded-xl bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center">
+              <ArrowLeftRight size={18} className="text-neon-cyan" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
@@ -143,7 +143,7 @@ export default function SwapExerciseModal({
               placeholder="Search biomechanical alternatives..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-bg-deep/80 border border-border-slate rounded-xl py-2.5 pl-10 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#73C8B4]/40 focus:border-[#73C8B4]/30 placeholder:text-slate-500 transition-all"
+              className="w-full bg-bg-deep/80 border border-border-slate rounded-xl py-2.5 pl-10 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-cyan/40 focus:border-neon-cyan/30 placeholder:text-slate-500 transition-all"
             />
           </div>
 
@@ -154,7 +154,7 @@ export default function SwapExerciseModal({
                 onClick={() => setShowAllMuscle(!showAllMuscle)}
                 className={`flex items-center gap-2 text-xs font-semibold transition-all px-3 py-1.5 rounded-lg border ${
                   showAllMuscle
-                    ? "text-[#73C8B4] bg-[#73C8B4]/10 border-[#73C8B4]/30"
+                    ? "text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30"
                     : "text-slate-400 bg-slate-800/60 border-slate-700/60 hover:text-white"
                 }`}
               >
@@ -185,7 +185,7 @@ export default function SwapExerciseModal({
               {!showAllMuscle && !filterAngle && (
                 <button
                   onClick={() => setShowAllMuscle(true)}
-                  className="text-xs text-[#73C8B4] hover:underline font-semibold"
+                  className="text-xs text-neon-cyan hover:underline font-semibold"
                 >
                   Show all {targetMuscle} exercises →
                 </button>
@@ -211,7 +211,7 @@ export default function SwapExerciseModal({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate group-hover:text-[#73C8B4] transition-colors">
+                  <p className="text-sm font-semibold text-white truncate group-hover:text-neon-cyan transition-colors">
                     {ex.name}
                   </p>
                   {ex.nameAr && (
@@ -242,7 +242,7 @@ export default function SwapExerciseModal({
             <div
               className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
                 permanent
-                  ? "bg-[#C4E58A] border-[#C4E58A] text-[#0D1723] shadow-[0_0_8px_rgba(196,229,138,0.4)]"
+                  ? "bg-neon-cyan border-neon-cyan text-bg-deep shadow-[0_0_8px_rgba(0,240,255,0.4)]"
                   : "border-slate-600 bg-slate-800/80 group-hover:border-slate-400"
               }`}
               onClick={() => setPermanent(!permanent)}

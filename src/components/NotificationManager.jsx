@@ -138,7 +138,7 @@ export default function NotificationManager() {
           "💧 Water Reminder",
           `Time to drink water! You've had ${waterCount}/${waterGoal} cups today.`,
           Droplets,
-          "bg-[#73C8B4]/20 text-[#73C8B4]",
+          "bg-cyan-500/20 text-cyan-400",
         );
         updateLastWaterReminderTime();
       }

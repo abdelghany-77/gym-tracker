@@ -16,7 +16,7 @@ import { ConfirmDialog } from "./Modal";
 const planMeta = {
   ppl_upper: {
     icon: Zap,
-    gradient: "from-[#C4E58A]/20 via-[#73C8B4]/10 to-transparent",
+    gradient: "from-cyan-500/20 via-blue-500/10 to-transparent",
     borderActive: "border-neon-blue/60 shadow-[0_0_20px_rgba(0,212,255,0.15)]",
     borderIdle: "border-slate-700/50 hover:border-slate-600",
     accentColor: "text-neon-blue",

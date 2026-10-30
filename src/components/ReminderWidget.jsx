@@ -38,13 +38,13 @@ export default function ReminderWidget() {
       {/* Water Tracker Card */}
       <div className="relative bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-slate-800 overflow-hidden">
         {/* Background glow */}
-        <div className="absolute top-0 right-0 w-40 h-40 bg-[#73C8B4]/8 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/8 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none" />
 
         <div className="relative z-10">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Droplets size={16} className="text-[#73C8B4]" />
+              <Droplets size={16} className="text-cyan-400" />
               Water Intake
             </h3>
             {waterComplete && (
@@ -62,7 +62,7 @@ export default function ReminderWidget() {
                 className={`w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-500 ${
                   waterComplete
                     ? "border-emerald-400/40 bg-emerald-400/5"
-                    : "border-[#73C8B4]/30 bg-slate-800/80"
+                    : "border-cyan-400/30 bg-slate-800/80"
                 }`}
               >
                 {/* Water fill animation */}
@@ -75,12 +75,12 @@ export default function ReminderWidget() {
                       : "linear-gradient(to top, rgba(0,212,255,0.25), rgba(0,212,255,0.05))",
                   }}
                 >
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#73C8B4]/40 to-transparent animate-wave" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent animate-wave" />
                 </div>
 
                 <span
                   className={`text-xl font-bold relative z-10 transition-all ${animatingCup ? "scale-125" : "scale-100"} ${
-                    waterComplete ? "text-emerald-400" : "text-[#73C8B4]"
+                    waterComplete ? "text-emerald-400" : "text-cyan-400"
                   }`}
                 >
                   {waterCount}
@@ -111,7 +111,7 @@ export default function ReminderWidget() {
                     className={`h-full rounded-full transition-all duration-700 ease-out animate-fillProgress ${
                       waterComplete
                         ? "bg-gradient-to-r from-emerald-500 to-emerald-400"
-                        : "bg-gradient-to-r from-[#73C8B4] to-[#C4E58A]"
+                        : "bg-gradient-to-r from-cyan-600 to-cyan-400"
                     }`}
                     style={{ width: `${waterPercent}%` }}
                   />
@@ -133,7 +133,7 @@ export default function ReminderWidget() {
                   className={`flex-[2] flex items-center justify-center gap-1.5 h-9 rounded-xl text-sm font-bold transition-all active:scale-95 btn-press ${
                     waterComplete
                       ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 hover:bg-emerald-500/30"
-                      : "bg-[#C4E58A] text-[#0D1723] hover:bg-[#B3D875] shadow-lg shadow-[#C4E58A]/20"
+                      : "bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-lg shadow-cyan-500/20"
                   }`}
                   aria-label="Add a cup of water"
                 >

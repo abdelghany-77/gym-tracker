@@ -42,7 +42,7 @@ export default function ReminderSettings() {
           onClick={toggleReminders}
           className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
             remindersEnabled
-              ? "bg-[#C4E58A] shadow-md shadow-[#C4E58A]/30 text-[#0D1723]"
+              ? "bg-cyan-500 shadow-md shadow-cyan-500/30"
               : "bg-slate-700"
           }`}
           aria-label="Toggle reminders"
@@ -61,7 +61,7 @@ export default function ReminderSettings() {
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
             <div className="flex items-center gap-2">
               {notificationsGranted ? (
-                <Bell size={14} className="text-[#73C8B4]" />
+                <Bell size={14} className="text-cyan-400" />
               ) : (
                 <BellOff size={14} className="text-slate-500" />
               )}
@@ -79,7 +79,7 @@ export default function ReminderSettings() {
             {!notificationsGranted ? (
               <button
                 onClick={requestNotificationPermission}
-                className="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-[#73C8B4] text-[11px] font-bold border border-cyan-500/30 hover:bg-cyan-500/30 transition-all active:scale-95"
+                className="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 text-[11px] font-bold border border-cyan-500/30 hover:bg-cyan-500/30 transition-all active:scale-95"
               >
                 Enable
               </button>
@@ -127,11 +127,11 @@ export default function ReminderSettings() {
           {/* Water Interval */}
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Droplets size={12} className="text-[#73C8B4]" />
+              <Droplets size={12} className="text-cyan-400" />
               Water Reminder Interval
             </h3>
             <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-              <Clock size={14} className="text-[#73C8B4]" />
+              <Clock size={14} className="text-cyan-400" />
               <span className="text-xs text-white flex-1">Remind every</span>
               <div className="flex items-center gap-2">
                 <input
@@ -142,7 +142,7 @@ export default function ReminderSettings() {
                   step="10"
                   value={waterIntervalMinutes}
                   onChange={(e) => setWaterInterval(Number(e.target.value))}
-                  className="w-16 bg-slate-700 text-white rounded-lg px-2 py-1.5 border border-slate-600 focus:border-[#73C8B4] focus:outline-none focus:ring-1 focus:ring-[#73C8B4]/30 transition-colors text-sm text-center"
+                  className="w-16 bg-slate-700 text-white rounded-lg px-2 py-1.5 border border-slate-600 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400/30 transition-colors text-sm text-center"
                 />
                 <span className="text-xs text-slate-500">min</span>
               </div>
