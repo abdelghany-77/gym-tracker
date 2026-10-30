@@ -1,0 +1,1 @@
+import{c as r}from"./index-_KSVmZgm.js";const s=[["path",{d:"m21 21-4.34-4.34",key:"14j7rj"}],["circle",{cx:"11",cy:"11",r:"8",key:"4ej97u"}]],o=r("search",s),n=t=>{if(t.startsWith("http")||t.startsWith("data:"))return t;const c="/gym-tracker/",e=t.startsWith("/")?t.slice(1):t;return`${c}${e}`};export{o as S,n as g};
