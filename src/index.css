@@ -36,6 +36,53 @@ body {
     -apple-system,
     sans-serif;
   overscroll-behavior-y: contain;
+  overflow-x: hidden;
+  background: #0B0F17;
+}
+
+button,
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
+
+.page-shell {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+
+.app-main {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+.app-main-active {
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.app-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 768px) {
+  .page-shell {
+    padding-inline: clamp(1.5rem, 4vw, 3rem);
+  }
+}
+
+@media (min-width: 1280px) {
+  .page-shell {
+    max-width: 80rem;
+  }
 }
 
 /* ── Scrollbar styling ── */
@@ -168,6 +215,15 @@ input[type="number"] {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

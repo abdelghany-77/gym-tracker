@@ -265,7 +265,7 @@ export default function ManageExercises() {
   };
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-lg mx-auto space-y-4 animate-fadeIn">
+    <div className="page-shell pt-4 pb-24 space-y-4 animate-fadeIn">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
@@ -666,7 +666,7 @@ export default function ManageExercises() {
               className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 placeholder:text-slate-500"
             />
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
               <div>
                 <label className="text-[10px] text-slate-500 mb-1 block">
                   Muscle Group
@@ -719,7 +719,7 @@ export default function ManageExercises() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
               <div>
                 <label className="text-[10px] text-slate-500 mb-1 block">
                   Sets

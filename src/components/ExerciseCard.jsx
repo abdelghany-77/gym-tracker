@@ -5,7 +5,6 @@ import {
   Check,
   Plus,
   Minus,
-  Info,
   ArrowLeftRight,
   X,
   TrendingUp,
@@ -13,6 +12,7 @@ import {
   ExternalLink,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
   AlertTriangle,
   Sparkles,
   PlayCircle,
@@ -64,20 +64,20 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
 
   return (
     <>
-      <div className="glass-card overflow-hidden shadow-xl shadow-black/40 border border-border-slate transition-all">
+      <div className="glass-card overflow-hidden shadow-xl shadow-black/40 border border-border-slate transition-all select-none">
         {/* Exercise Header */}
-        <div className="flex items-center gap-3.5 p-4 border-b border-border-slate/60 bg-bg-surface/60">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 p-3 sm:p-4 border-b border-border-slate/60 bg-bg-surface/60">
           <button
             type="button"
             onClick={() => setShowTechniqueModal(true)}
-            className="w-14 h-14 rounded-2xl overflow-hidden bg-[#121824] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 transition-transform active:scale-95 border border-[#1E293B] shadow-md flex items-center justify-center relative group"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-[#0E1522] to-[#161F30] border border-[#22304A] hover:border-neon-cyan/50 transition-all active:scale-95 shadow-md flex items-center justify-center relative group shrink-0 overflow-hidden"
             aria-label={`View ${exercise.name} technique and anatomy`}
             title="Click to view technique & anatomy"
           >
             <img
               src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
               alt={exercise.name}
-              className="w-12 h-12 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1 group-hover:scale-105 transition-transform"
+              className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform drop-shadow"
               loading="lazy"
               onError={(e) => {
                 e.target.onerror = null;
@@ -88,8 +88,9 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               <Sparkles size={14} className="text-neon-cyan drop-shadow" />
             </div>
           </button>
+
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-white truncate text-[15px] tracking-tight">
+            <h3 className="font-bold text-white truncate text-sm sm:text-base tracking-tight">
               {exercise.name}
             </h3>
             {exercise.nameAr && (
@@ -97,8 +98,8 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                 {exercise.nameAr}
               </p>
             )}
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
                 {exercise.muscle}
               </span>
               {exercise.targetAngle && (
@@ -111,30 +112,30 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               )}
             </div>
           </div>
+
           {/* Swap button */}
           <button
             type="button"
             onClick={() => setShowSwap(true)}
-            className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-neon-cyan/15 hover:text-neon-cyan text-slate-400 transition-all active:scale-90 border border-slate-700/50 shrink-0"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-neon-cyan/15 hover:text-neon-cyan text-slate-400 transition-all active:scale-90 border border-slate-700/50 shrink-0"
             aria-label={`Swap ${exercise.name} for another exercise`}
             title="تبديل التمرين"
           >
-            <ArrowLeftRight size={17} />
+            <ArrowLeftRight size={16} />
           </button>
         </div>
 
         {/* Ghost Replay Banner */}
         {ghostData && (
-          <div className="px-4 py-2 bg-vivid-purple/8 border-b border-border-slate/50 flex items-center gap-2">
-            <Ghost size={14} className="text-vivid-purple shrink-0" />
-            <div className="text-xs text-slate-300 flex-1 truncate">
-              <span className="text-vivid-purple font-semibold">
-                Previous ({ghostData.date}):{" "}
-              </span>
+          <div className="px-3.5 py-1.5 bg-vivid-purple/10 border-b border-border-slate/40 flex items-center gap-2 text-xs">
+            <Ghost size={13} className="text-vivid-purple shrink-0" />
+            <span className="text-vivid-purple font-semibold text-[11px] shrink-0">
+              Last ({ghostData.date}):
+            </span>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar font-mono text-[11px] text-slate-300">
               {ghostData.sets.map((s, i) => (
-                <span key={i} className="text-slate-400 font-mono">
-                  {i > 0 && " | "}
-                  <strong className="text-slate-200">{s.weight}</strong>kg × <strong className="text-slate-200">{s.reps}</strong>
+                <span key={i} className="bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/60 shrink-0">
+                  S{i + 1}: <strong className="text-white">{s.weight}</strong>kg × <strong className="text-white">{s.reps}</strong>
                 </span>
               ))}
             </div>
@@ -142,24 +143,25 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
         )}
 
         {/* Technique & Anatomy Bar (1-Click Micro Modal) */}
-        <div className="px-4 py-2 bg-bg-deep/40 border-b border-border-slate/40 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setShowTechniqueModal(true)}
-            className="flex items-center gap-1.5 text-xs text-neon-cyan hover:text-white font-medium transition-colors"
-          >
-            <Activity size={13} className="text-neon-cyan shrink-0" />
-            <span>Technique & Anatomy / تفاصيل الأداء</span>
-          </button>
-          <span className="text-[10px] text-slate-500 font-mono">
-            {exercise.category || "Exercise"}
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowTechniqueModal(true)}
+          className="w-full px-3.5 py-2 bg-bg-deep/40 hover:bg-bg-deep/70 border-b border-border-slate/40 flex items-center justify-between text-xs text-neon-cyan transition-colors group select-none"
+        >
+          <div className="flex items-center gap-2 font-medium">
+            <Activity size={13} className="text-neon-cyan group-hover:scale-110 transition-transform" />
+            <span>Technique & Biomechanics / التكنيك والتشريح</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-slate-200 text-[11px]">
+            <span className="capitalize">{exercise.category || "Exercise"}</span>
+            <ChevronRight size={13} />
+          </div>
+        </button>
 
         {/* Sets Table */}
-        <div className="p-4 space-y-2.5">
+        <div className="p-3 sm:p-4 space-y-2">
           {/* Table header */}
-          <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 text-[11px] text-slate-400 uppercase tracking-wider font-semibold px-1 pb-1.5 border-b border-border-slate/50">
+          <div className="grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-wider font-semibold px-1 pb-1 border-b border-border-slate/50">
             <span className="text-center">Set</span>
             <span className="text-center">Weight (kg)</span>
             <span className="text-center">Reps</span>
@@ -170,10 +172,10 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           {sets.map((set, si) => (
             <div
               key={si}
-              className={`grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 items-center p-1.5 rounded-xl transition-all relative ${
+              className={`grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 items-center p-1.5 rounded-xl transition-all relative ${
                 set.done
                   ? "bg-neon-emerald/5 border border-neon-emerald/20"
-                  : "bg-slate-900/40 border border-transparent hover:border-slate-800"
+                  : "bg-slate-900/40 border border-slate-800/50 hover:border-slate-700"
               }`}
             >
               {/* Set Number */}
@@ -182,7 +184,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold font-mono transition-colors ${
                     set.done
                       ? "text-neon-emerald bg-neon-emerald/15"
-                      : "text-slate-400 bg-slate-800"
+                      : "text-slate-400 bg-slate-800/80"
                   }`}
                 >
                   {si + 1}
@@ -190,16 +192,16 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
               </div>
 
               {/* Weight Input + Steppers */}
-              <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 focus-within:border-neon-cyan/60 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
+              <div className="flex items-center bg-slate-800/90 rounded-xl border border-slate-700/70 focus-within:border-neon-cyan/70 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
                 <input
                   type="number"
                   inputMode="decimal"
                   step="any"
-                  placeholder={ghostData?.sets[si]?.weight ? `${ghostData.sets[si].weight}` : "0"}
+                  placeholder={ghostData?.sets[si]?.weight ? `${ghostData.sets[si].weight}` : "—"}
                   value={set.weight}
                   disabled={set.done}
                   onChange={(e) => updateSet(exerciseIndex, si, "weight", e.target.value)}
-                  className="w-full bg-transparent text-center font-bold font-mono text-sm text-white focus:outline-none disabled:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full bg-transparent text-center font-bold font-mono text-sm text-white focus:outline-none disabled:text-slate-400 placeholder:text-slate-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   aria-label={`Set ${si + 1} weight in kg`}
                 />
                 {!set.done && (
@@ -210,7 +212,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                       className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
                       title="+2.5 kg"
                     >
-                      <ChevronUp size={10} />
+                      <ChevronUp size={11} strokeWidth={2.5} />
                     </button>
                     <button
                       type="button"
@@ -218,14 +220,14 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                       className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
                       title="-2.5 kg"
                     >
-                      <ChevronDown size={10} />
+                      <ChevronDown size={11} strokeWidth={2.5} />
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Reps Input + Steppers */}
-              <div className="flex items-center bg-slate-800/80 rounded-xl border border-slate-700/60 focus-within:border-neon-cyan/60 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
+              <div className="flex items-center bg-slate-800/90 rounded-xl border border-slate-700/70 focus-within:border-neon-cyan/70 focus-within:ring-1 focus-within:ring-neon-cyan/30 transition-all overflow-hidden h-10 px-1">
                 <input
                   type="number"
                   inputMode="numeric"
@@ -233,7 +235,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                   value={set.reps}
                   disabled={set.done}
                   onChange={(e) => updateSet(exerciseIndex, si, "reps", e.target.value)}
-                  className="w-full bg-transparent text-center font-bold font-mono text-sm text-white focus:outline-none disabled:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full bg-transparent text-center font-bold font-mono text-sm text-white focus:outline-none disabled:text-slate-400 placeholder:text-slate-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   aria-label={`Set ${si + 1} reps`}
                 />
                 {!set.done && (
@@ -244,7 +246,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                       className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
                       title="+1 rep"
                     >
-                      <ChevronUp size={10} />
+                      <ChevronUp size={11} strokeWidth={2.5} />
                     </button>
                     <button
                       type="button"
@@ -252,7 +254,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                       className="text-slate-500 hover:text-neon-cyan p-0.5 transition-colors"
                       title="-1 rep"
                     >
-                      <ChevronDown size={10} />
+                      <ChevronDown size={11} strokeWidth={2.5} />
                     </button>
                   </div>
                 )}
@@ -279,7 +281,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
                     haptics.light();
                   }
                 }}
-                className={`w-11 h-10 rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none ${
+                className={`w-full h-10 rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none ${
                   set.done ? "animate-set-complete " : ""
                 }${
                   set.done
@@ -311,7 +313,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
           ))}
 
           {/* Add/Remove set buttons */}
-          <div className="flex items-center justify-between pt-3 border-t border-border-slate/40 mt-2 px-1">
+          <div className="flex items-center justify-between pt-2 border-t border-border-slate/40 mt-1 px-1">
             <button
               type="button"
               onClick={() => removeSet(exerciseIndex, sets.length - 1)}
@@ -324,7 +326,7 @@ function ExerciseCard({ exerciseIndex, exerciseData }) {
             <button
               type="button"
               onClick={() => addSet(exerciseIndex)}
-              className="text-xs text-neon-cyan font-semibold hover:text-neon-cyan/80 flex items-center gap-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none bg-neon-cyan/10 px-3 py-1 rounded-lg border border-neon-cyan/20"
+              className="text-xs text-neon-cyan font-semibold hover:text-white flex items-center gap-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none bg-neon-cyan/10 hover:bg-neon-cyan/20 px-3 py-1 rounded-lg border border-neon-cyan/20"
               aria-label="Add a set"
             >
               <Plus size={13} /> Add Set

@@ -80,7 +80,7 @@ export default function WorkoutHistory() {
   );
 
   return (
-    <div className="px-4 pt-4 pb-20 max-w-lg mx-auto space-y-3.5 animate-fadeIn">
+    <div className="page-shell pt-4 pb-24 space-y-3.5 animate-fadeIn">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -115,7 +115,7 @@ export default function WorkoutHistory() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+              className={`min-w-0 flex-1 py-1.5 px-1 sm:px-2 text-[10px] sm:text-xs font-semibold rounded-lg flex items-center justify-center gap-1 transition-all ${
                 isActive
                   ? "bg-neon-cyan text-bg-deep shadow-sm"
                   : "text-slate-400 hover:text-white"

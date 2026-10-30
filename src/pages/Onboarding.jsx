@@ -25,7 +25,7 @@ export default function Onboarding({ onComplete }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-sm space-y-8">
         {/* Progress dots */}
         <div className="flex justify-center gap-2">
@@ -87,7 +87,7 @@ export default function Onboarding({ onComplete }) {
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full bg-slate-800 text-white rounded-xl px-4 py-3 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors placeholder:text-slate-500"
               />
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-2">
                 <div>
                   <label className="text-[10px] text-slate-500 mb-1 block">Weight (kg)</label>
                   <input

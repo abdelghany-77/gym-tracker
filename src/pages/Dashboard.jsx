@@ -81,7 +81,7 @@ export default function Dashboard() {
   }, [history, heatmapData]);
 
   return (
-    <div className="px-4 pt-4 pb-20 max-w-lg mx-auto space-y-3.5 animate-fadeIn bg-bg-deep min-h-screen">
+    <div className="page-shell pt-4 pb-24 space-y-3.5 animate-fadeIn bg-bg-deep min-h-screen">
       {/* ── Compact Header ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -226,7 +226,7 @@ export default function Dashboard() {
       )}
 
       {/* ── Quick Stats: Compact 3-Column Row ── */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-3 gap-2">
         {[
           { label: "This Week", value: stats.thisWeek, icon: Calendar, color: "text-neon-cyan" },
           { label: "Total Done", value: stats.totalSessions, icon: TrendingUp, color: "text-neon-green" },

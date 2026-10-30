@@ -63,7 +63,7 @@ export default function WorkoutSelect() {
   };
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5 animate-fadeIn">
+    <div className="page-shell pt-6 pb-24 space-y-5 animate-fadeIn">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Start Workout</h1>

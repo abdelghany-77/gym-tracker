@@ -24,7 +24,7 @@ export default function Nutrition() {
   const mealsEaten = dailyChecklist?.mealsEaten || [];
 
   return (
-    <div className="px-4 pt-4 pb-20 max-w-lg mx-auto space-y-3.5 animate-fadeIn">
+    <div className="page-shell pt-4 pb-24 space-y-3.5 animate-fadeIn">
       {/* ── Compact Header ── */}
       <div className="flex items-center justify-between">
         <div>

@@ -28,7 +28,7 @@ export default function Profile() {
   const maxTrend = Math.max(...weeklyTrend.map((w) => w.count), 1);
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5 animate-fadeIn">
+    <div className="page-shell pt-6 pb-24 space-y-5 animate-fadeIn">
       {/* ── Header: User Avatar & Greeting ── */}
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 border border-slate-700 flex items-center justify-center text-2xl font-bold text-neon-blue shrink-0">
@@ -82,7 +82,7 @@ export default function Profile() {
             {/* User Stats */}
             <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4">
               <h2 className="text-sm font-semibold text-white">Your Stats</h2>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3">
                 <div>
                   <label className="text-[11px] text-slate-500 mb-1 block">Weight (kg)</label>
                   <input
@@ -158,7 +158,7 @@ export default function Profile() {
             {/* Stats Summary */}
             <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
               <h2 className="text-sm font-semibold text-white">Training Summary</h2>
-              <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-4 text-center">
                 <div>
                   <p className="text-2xl font-bold text-neon-blue">{history.length}</p>
                   <p className="text-[11px] text-slate-500 uppercase tracking-wider">Total Sessions</p>

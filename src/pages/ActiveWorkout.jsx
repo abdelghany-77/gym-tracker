@@ -193,22 +193,23 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <div className="max-w-lg mx-auto flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-bg-deep select-none">
-      {/* ═══ TOP FIXED HEADER ═══ */}
-      <div className="shrink-0 bg-bg-deep px-3 pt-2.5 pb-1 space-y-1.5 border-b border-border-slate/40">
+    <div className="w-full max-w-lg mx-auto flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-bg-deep select-none">
+      {/* ═══ TOP FIXED HEADER (Safe area notch protected) ═══ */}
+      <div className="shrink-0 bg-bg-deep px-3 sm:px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-2 space-y-1.5 border-b border-border-slate/40">
         {/* Row 1: Back, Program Name, Elapsed Timer, Cancel */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => navigate("/workout")}
             className="w-8 h-8 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all text-slate-300"
-            aria-label="Go back"
+            aria-label="Back to routines"
+            title="Back to routines"
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={16} />
           </button>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-xs font-bold text-white truncate">
+            <h2 className="text-xs sm:text-sm font-bold text-white truncate">
               {activeWorkout.programName || "Active Routine"}
             </h2>
             <div className="flex items-center gap-2 text-[10px] text-slate-400">
@@ -222,7 +223,7 @@ export default function ActiveWorkout() {
           </div>
 
           <div
-            className="flex items-center gap-1 text-xs text-neon-cyan font-mono font-bold bg-neon-cyan/8 px-2 py-0.5 rounded-lg border border-neon-cyan/15 shrink-0"
+            className="flex items-center gap-1 text-[11px] sm:text-xs text-neon-cyan font-mono font-bold bg-neon-cyan/10 px-2 py-0.5 rounded-lg border border-neon-cyan/20 shrink-0"
             aria-live="polite"
           >
             <Clock size={11} />
@@ -234,8 +235,9 @@ export default function ActiveWorkout() {
             onClick={() => setShowConfirmCancel(true)}
             className="w-8 h-8 rounded-xl bg-slate-800/80 flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition-all text-slate-400"
             aria-label="Cancel workout"
+            title="Discard workout"
           >
-            <X size={15} />
+            <X size={16} />
           </button>
         </div>
 
@@ -249,7 +251,7 @@ export default function ActiveWorkout() {
       </div>
 
       {/* ═══ HORIZONTAL SWIPEABLE EXERCISE PILL CAROUSEL ═══ */}
-      <div className="shrink-0 px-3 py-1.5 overflow-x-auto no-scrollbar flex items-center gap-1.5 border-b border-border-slate/40 bg-bg-surface/30">
+      <div className="shrink-0 px-3 py-1.5 overflow-x-auto no-scrollbar flex items-center gap-1.5 border-b border-border-slate/40 bg-bg-surface/30 snap-x select-none">
         {activeWorkout.exercises.map((exData, i) => {
           const exInfo = exercises.find((e) => e.id === exData.exerciseId);
           const allDone = exData.sets.length > 0 && exData.sets.every((s) => s.done);
@@ -262,7 +264,7 @@ export default function ActiveWorkout() {
               ref={isCurrent ? activePillRef : null}
               type="button"
               onClick={() => setCurrentIndex(i)}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold shrink-0 transition-all active:scale-95 border ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold shrink-0 transition-all active:scale-95 border snap-start ${
                 isCurrent
                   ? "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/50 shadow-[0_0_10px_rgba(0,240,255,0.2)]"
                   : allDone
@@ -273,7 +275,7 @@ export default function ActiveWorkout() {
               }`}
             >
               <span className="font-mono text-[10px] opacity-70">{i + 1}.</span>
-              <span className="max-w-[100px] truncate">{exInfo?.name || "Exercise"}</span>
+              <span className="max-w-[120px] sm:max-w-[150px] truncate">{exInfo?.name || "Exercise"}</span>
               {allDone ? (
                 <Check size={11} className="text-emerald-400 shrink-0" strokeWidth={3} />
               ) : (
@@ -287,7 +289,7 @@ export default function ActiveWorkout() {
       </div>
 
       {/* ═══ CENTER WORKOUT EXECUTION AREA (Zero Scroll Optimized) ═══ */}
-      <div className="flex-1 min-h-0 overflow-y-auto sm:overflow-hidden p-3 flex flex-col justify-between gap-2 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col justify-between gap-2.5 custom-scrollbar">
         {currentExercise && (
           <div key={currentExercise.exerciseId} className="animate-fadeIn">
             <ExerciseCard
@@ -297,17 +299,17 @@ export default function ActiveWorkout() {
           </div>
         )}
 
-        {/* Inline Compact Rest Timer */}
+        {/* Inline Compact High-Tech Rest Timer */}
         <RestTimer inline />
       </div>
 
-      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
-      <div className="shrink-0 p-3 bg-bg-surface/95 backdrop-blur-md border-t border-border-slate flex items-center gap-2 z-20">
+      {/* ═══ STICKY BOTTOM ACTION BAR (Safe area home-indicator protected) ═══ */}
+      <div className="shrink-0 p-3 bg-bg-surface/95 backdrop-blur-md border-t border-border-slate flex items-center gap-2 z-20 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
         {/* Primary Log Set Button */}
         <button
           type="button"
           onClick={handleLogCurrentSet}
-          className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-neon-cyan to-neon-green text-bg-deep shadow-[0_0_16px_rgba(0,240,255,0.3)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-press"
+          className="flex-1 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-neon-cyan to-neon-green text-bg-deep shadow-[0_0_16px_rgba(0,240,255,0.3)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-press"
         >
           <Check size={18} strokeWidth={3} />
           <span>

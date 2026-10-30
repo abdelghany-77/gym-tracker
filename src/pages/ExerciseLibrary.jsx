@@ -55,8 +55,8 @@ export default function ExerciseLibrary() {
   const clearSearch = () => setSearchTerm("");
 
   return (
-    <div className="p-4 space-y-6 pb-24">
-      <header className="flex justify-between items-center">
+    <div className="page-shell pt-4 space-y-5 pb-24">
+      <header className="flex justify-between items-center gap-2">
         <div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
             Exercise Library
@@ -66,42 +66,42 @@ export default function ExerciseLibrary() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate("/exercises/manage")}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 text-slate-400 text-xs border border-slate-700 hover:bg-slate-700 hover:text-white transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs border border-slate-700 hover:bg-slate-700 hover:text-white transition-all active:scale-95"
             aria-label="Manage exercises"
           >
             <Settings size={13} />
-            Manage
+            <span>Manage</span>
           </button>
-        <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`p-1.5 rounded-md transition-all ${
-              viewMode === "grid"
-                ? "bg-slate-700 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            aria-label="Grid view"
-          >
-            <Grid size={18} />
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`p-1.5 rounded-md transition-all ${
-              viewMode === "list"
-                ? "bg-slate-700 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            aria-label="List view"
-          >
-            <List size={18} />
-          </button>
-        </div>
+          <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === "grid"
+                  ? "bg-slate-700 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+              aria-label="Grid view"
+            >
+              <Grid size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === "list"
+                  ? "bg-slate-700 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+              aria-label="List view"
+            >
+              <List size={18} />
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Search Bar */}
       <div className="relative">
-        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none">
           <Search className="h-4 w-4 text-slate-400" />
         </div>
         <input
@@ -109,7 +109,7 @@ export default function ExerciseLibrary() {
           placeholder="Search exercises..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-10 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue/50 focus:border-transparent transition-all placeholder:text-slate-500"
+          className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-10 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-cyan/50 focus:border-transparent transition-all placeholder:text-slate-500"
         />
         {searchTerm && (
           <button
@@ -122,8 +122,8 @@ export default function ExerciseLibrary() {
         )}
       </div>
 
-      {/* Muscle Filter Chips */}
-      <div className="flex overflow-x-auto pb-2 gap-2 scrollbar-hide -mx-4 px-4">
+      {/* Muscle Filter Chips (Fixed shrink-0 so they never squash into circles) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar -mx-4 px-4 select-none">
         {muscles.map((m) => {
           const count =
             m === "All"
@@ -131,31 +131,29 @@ export default function ExerciseLibrary() {
               : exercises.filter((e) => e.muscle === m).length;
           const isActive = selectedMuscle === m;
 
-          // Determine active color style
-          let activeStyle = "bg-neon-blue text-slate-950 font-semibold shadow-lg shadow-neon-blue/20 border-neon-blue";
+          let activeStyle = "bg-neon-cyan text-slate-950 font-bold shadow-lg shadow-neon-cyan/25 border-neon-cyan";
           if (isActive && m !== "All") {
-             // Use specific muscle color for active state if available, else neon-blue
-             if (m === "Chest") activeStyle = "bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20";
-             else if (m === "Back") activeStyle = "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20";
-             else if (m === "Shoulders") activeStyle = "bg-amber-500 text-slate-900 border-amber-500 shadow-lg shadow-amber-500/20";
-             else if (m === "Arms") activeStyle = "bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/20";
-             else if (m === "Legs") activeStyle = "bg-emerald-500 text-slate-900 border-emerald-500 shadow-lg shadow-emerald-500/20";
+             if (m === "Chest") activeStyle = "bg-red-500 text-white font-bold border-red-500 shadow-lg shadow-red-500/25";
+             else if (m === "Back") activeStyle = "bg-blue-500 text-white font-bold border-blue-500 shadow-lg shadow-blue-500/25";
+             else if (m === "Shoulders") activeStyle = "bg-amber-500 text-slate-950 font-bold border-amber-500 shadow-lg shadow-amber-500/25";
+             else if (m === "Arms") activeStyle = "bg-purple-500 text-white font-bold border-purple-500 shadow-lg shadow-purple-500/25";
+             else if (m === "Legs") activeStyle = "bg-emerald-500 text-slate-950 font-bold border-emerald-500 shadow-lg shadow-emerald-500/25";
           }
 
           return (
             <button
               key={m}
               onClick={() => setSelectedMuscle(m)}
-              className={`px-4 py-2 rounded-full text-[11px] whitespace-nowrap transition-all border flex items-center gap-1.5 ${
+              className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-1.5 active:scale-95 ${
                 isActive
                   ? activeStyle
-                  : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600 hover:bg-slate-750"
+                  : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600 hover:bg-slate-700 hover:text-white"
               }`}
             >
-              {m}
+              <span>{m}</span>
               <span
-                className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                  isActive ? "bg-black/20" : "bg-slate-700 text-slate-500"
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  isActive ? "bg-black/20 text-inherit" : "bg-slate-700 text-slate-400"
                 }`}
               >
                 {count}
@@ -166,54 +164,56 @@ export default function ExerciseLibrary() {
       </div>
 
       {/* Grouped Exercise Display */}
-      <div className="space-y-8">
+      <div className="space-y-6">
         {Object.entries(groupedExercises).map(([muscle, group]) => {
           const MuscleIcon = muscleIcons[muscle] || Target;
           return (
             <div key={muscle} className="space-y-3">
               <div className="flex items-center gap-2 px-1">
-                <MuscleIcon size={18} className="text-slate-400" />
-                <h2 className="text-sm font-semibold text-slate-300">
+                <MuscleIcon size={16} className="text-neon-cyan shrink-0" />
+                <h2 className="text-sm font-bold text-slate-200">
                   {muscle}
                 </h2>
-                <span className="text-[10px] text-slate-600 font-medium bg-slate-800/50 px-2 py-0.5 rounded-full">
-                  {group.length} exercises
+                <span className="text-[10px] text-slate-400 font-medium bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700/50 font-mono">
+                  {group.length}
                 </span>
                 <div className="h-px bg-slate-800 flex-1 ml-2" />
               </div>
 
               {viewMode === "grid" ? (
                 /* Grid View */
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {group.map((exercise) => (
                     <div
                       key={exercise.id}
-                      className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-800 border border-slate-700/50 hover:border-slate-600 transition-all active:scale-[0.98]"
+                      className="group relative aspect-square rounded-2xl overflow-hidden bg-[#121824] border border-border-slate hover:border-neon-cyan/40 transition-all active:scale-[0.98] shadow-md flex flex-col justify-between"
                     >
-                      <img
-                        src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
-                        alt={exercise.name}
-                        className="w-full h-full object-contain p-2 opacity-85 group-hover:opacity-100 transition-opacity bg-[#0B0F17]"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = getImageUrl("/icons/dumbbell.svg");
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-3 pointer-events-none">
+                      <div className="w-full flex-1 flex items-center justify-center p-2 overflow-hidden bg-[#0B0F17]">
+                        <img
+                          src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
+                          alt={exercise.name}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = getImageUrl("/icons/dumbbell.svg");
+                          }}
+                        />
+                      </div>
+                      <div className="p-2.5 bg-bg-surface/90 border-t border-border-slate/60 backdrop-blur-sm">
                         <div
-                          className={`self-start text-[10px] px-2 py-0.5 rounded-full border mb-1.5 ${
+                          className={`inline-block text-[9px] font-bold px-1.5 py-0.2 rounded-md border mb-1 ${
                             muscleColors[exercise.muscle] ||
                             "bg-slate-700 text-slate-300 border-slate-600"
                           }`}
                         >
                           {exercise.muscle}
                         </div>
-                        <h3 className="font-semibold text-white text-sm leading-tight">
+                        <h3 className="font-semibold text-white text-xs leading-snug truncate">
                           {exercise.name}
                         </h3>
                         {exercise.nameAr && (
-                          <p className="text-[11px] text-slate-400 truncate" dir="rtl">
+                          <p className="text-[10px] text-slate-400 truncate" dir="rtl">
                             {exercise.nameAr}
                           </p>
                         )}
@@ -223,13 +223,13 @@ export default function ExerciseLibrary() {
                 </div>
               ) : (
                 /* List View */
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {group.map((exercise) => (
                     <div
                       key={exercise.id}
-                      className="flex items-center gap-4 bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50 hover:border-slate-600/80 transition-all active:scale-[0.99]"
+                      className="flex items-center gap-3 bg-bg-surface/70 p-2.5 rounded-2xl border border-border-slate hover:border-slate-600/80 transition-all active:scale-[0.99]"
                     >
-                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1 flex items-center justify-center">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#0B0F17] shrink-0 border border-[#1E293B] p-1 flex items-center justify-center">
                         <img
                           src={getImageUrl(exercise.image || `/exercises/${exercise.id}.png`)}
                           alt={exercise.name}
@@ -252,13 +252,18 @@ export default function ExerciseLibrary() {
                         )}
                         <div className="flex items-center gap-2 mt-1">
                           <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                            className={`text-[9px] font-bold px-2 py-0.5 rounded-md border ${
                               muscleColors[exercise.muscle] ||
                               "bg-slate-700 text-slate-300 border-slate-600"
                             }`}
                           >
                             {exercise.muscle}
                           </span>
+                          {exercise.category && (
+                            <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                              {exercise.category}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

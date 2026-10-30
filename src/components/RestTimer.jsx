@@ -106,210 +106,188 @@ export default function RestTimer({ inline = false }) {
   }, [isRunning, timeLeft, playBeep]);
 
   // Progress Offset
-  const progress = timeLeft / totalTime;
+  const progress = timeLeft / Math.max(1, totalTime);
   const dashOffset = CIRCUMFERENCE * (1 - progress);
 
   // Dynamic Color
   const getColor = () => {
     if (timeLeft === 0) return "stroke-emerald-500";
     if (timeLeft < 10) return "stroke-red-500";
-    return "stroke-neon-blue";
+    return "stroke-neon-cyan";
   };
 
   const getTextColor = () => {
     if (timeLeft === 0) return "text-emerald-400";
     if (timeLeft < 10) return "text-red-400";
-    return "text-neon-blue";
+    return "text-neon-cyan";
   };
 
   if (!activeWorkout) return null;
 
-  // ═══ INLINE VERSION (embedded in page flow) ═══
+  // ═══ COMPACT HIGH-TECH INLINE REST TIMER ═══
   if (inline) {
     if (!isOpen && !isRunning) {
-      // Collapsed inline bar
+      // Sleek collapsed 34px trigger pill
       return (
         <button
-          onClick={() => setIsOpen(true)}
-          className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800/60 hover:border-slate-700 transition-all active:scale-[0.98]"
-          aria-label="Open rest timer"
+          type="button"
+          onClick={() => {
+            setIsOpen(true);
+            setTimeLeft(totalTime);
+            setIsRunning(true);
+          }}
+          className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-slate-700 hover:bg-slate-900/80 transition-all active:scale-[0.99] text-xs select-none"
+          aria-label="Start rest timer"
         >
-          <div className="w-9 h-9 rounded-xl bg-neon-blue/10 flex items-center justify-center shrink-0">
-            <Timer size={16} className="text-neon-blue" />
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-md bg-neon-cyan/10 flex items-center justify-center shrink-0">
+              <Timer size={12} className="text-neon-cyan" />
+            </div>
+            <span className="font-semibold text-slate-300 text-[11px]">Rest Timer:</span>
+            <span className="font-mono text-neon-cyan font-bold text-[11px]">{totalTime}s</span>
           </div>
-          <div className="flex-1 text-left">
-            <p className="text-xs text-slate-400 font-medium">Rest Timer</p>
-            <p className="text-[10px] text-slate-500">Tap to set up</p>
-          </div>
-          <span className="text-xs text-slate-500 font-mono">{totalTime}s</span>
+          <span className="text-[10px] font-semibold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
+            Start Rest →
+          </span>
         </button>
       );
     }
 
-    // Expanded inline timer
+    // High-density active timer bar (~52px height)
     return (
-      <div className="w-full bg-slate-900/80 border border-slate-800/60 rounded-2xl overflow-hidden animate-fadeIn">
-        {/* Compact header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/40">
-          <div className="flex items-center gap-2">
-            <Timer size={13} className="text-neon-blue" />
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Rest Timer
+      <div className="w-full bg-slate-900/95 border border-slate-800 rounded-xl px-3 py-2 shadow-lg animate-fadeIn flex flex-col gap-1.5 select-none shrink-0">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Mini countdown badge */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div
+              className={`px-2 py-0.5 rounded-lg font-mono font-bold text-xs sm:text-sm border flex items-center gap-1.5 ${
+                timeLeft < 10
+                  ? "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse"
+                  : "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/30"
+              }`}
+            >
+              <Timer size={13} className={isRunning ? "animate-pulse" : ""} />
+              <span>
+                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-medium hidden min-[360px]:inline">
+              {isRunning ? "Resting" : "Paused"}
             </span>
           </div>
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              setIsRunning(false);
-              setTimeLeft(0);
-            }}
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-500 transition-colors"
-            aria-label="Close rest timer"
-          >
-            <X size={14} />
-          </button>
-        </div>
 
-        {/* Timer body - horizontal layout */}
-        <div className="flex items-center gap-4 p-4">
-          {/* Circle */}
-          <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-            <svg className="absolute inset-0 w-full h-full -rotate-90">
-              <circle
-                cx="50%"
-                cy="50%"
-                r={RADIUS}
-                className="stroke-slate-800"
-                strokeWidth="5"
-                fill="none"
-              />
-              <circle
-                cx="50%"
-                cy="50%"
-                r={RADIUS}
-                className={`transition-all duration-1000 ease-linear ${getColor()}`}
-                strokeWidth="5"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={CIRCUMFERENCE}
-                strokeDashoffset={dashOffset}
-              />
-            </svg>
-            <div
-              className="relative z-10 text-center"
-              role="timer"
-              aria-live="assertive"
-              aria-atomic="true"
+          {/* Center: Quick adjust buttons */}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                const newTime = Math.max(10, totalTime - 15);
+                setTotalTime(newTime);
+                if (isRunning) setTimeLeft((l) => Math.max(0, l - 15));
+                else setTimeLeft(newTime);
+              }}
+              className="px-2 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[10px] sm:text-[11px] font-mono transition-all active:scale-95"
+              title="-15 seconds"
             >
-              <span className={`text-2xl font-bold font-mono block leading-none ${getTextColor()}`}>
-                {timeLeft}
-              </span>
-              <span className="text-[8px] text-slate-500 font-medium uppercase">
-                sec
-              </span>
-            </div>
+              -15s
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const newTime = totalTime + 15;
+                setTotalTime(newTime);
+                if (isRunning) setTimeLeft((l) => l + 15);
+                else setTimeLeft(newTime);
+              }}
+              className="px-2 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[10px] sm:text-[11px] font-mono transition-all active:scale-95"
+              title="+15 seconds"
+            >
+              +15s
+            </button>
           </div>
 
-          {/* Controls */}
-          <div className="flex-1 flex flex-col gap-2">
-            {/* Play/Pause + Reset row */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  if (!isRunning && timeLeft === 0) setTimeLeft(totalTime);
-                  setIsRunning(!isRunning);
-                }}
-                className={`flex-1 h-10 rounded-xl flex items-center justify-center gap-2 transition-all btn-press text-sm font-medium ${
-                  isRunning
-                    ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                    : "bg-neon-blue/15 text-neon-blue border border-neon-blue/30"
-                }`}
-                aria-label={isRunning ? "Pause" : "Start"}
-              >
-                {isRunning ? (
-                  <><Pause size={14} fill="currentColor" /> Pause</>
-                ) : (
-                  <><Play size={14} fill="currentColor" /> {timeLeft === 0 ? "Start" : "Resume"}</>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  setIsRunning(false);
-                  setTimeLeft(totalTime);
-                }}
-                className="w-10 h-10 rounded-xl bg-slate-800/80 text-slate-400 flex items-center justify-center transition-all btn-press hover:text-white border border-slate-700/50"
-                aria-label="Reset"
-              >
-                <RotateCcw size={14} />
-              </button>
-            </div>
+          {/* Right: Pause/Resume + Presets + Close */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                if (!isRunning && timeLeft === 0) setTimeLeft(totalTime);
+                setIsRunning(!isRunning);
+              }}
+              className={`p-1.5 rounded-lg border transition-all active:scale-95 ${
+                isRunning
+                  ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  : "bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30"
+              }`}
+              aria-label={isRunning ? "Pause timer" : "Resume timer"}
+            >
+              {isRunning ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" />}
+            </button>
 
-            {/* +/- buttons */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => {
-                  const newTime = Math.max(10, totalTime - 10);
-                  setTotalTime(newTime);
-                  if (isRunning) setTimeLeft((l) => Math.max(0, l - 10));
-                  else setTimeLeft(newTime);
-                }}
-                className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
-              >
-                <Minus size={12} /> 10s
-              </button>
-              <button
-                onClick={() => {
-                  const newTime = totalTime + 10;
-                  setTotalTime(newTime);
-                  if (isRunning) setTimeLeft((l) => l + 10);
-                  else setTimeLeft(newTime);
-                }}
-                className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
-              >
-                <Plus size={12} /> 10s
-              </button>
-              <button
-                onClick={() => setShowPresets(!showPresets)}
-                className="w-8 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press border border-slate-700/30 hover:text-white transition-colors"
-                aria-label="Presets"
-              >
-                <Settings size={12} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowPresets(!showPresets)}
+              className="p-1.5 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 transition-all active:scale-95"
+              title="Quick Presets"
+            >
+              <Settings size={12} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                setIsRunning(false);
+                setTimeLeft(0);
+              }}
+              className="p-1.5 rounded-lg bg-slate-800/80 text-slate-400 hover:text-red-400 border border-slate-700/60 transition-all active:scale-95"
+              title="Stop timer"
+            >
+              <X size={12} />
+            </button>
           </div>
         </div>
 
-        {/* Presets */}
+        {/* Linear Progress Bar */}
+        <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-1000 ease-linear rounded-full ${
+              timeLeft < 10 ? "bg-red-500" : "bg-gradient-to-r from-neon-cyan to-neon-green"
+            }`}
+            style={{ width: `${Math.min(100, Math.max(0, (timeLeft / (totalTime || 60)) * 100))}%` }}
+          />
+        </div>
+
+        {/* Presets dropdown */}
         {showPresets && (
-          <div className="px-4 pb-3 pt-1 border-t border-slate-800/40">
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {PRESETS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setTotalTime(s);
-                    setTimeLeft(s);
-                    setIsRunning(false);
-                    if (activeWorkout?.exercises) {
-                      for (let i = activeWorkout.exercises.length - 1; i >= 0; i--) {
-                        if (activeWorkout.exercises[i].sets.some((st) => st.done)) {
-                          setExerciseRestTime(activeWorkout.exercises[i].exerciseId, s);
-                          break;
-                        }
+          <div className="pt-1.5 mt-0.5 border-t border-slate-800/80 flex flex-wrap gap-1 justify-center animate-fadeIn">
+            {PRESETS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  setTotalTime(s);
+                  setTimeLeft(s);
+                  setIsRunning(true);
+                  if (activeWorkout?.exercises) {
+                    for (let i = activeWorkout.exercises.length - 1; i >= 0; i--) {
+                      if (activeWorkout.exercises[i].sets.some((st) => st.done)) {
+                        setExerciseRestTime(activeWorkout.exercises[i].exerciseId, s);
+                        break;
                       }
                     }
-                    setShowPresets(false);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    totalTime === s
-                      ? "bg-neon-blue text-slate-950"
-                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                  }`}
-                >
-                  {s >= 60 ? `${s / 60}m` : `${s}s`}
-                </button>
-              ))}
-            </div>
+                  }
+                  setShowPresets(false);
+                }}
+                className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-all ${
+                  totalTime === s
+                    ? "bg-neon-cyan text-slate-950 font-bold"
+                    : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+                }`}
+              >
+                {s >= 60 ? `${s / 60}m` : `${s}s`}
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -375,7 +353,7 @@ export default function RestTimer({ inline = false }) {
                 if (isRunning) setTimeLeft((l) => Math.max(0, l - 10));
                 else setTimeLeft(newTime);
               }}
-              className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
+              className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 btn-press transition-all hover:text-white"
               aria-label="Subtract 10 seconds"
             >
               <Minus size={18} />
