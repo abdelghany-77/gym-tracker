@@ -16,6 +16,8 @@ export default defineConfig({
         name: "Gym",
         short_name: "Gym",
         description: "Track your hypertrophy journey with biomechanically complete programs",
+        start_url: "/gym-tracker/",
+        scope: "/gym-tracker/",
         theme_color: "#0B0F17",
         background_color: "#0B0F17",
         display: "standalone",
@@ -35,9 +37,12 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg}"],
+        navigateFallback: "/gym-tracker/index.html",
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith("/gym-tracker/"),
+            urlPattern: ({ url }) =>
+              url.origin === self.location.origin &&
+              url.pathname.startsWith("/gym-tracker/"),
             handler: "CacheFirst",
             options: {
               cacheName: "gym-cache-v3",
