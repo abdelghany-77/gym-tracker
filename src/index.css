@@ -29,11 +29,13 @@ html {
   scroll-behavior: smooth;
   color-scheme: dark;
   scroll-padding-bottom: 6rem;
+  touch-action: pan-x pan-y;
 }
 
 body {
   margin: 0;
   min-width: 320px;
+  touch-action: pan-x pan-y;
 }
 
 button:not(:disabled),

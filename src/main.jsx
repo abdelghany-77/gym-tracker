@@ -13,6 +13,13 @@ const savedTheme = (() => {
 })();
 document.documentElement.setAttribute('data-theme', savedTheme);
 
+// Disable pinch-to-zoom gestures (especially on iOS Safari)
+if (typeof window !== 'undefined') {
+  document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+  document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+  document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
