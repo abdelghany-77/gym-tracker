@@ -10,6 +10,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:capacitor": "node scripts/build-capacitor.mjs",
+    "build:apk": "node scripts/build-apk.mjs",
+    "apk:debug": "npm run build && npx cap sync android && node scripts/build-apk.mjs",
     "lint": "eslint .",
     "sync:exercise-images": "node scripts/sync-exercise-images.mjs",
     "preview": "vite preview",

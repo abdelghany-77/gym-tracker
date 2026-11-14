@@ -2,9 +2,12 @@ import sharp from "sharp";
 import fs from "node:fs";
 import path from "node:path";
 
-const SOURCE_ICON = path.resolve("public/icon.png");
+const SOURCE_ICON = path.resolve("public/icons/icon-512.png");
 const RES_DIR = path.resolve("android/app/src/main/res");
-const BG_COLOR = { r: 11, g: 15, b: 23, alpha: 1 }; // #0B0F17
+const BG_COLOR = { r: 11, g: 15, b: 23, alpha: 1 }; // #0B0F17 (App dark background)
+
+// Copy to public/icon.png so web root icon also matches
+fs.copyFileSync(SOURCE_ICON, path.resolve("public/icon.png"));
 
 const iconDensities = [
   { dir: "mipmap-mdpi", size: 48, fgSize: 108 },
@@ -15,21 +18,21 @@ const iconDensities = [
 ];
 
 const splashScreens = [
-  { dir: "drawable", w: 480, h: 800, iconSize: 160 },
-  { dir: "drawable-port-mdpi", w: 320, h: 480, iconSize: 120 },
-  { dir: "drawable-port-hdpi", w: 480, h: 800, iconSize: 160 },
-  { dir: "drawable-port-xhdpi", w: 720, h: 1280, iconSize: 220 },
-  { dir: "drawable-port-xxhdpi", w: 960, h: 1600, iconSize: 300 },
-  { dir: "drawable-port-xxxhdpi", w: 1280, h: 1920, iconSize: 380 },
-  { dir: "drawable-land-mdpi", w: 480, h: 320, iconSize: 120 },
-  { dir: "drawable-land-hdpi", w: 800, h: 480, iconSize: 160 },
-  { dir: "drawable-land-xhdpi", w: 1280, h: 720, iconSize: 220 },
-  { dir: "drawable-land-xxhdpi", w: 1600, h: 960, iconSize: 300 },
+  { dir: "drawable", w: 480, h: 800, iconSize: 180 },
+  { dir: "drawable-port-mdpi", w: 320, h: 480, iconSize: 130 },
+  { dir: "drawable-port-hdpi", w: 480, h: 800, iconSize: 180 },
+  { dir: "drawable-port-xhdpi", w: 720, h: 1280, iconSize: 260 },
+  { dir: "drawable-port-xxhdpi", w: 960, h: 1600, iconSize: 340 },
+  { dir: "drawable-port-xxxhdpi", w: 1280, h: 1920, iconSize: 420 },
+  { dir: "drawable-land-mdpi", w: 480, h: 320, iconSize: 130 },
+  { dir: "drawable-land-hdpi", w: 800, h: 480, iconSize: 180 },
+  { dir: "drawable-land-xhdpi", w: 1280, h: 720, iconSize: 240 },
+  { dir: "drawable-land-xxhdpi", w: 1600, h: 960, iconSize: 320 },
   { dir: "drawable-land-xxxhdpi", w: 1920, h: 1280, iconSize: 380 },
 ];
 
 async function generate() {
-  console.log("Generating Android app icons and dark splash screens...");
+  console.log(`Generating Android launcher icons and splash screens from ${SOURCE_ICON}...`);
 
   // 1. Generate Mipmap Icons
   for (const { dir, size, fgSize } of iconDensities) {
@@ -37,8 +40,9 @@ async function generate() {
     if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
     // ic_launcher.png (composite on #0B0F17)
+    const iconInnerSize = Math.round(size * 0.82);
     const iconBuffer = await sharp(SOURCE_ICON)
-      .resize(Math.round(size * 0.85), Math.round(size * 0.85), { fit: "contain" })
+      .resize(iconInnerSize, iconInnerSize, { fit: "contain" })
       .toBuffer();
 
     await sharp({
@@ -54,7 +58,6 @@ async function generate() {
       .toFile(path.join(targetDir, "ic_launcher.png"));
 
     // ic_launcher_round.png
-    // Generate circular mask
     const radius = size / 2;
     const circleSvg = Buffer.from(
       `<svg><circle cx="${radius}" cy="${radius}" r="${radius}" fill="#0B0F17"/></svg>`
@@ -74,7 +77,7 @@ async function generate() {
       .png()
       .toFile(path.join(targetDir, "ic_launcher_round.png"));
 
-    // ic_launcher_foreground.png (transparent background, 108dp base, active zone ~72dp)
+    // ic_launcher_foreground.png (transparent background, adaptive icon safe zone ~65%)
     const fgInnerSize = Math.round(fgSize * 0.65);
     const fgIconBuffer = await sharp(SOURCE_ICON)
       .resize(fgInnerSize, fgInnerSize, { fit: "contain" })
@@ -119,7 +122,7 @@ async function generate() {
     console.log(`✓ ${dir}/splash.png (${w}x${h}) generated`);
   }
 
-  console.log("All Android assets successfully generated!");
+  console.log("All Android assets successfully generated from public/icons/icon-512.png!");
 }
 
 generate().catch((err) => {
