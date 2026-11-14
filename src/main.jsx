@@ -3,6 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import { initStatusBar, ensureNotificationChannel } from './utils/nativeBridge'
+
+// Initialize native platform integrations (status bar style, Android notification channel)
+void initStatusBar();
+void ensureNotificationChannel();
 
 // Initialize theme from localStorage (item 13)
 const savedTheme = (() => {

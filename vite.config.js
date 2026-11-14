@@ -5,13 +5,10 @@ import { VitePWA } from "vite-plugin-pwa";
 import process from "node:process";
 
 // ── Base path strategy ──
-// • Default (GitHub Pages): absolute base "/gym-tracker/".
-// • CAPACITOR_BUILD=1 (native shell): relative base "./" so every asset
-//   resolves inside the Capacitor WebView, which serves dist/ from
-//   https://localhost with NO sub-path. The app uses HashRouter, so a
-//   relative base is safe in both modes.
-const isCapacitor = !!process.env.CAPACITOR_BUILD;
-const BASE = isCapacitor ? "./" : "/gym-tracker/";
+// Relative base "./" ensures all bundled JS, CSS, local exercise images,
+// and audio files resolve cleanly inside Capacitor's local WebView (https://localhost)
+// as well as in GitHub Pages with HashRouter.
+const BASE = "./";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -56,17 +53,12 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg}"],
-        navigateFallback: isCapacitor ? "index.html" : "/gym-tracker/index.html",
+        navigateFallback: "index.html",
         runtimeCaching: [
           {
-            // Same-origin app assets. In the Capacitor WebView every asset is
-            // already local, so this mainly guarantees offline resilience on
-            // the hosted web build.
+            // Same-origin app assets cached for offline resilience
             urlPattern: ({ url }) =>
-              url.origin === self.location.origin &&
-              url.pathname.startsWith(
-                isCapacitor ? "/" : "/gym-tracker/",
-              ),
+              url.origin === self.location.origin,
             handler: "CacheFirst",
             options: {
               cacheName: "gym-cache-v3",

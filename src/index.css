@@ -53,10 +53,19 @@ button:disabled {
 }
 
 .app-main {
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
 
 .mobile-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 

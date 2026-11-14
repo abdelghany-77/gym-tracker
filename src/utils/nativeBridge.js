@@ -1,34 +1,28 @@
 // ── Native Bridge: platform-aware Capacitor upgrades with web fallbacks ──
 //
-// Every helper detects the Capacitor native shell via the runtime bridge
-// (window.Capacitor.isNativePlatform()) and, when present, upgrades the web
-// API to the native plugin. On web/PWA builds every call degrades gracefully
-// to the browser equivalent (or a no-op), so the same bundle serves both.
-//
-// Plugin access uses the injected runtime proxy (window.Capacitor.Plugins.X)
-// rather than static imports — the installed plugin packages register
-// themselves under those keys during `npx cap sync`.
+// Automatically detects the Capacitor native shell via Capacitor.isNativePlatform()
+// and upgrades to native hardware plugins (StatusBar, LocalNotifications, KeepAwake, Haptics).
+// On web/PWA builds, every call degrades gracefully to browser equivalents or no-ops.
+
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { LocalNotifications } from "@capacitor/local-notifications";
+import { KeepAwake } from "@capacitor-community/keep-awake";
+import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 
 /** True when running inside the Capacitor native shell. */
-export const isNative = () =>
-  typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
-
-const getPlugin = (name) => {
-  if (!isNative()) return null;
-  return window.Capacitor?.Plugins?.[name] || null;
-};
+export const isNative = () => Capacitor.isNativePlatform();
 
 /* ══════════════════ Status Bar ══════════════════ */
 
 /** Dark status bar matching the app theme (native only). */
 export const initStatusBar = async () => {
-  const StatusBar = getPlugin("StatusBar");
-  if (!StatusBar) return;
+  if (!isNative()) return;
   try {
-    await StatusBar.setStyle({ style: "DARK" });
+    await StatusBar.setStyle({ style: Style.Dark });
     await StatusBar.setBackgroundColor({ color: "#0B0F17" });
-  } catch {
-    /* styling is cosmetic — non-fatal */
+  } catch (err) {
+    console.warn("StatusBar setup warning:", err);
   }
 };
 
@@ -36,6 +30,36 @@ export const initStatusBar = async () => {
 
 /** Single high-priority Android channel for all timer alerts. */
 export const CHANNEL_ID = "gym-timer-channel";
+
+/** Ensure the Android notification channel exists (no-op on web/iOS). */
+export const ensureNotificationChannel = async () => {
+  if (!isNative()) return;
+  try {
+    await LocalNotifications.createChannel({
+      id: CHANNEL_ID,
+      name: "Rest & Hydration Timer",
+      importance: 5, // IMPORTANCE_HIGH → heads-up + lock screen
+      visibility: 1, // PUBLIC
+      vibration: true,
+      sound: "notify.wav",
+    });
+  } catch (err) {
+    console.warn("Notification channel check:", err);
+  }
+};
+
+/** Request native notification permission on launch / workout start. */
+export const requestNativeNotificationPermission = async () => {
+  if (!isNative()) return false;
+  try {
+    const current = await LocalNotifications.checkPermissions();
+    if (current.display === "granted") return true;
+    const req = await LocalNotifications.requestPermissions();
+    return req.display === "granted";
+  } catch {
+    return false;
+  }
+};
 
 /* ══════════════════ Rest Timer scheduling ══════════════════ */
 
@@ -46,13 +70,10 @@ export const REST_NOTIFICATION_ID = 7001;
 /**
  * Schedule the "Rest complete" notification to fire at the exact deadline —
  * even if the OS puts the app in idle/doze (allowWhileIdle) — so the alert
- * survives a killed or backgrounded WebView. Web fallback: none needed (the
- * wall-clock timer + visibilitychange re-sync covers foreground; Web
- * Notifications fire through notificationService.showLocalNotification).
+ * survives a killed or backgrounded WebView.
  */
 export const scheduleRestNotification = async (endTimestampMs) => {
-  const LocalNotifications = getPlugin("LocalNotifications");
-  if (!LocalNotifications?.schedule) return false;
+  if (!isNative()) return false;
   try {
     await LocalNotifications.schedule({
       notifications: [
@@ -64,21 +85,20 @@ export const scheduleRestNotification = async (endTimestampMs) => {
           schedule: {
             at: new Date(endTimestampMs),
             allowWhileIdle: true,
-            exact: true,
           },
         },
       ],
     });
     return true;
-  } catch {
+  } catch (err) {
+    console.warn("Schedule rest notification error:", err);
     return false;
   }
 };
 
 /** Cancel the pending rest notification (skip / reset / pause / early stop). */
 export const cancelRestNotification = async () => {
-  const LocalNotifications = getPlugin("LocalNotifications");
-  if (!LocalNotifications?.cancel) return;
+  if (!isNative()) return;
   try {
     await LocalNotifications.cancel({
       notifications: [{ id: REST_NOTIFICATION_ID }],
@@ -90,10 +110,6 @@ export const cancelRestNotification = async () => {
 
 /* ══════════════════ Hydration scheduling ══════════════════ */
 
-// Capacitor's local notifications have no "every N minutes" repeat unit, so we
-// pre-schedule a batch of one-shot reminders spaced by the chosen interval.
-// The batch is cancelled and re-scheduled whenever the interval changes or the
-// workout ends.
 const HYDRATION_BASE_ID = 8000;
 const HYDRATION_BATCH = 12;
 
@@ -101,16 +117,12 @@ export const scheduleHydrationNotifications = async (
   intervalMinutes,
   startAt = Date.now(),
 ) => {
-  const LocalNotifications = getPlugin("LocalNotifications");
-  if (
-    !LocalNotifications?.schedule ||
-    !intervalMinutes ||
-    intervalMinutes <= 0
-  ) {
+  if (!isNative() || !intervalMinutes || intervalMinutes <= 0) {
     return 0;
   }
   const intervalMs = intervalMinutes * 60_000;
   try {
+    await cancelHydrationNotifications();
     await LocalNotifications.schedule({
       notifications: Array.from({ length: HYDRATION_BATCH }, (_, i) => ({
         id: HYDRATION_BASE_ID + i,
@@ -124,14 +136,14 @@ export const scheduleHydrationNotifications = async (
       })),
     });
     return HYDRATION_BATCH;
-  } catch {
+  } catch (err) {
+    console.warn("Schedule hydration notification error:", err);
     return 0;
   }
 };
 
 export const cancelHydrationNotifications = async () => {
-  const LocalNotifications = getPlugin("LocalNotifications");
-  if (!LocalNotifications?.cancel) return;
+  if (!isNative()) return;
   try {
     await LocalNotifications.cancel({
       notifications: Array.from({ length: HYDRATION_BATCH }, (_, i) => ({
@@ -143,9 +155,6 @@ export const cancelHydrationNotifications = async () => {
   }
 };
 
-/* ══════════════════ Haptics ══════════════════ */
-// (haptic feedback lives in utils/haptics.js — single seam, native-aware)
-
 /* ══════════════════ Keep Awake ══════════════════ */
 
 let webWakeLock = null;
@@ -153,8 +162,7 @@ let webWakeLock = null;
 /** Keep the screen on during an active workout (native: KeepAwake plugin;
  *  web: Screen Wake Lock API). */
 export const keepAwake = async () => {
-  const KeepAwake = getPlugin("KeepAwake");
-  if (KeepAwake?.keepAwake) {
+  if (isNative()) {
     try {
       await KeepAwake.keepAwake();
       return;
@@ -163,7 +171,9 @@ export const keepAwake = async () => {
     }
   }
   try {
-    webWakeLock = (await navigator.wakeLock?.request?.("screen")) || null;
+    if (typeof navigator !== "undefined" && "wakeLock" in navigator) {
+      webWakeLock = (await navigator.wakeLock?.request?.("screen")) || null;
+    }
   } catch {
     /* unsupported or denied */
   }
@@ -171,8 +181,7 @@ export const keepAwake = async () => {
 
 /** Release the wake lock (workout finished / paused / page closed). */
 export const allowSleep = async () => {
-  const KeepAwake = getPlugin("KeepAwake");
-  if (KeepAwake?.allowSleep) {
+  if (isNative()) {
     try {
       await KeepAwake.allowSleep();
     } catch {
@@ -185,4 +194,40 @@ export const allowSleep = async () => {
     /* already released */
   }
   webWakeLock = null;
+};
+
+/* ══════════════════ Haptics Helper ══════════════════ */
+
+export const triggerImpact = async (style = "LIGHT") => {
+  if (isNative()) {
+    try {
+      const mappedStyle =
+        style === "HEAVY"
+          ? ImpactStyle.Heavy
+          : style === "MEDIUM"
+            ? ImpactStyle.Medium
+            : ImpactStyle.Light;
+      await Haptics.impact({ style: mappedStyle });
+      return;
+    } catch {}
+  }
+  try {
+    navigator.vibrate?.(style === "HEAVY" ? 50 : style === "MEDIUM" ? 25 : 10);
+  } catch {}
+};
+
+export const triggerNotification = async (type = "SUCCESS") => {
+  if (isNative()) {
+    try {
+      const mappedType =
+        type === "WARNING" ? NotificationType.Warning : NotificationType.Success;
+      await Haptics.notification({ type: mappedType });
+      return;
+    } catch {}
+  }
+  try {
+    navigator.vibrate?.(
+      type === "WARNING" ? [200, 100, 200] : [50, 30, 50],
+    );
+  } catch {}
 };
