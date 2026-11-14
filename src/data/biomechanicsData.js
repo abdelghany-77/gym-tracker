@@ -1028,4 +1028,131 @@ export const exerciseBiomechanics = {
       "Lumbar spine peeling off floor."
     ],
   },
+  // ── PHASE 1 ANGLE-COVERAGE ADDITIONS ──
+  back_landmine_row: {
+    primaryTarget: "Latissimus Dorsi (Unilateral) & Rhomboids",
+    secondaryMuscles: ["Erector Spinae", "Posterior Deltoid", "Biceps Brachii"],
+    jointAction: "Unilateral Shoulder Extension + Scapular Retraction",
+    setupAlignment: "Landmine corner, staggered stance beside the bar, torso hinged 45°",
+    executionCues: [
+      "Row the sleeve toward the hip, driving the elbow past the ribcage.",
+      "Keep hips square to avoid cheating with torso rotation momentum."
+    ],
+    commonMistakes: [
+      "Rounding the lumbar spine under load.",
+      "Pulling with the arm instead of initiating from the scapula."
+    ],
+  },
+  back_single_arm_cable_row: {
+    primaryTarget: "Latissimus Dorsi (Ipsilateral Focus)",
+    secondaryMuscles: ["Rhomboids", "Teres Major", "Biceps Brachii"],
+    jointAction: "Unilateral Horizontal Shoulder Extension",
+    setupAlignment: "Seated at low pulley with single handle, opposite hand braced on knee frame",
+    executionCues: [
+      "Pull the handle to the lower ribs with a slight controlled torso turn.",
+      "Allow a full scapular protraction stretch at the end of each rep."
+    ],
+    commonMistakes: [
+      "Excessive trunk rotation turning it into a spinal movement.",
+      "Shrugging the working shoulder during the pull."
+    ],
+  },
+  back_incline_reverse_fly: {
+    primaryTarget: "Rhomboids & Posterior Deltoid",
+    secondaryMuscles: ["Middle/Lower Trapezius", "Infraspinatus"],
+    jointAction: "Horizontal Shoulder Abduction on Incline Bench",
+    setupAlignment: "Chest down on 30-45° incline bench, dumbbells hanging below",
+    executionCues: [
+      "Lead with the elbows and pinkies slightly up (thumbs-up bias).",
+      "Squeeze the shoulder blades together at the top for one second."
+    ],
+    commonMistakes: [
+      "Using too heavy a load and shrugging the traps to lift.",
+      "Swinging dumbbells with momentum off the bench."
+    ],
+  },
+  back_cable_rear_delt_row: {
+    primaryTarget: "Upper Trapezius, Rhomboids & Rear Delts",
+    secondaryMuscles: ["Latissimus Dorsi", "Biceps Brachii"],
+    jointAction: "High-Elbow Horizontal Row to Collarbone",
+    setupAlignment: "Cable at mid-torso height with wide straight-bar attachment",
+    executionCues: [
+      "Flare elbows high and wide, pulling the bar to the collarbone.",
+      "Keep wrists neutral and let the upper back do the work."
+    ],
+    commonMistakes: [
+      "Rowing to the abdomen, converting the movement to a lat row.",
+      "Leaning back past 20° to move the weight."
+    ],
+  },
+  back_good_morning: {
+    primaryTarget: "Erector Spinae & Posterior Chain",
+    secondaryMuscles: ["Glutes", "Hamstrings", "Adductor Magnus"],
+    jointAction: "Hip Hinge Under Spinal Load",
+    setupAlignment: "Bar on upper traps, feet shoulder-width, soft knees, braced 360° core",
+    executionCues: [
+      "Push hips straight back while the chest travels forward over the bar.",
+      "Hinge to a point where the torso approaches parallel without rounding."
+    ],
+    commonMistakes: [
+      "Letting the spine flex under load (disc shear risk).",
+      "Turning it into a squat by bending the knees deeply."
+    ],
+  },
+  back_superman_hold: {
+    primaryTarget: "Erector Spinae (Static Extension)",
+    secondaryMuscles: ["Glutes", "Rear Delts", "Hamstrings"],
+    jointAction: "Anti-Flexion Static Spinal Extension Hold",
+    setupAlignment: "Prone on floor, arms extended forward, legs straight",
+    executionCues: [
+      "Lift chest, arms and legs into a long X and hold the peak.",
+      "Breathe steadily without holding the breath through the set."
+    ],
+    commonMistakes: [
+      "Cranking the neck into extension instead of lengthening the spine.",
+      "Bouncing reps instead of holding a controlled isometric."
+    ],
+  },
+  leg_sissy_squat: {
+    primaryTarget: "Rectus Femoris & Vastus Musculature (Deep Stretch)",
+    secondaryMuscles: ["Hip Flexors", "Knee Stabilizers"],
+    jointAction: "Knee-Dominant Extension with Fixed Hip Line",
+    setupAlignment: "Feet hip-width, rise onto balls of feet, optional hand support on a rack",
+    executionCues: [
+      "Push knees forward past the toes while the hips, torso and knees stay in one line.",
+      "Descend until a deep quad stretch, then pull back up through the quads."
+    ],
+    commonMistakes: [
+      "Breaking at the hips and folding the torso forward.",
+      "Letting the heels drop, shifting load away from the quads."
+    ],
+  },
+  arm_overhead_cable_curl: {
+    primaryTarget: "Biceps Brachii Long Head (Overhead Stretch)",
+    secondaryMuscles: ["Brachialis", "Forearm Flexors"],
+    jointAction: "Elbow Flexion with Shoulder in Overhead Flexion",
+    setupAlignment: "Two high pulleys behind the shoulders, arms raised overhead",
+    executionCues: [
+      "Keep upper arms fixed beside the head; curl handles toward the temples.",
+      "Squeeze at the top with elbows pointing straight up."
+    ],
+    commonMistakes: [
+      "Pulling elbows forward, removing the long-head stretch.",
+      "Standing too far from the pulleys so the stack pulls the arms down."
+    ],
+  },
+  arm_drag_curl: {
+    primaryTarget: "Biceps Brachii Long Head",
+    secondaryMuscles: ["Brachialis", "Front Delts (stabilizers)"],
+    jointAction: "Strict Elbow Flexion with Tracked-Back Elbows",
+    setupAlignment: "Standing, barbell at thigh with underhand shoulder-width grip",
+    executionCues: [
+      "Drag the bar up the torso while elbows travel behind the bar path.",
+      "Stop at peak contraction; never let the elbows drift forward."
+    ],
+    commonMistakes: [
+      "Swinging the torso to start the rep.",
+      "Elbows drifting forward, shifting tension off the long head."
+    ],
+  },
 };

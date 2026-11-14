@@ -7,10 +7,12 @@ import {
   Filter,
   ChevronDown,
   Check,
+  Zap,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import ExerciseImage from "./ExerciseImage";
 import { getAngleLabel } from "../utils/angleUtils";
+import { getSwapAlternatives } from "../data/exercises";
 import AngleBadge from "./AngleBadge";
 
 export default function SwapExerciseModal({
@@ -36,6 +38,12 @@ export default function SwapExerciseModal({
     currentExercise?.primaryMuscle ||
     currentExercise?.muscle?.toLowerCase() ||
     "";
+
+  // Pre-linked same-angle equipment swaps (Barbell ↔ Dumbbell ↔ Machine/Cable)
+  const linkedAlternatives = useMemo(
+    () => (isOpen ? getSwapAlternatives(currentExerciseId) : []),
+    [isOpen, currentExerciseId],
+  );
 
   // Filter: by default only same targetAngle when filterAngle is present, or same primaryMuscle + angle
   const alternatives = useMemo(() => {
@@ -148,6 +156,41 @@ export default function SwapExerciseModal({
               {currentExercise.targetAngle && (
                 <AngleBadge angle={currentExercise.targetAngle} />
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ 1-Tap Linked Equipment Swaps ═══ */}
+        {!filterAngle && linkedAlternatives.length > 0 && (
+          <div className="px-5 pt-3">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-semibold flex items-center gap-1.5">
+              <Zap size={11} className="text-amber-400" />
+              Quick swaps — same angle, different equipment
+            </p>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {linkedAlternatives.map((altId) => {
+                const alt = exercises.find((ex) => ex.id === altId);
+                if (!alt) return null;
+                return (
+                  <button
+                    key={altId}
+                    onClick={() => handleSelect(altId)}
+                    className="shrink-0 w-28 flex flex-col items-center gap-1.5 p-2 rounded-xl bg-slate-900/80 border border-amber-400/20 hover:border-amber-400/60 active:scale-[0.97] transition-all"
+                  >
+                    <ExerciseImage
+                      exercise={alt}
+                      className="w-14 h-14 rounded-lg object-contain bg-[#0B0F17] border border-[#1E293B] p-1"
+                      compact
+                    />
+                    <p className="text-[10px] font-semibold text-white text-center leading-tight line-clamp-2">
+                      {alt.name}
+                    </p>
+                    <span className="text-[8px] uppercase tracking-wider text-amber-400/90 font-bold">
+                      {alt.equipment}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

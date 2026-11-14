@@ -55,8 +55,11 @@ const useWorkoutStore = create((set, get) => ({
     });
   },
   getRestTimeForExercise: (exerciseId) => {
-    const { exerciseRestTimes } = get();
-    return exerciseRestTimes[exerciseId] || 60; // default 60s
+    const { exerciseRestTimes, exercises } = get();
+    // Per-exercise custom override wins, then the biomechanics-based default.
+    if (exerciseRestTimes[exerciseId]) return exerciseRestTimes[exerciseId];
+    const ex = exercises.find((e) => e.id === exerciseId);
+    return ex?.restSeconds || 60;
   },
 
   // ── Reactive Rehydration ──

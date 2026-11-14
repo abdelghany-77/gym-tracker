@@ -4,6 +4,7 @@ const STORAGE_KEY = "gym_reminders";
 
 const defaultState = () => ({
   waterIntervalMinutes: 60,
+  hydrationIntervalMinutes: 20, // Active-workout hydration reminder (0 = Off)
   remindersEnabled: true,
   notificationsGranted: false,
   soundEnabled: true,
@@ -17,6 +18,7 @@ const load = () => loadFromStorage(STORAGE_KEY, defaultState());
 const persist = (state) => {
   const {
     waterIntervalMinutes,
+    hydrationIntervalMinutes,
     remindersEnabled,
     notificationsGranted,
     soundEnabled,
@@ -26,6 +28,7 @@ const persist = (state) => {
   } = state;
   saveToStorage(STORAGE_KEY, {
     waterIntervalMinutes,
+    hydrationIntervalMinutes,
     remindersEnabled,
     notificationsGranted,
     soundEnabled,
@@ -35,6 +38,12 @@ const persist = (state) => {
   });
 };
 
+const clampHydration = (minutes) => {
+  if (minutes === 0) return 0; // Off
+  if (!Number.isFinite(minutes)) return 20;
+  return Math.min(180, Math.max(5, Math.round(minutes)));
+};
+
 // ── Reminder Slice (settings only — water/vitamin data lives in nutritionSlice) ──
 export const createReminderSlice = (set) => {
   const saved = load();
@@ -42,10 +51,14 @@ export const createReminderSlice = (set) => {
   merged.waterIntervalMinutes = Number.isFinite(merged.waterIntervalMinutes)
     ? Math.min(180, Math.max(10, merged.waterIntervalMinutes))
     : 60;
+  merged.hydrationIntervalMinutes = clampHydration(
+    merged.hydrationIntervalMinutes,
+  );
 
   return {
     // ─── Reminder Settings State ───
     waterIntervalMinutes: merged.waterIntervalMinutes,
+    hydrationIntervalMinutes: merged.hydrationIntervalMinutes,
     remindersEnabled: merged.remindersEnabled,
     notificationsGranted: merged.notificationsGranted,
     soundEnabled: merged.soundEnabled,
@@ -70,6 +83,15 @@ export const createReminderSlice = (set) => {
         };
         persist(next);
         return { waterIntervalMinutes: next.waterIntervalMinutes };
+      });
+    },
+
+    // Active-workout hydration reminder (0 = Off)
+    setHydrationInterval: (minutes) => {
+      set((s) => {
+        const next = { ...s, hydrationIntervalMinutes: clampHydration(minutes) };
+        persist(next);
+        return { hydrationIntervalMinutes: next.hydrationIntervalMinutes };
       });
     },
 

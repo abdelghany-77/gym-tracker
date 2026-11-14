@@ -241,7 +241,7 @@ export default function ExerciseLibrary() {
                     compact={viewMode === "list"}
                     className={
                       viewMode === "grid"
-                        ? "aspect-[4/3] w-full border-b border-slate-700/50 p-2"
+                        ? "aspect-[2/1] w-full border-b border-slate-700/50 p-2"
                         : "h-20 w-24 shrink-0 rounded-xl p-1"
                     }
                   />

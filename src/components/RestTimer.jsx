@@ -17,6 +17,27 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 // Preset rest times in seconds
 const PRESETS = [30, 45, 60, 90, 120, 180];
 
+// Shorter optional timer for warm-up sets (full defaults apply to working sets)
+const WARMUP_REST_SECONDS = 45;
+
+// ── Web Notification API alert on completion (works with the screen locked / app backgrounded) ──
+const notifyRestComplete = () => {
+  if ("Notification" in window && Notification.permission === "granted") {
+    try {
+      new Notification("Rest complete 💪", {
+        body: "Time for your next set!",
+        icon: "/gym-tracker/icon.png",
+        badge: "/gym-tracker/icon.png",
+        tag: "rest-complete",
+        renotify: true,
+        vibrate: [200, 100, 200],
+      });
+    } catch {
+      // Notification constructor unavailable — vibrate/chime already fired
+    }
+  }
+};
+
 export default function RestTimer({ inline = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -29,13 +50,23 @@ export default function RestTimer({ inline = false }) {
   const exerciseRestTimes = useWorkoutStore((s) => s.exerciseRestTimes);
   const setExerciseRestTime = useWorkoutStore((s) => s.setExerciseRestTime);
   const restTimerExerciseId = useWorkoutStore((s) => s.restTimerExerciseId);
+  const restTimerSetType = useWorkoutStore((s) => s.restTimerSetType);
+  const getRestTimeForExercise = useWorkoutStore((s) => s.getRestTimeForExercise);
   const previousTriggerRef = useRef(restTimerTrigger);
   const [deadline, setDeadline] = useState(null);
 
-  // Auto-start timer when a set is marked as done
+  // Auto-start timer when a set is marked as done.
+  // Working sets (N/F) use the biomechanics-based default duration;
+  // warm-up sets (W) get a shorter optional timer.
   useEffect(() => {
     if (activeWorkout && restTimerTrigger > previousTriggerRef.current) {
-      const restDuration = exerciseRestTimes[restTimerExerciseId] || 60;
+      const type = restTimerSetType || "N";
+      const defaultDuration =
+        type === "W"
+          ? WARMUP_REST_SECONDS
+          : getRestTimeForExercise(restTimerExerciseId);
+      const restDuration =
+        exerciseRestTimes[restTimerExerciseId] || defaultDuration;
       const timerId = setTimeout(() => {
         previousTriggerRef.current = restTimerTrigger;
         setDeadline(Date.now() + restDuration * 1000);
@@ -46,7 +77,14 @@ export default function RestTimer({ inline = false }) {
       }, 0);
       return () => clearTimeout(timerId);
     }
-  }, [restTimerTrigger, restTimerExerciseId, activeWorkout, exerciseRestTimes]);
+  }, [
+    restTimerTrigger,
+    restTimerExerciseId,
+    restTimerSetType,
+    activeWorkout,
+    exerciseRestTimes,
+    getRestTimeForExercise,
+  ]);
 
   // Audio Context Ref
   const audioContextRef = useRef(null);
@@ -96,6 +134,7 @@ export default function RestTimer({ inline = false }) {
         setIsRunning(false);
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         playBeep();
+        notifyRestComplete();
       }
     };
     const intervalId = setInterval(tick, 1000);
@@ -280,16 +319,16 @@ export default function RestTimer({ inline = false }) {
             {/* +/- buttons */}
             <div className="flex items-center gap-1.5">
               <button
-                onClick={() => adjustTime(-10)}
+                onClick={() => adjustTime(-15)}
                 className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
               >
-                <Minus size={12} /> 10s
+                <Minus size={12} /> 15s
               </button>
               <button
-                onClick={() => adjustTime(10)}
+                onClick={() => adjustTime(15)}
                 className="flex-1 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-400 btn-press text-xs gap-1 border border-slate-700/30 hover:text-white transition-colors"
               >
-                <Plus size={12} /> 10s
+                <Plus size={12} /> 15s
               </button>
               <button
                 onClick={() => setShowPresets(!showPresets)}
@@ -367,16 +406,16 @@ export default function RestTimer({ inline = false }) {
         <div className="flex items-center justify-between gap-6">
           <div className="flex flex-col gap-2">
             <button
-              onClick={() => adjustTime(10)}
+              onClick={() => adjustTime(15)}
               className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
-              aria-label="Add 10 seconds"
+              aria-label="Add 15 seconds"
             >
               <Plus size={18} />
             </button>
             <button
-              onClick={() => adjustTime(-10)}
+              onClick={() => adjustTime(-15)}
               className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white btn-press transition-all"
-              aria-label="Subtract 10 seconds"
+              aria-label="Subtract 15 seconds"
             >
               <Minus size={18} />
             </button>

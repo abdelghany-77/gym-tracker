@@ -13,11 +13,11 @@ Audit date: **2026-10-30**. Catalog: **72 exercises**. Outcome: **62 available**
 
 ## Corrections and provenance
 
-`public/exercises/manifest.json` is the machine-readable audit ledger for **all 72** exercises, replacing the old incomplete 57-entry sync mapping. Every available entry records its exact source ID, local path and reviewed PNG SHA-256. Every unavailable entry has null path, source ID and hash, plus a reason. The catalog exposes `imageStatus`; unavailable records also contain `imageUnavailableReason` and `image: null`.
+`public/exercises/manifest.json` is the machine-readable audit ledger for **all 81** exercises (72 originally audited + 9 Phase-1 angle-coverage additions), replacing the old incomplete 57-entry sync mapping. Every available entry records its exact source ID, local path and reviewed PNG SHA-256. Every unavailable entry has null path, source ID and hash, plus a reason. The catalog exposes `imageStatus`; unavailable records also contain `imageUnavailableReason` and `image: null`.
 
 Notable corrections: ab-wheel rollout now uses an actual roller rather than a barbell; standing machine calf raise now uses shoulder pads rather than dumbbells; chest-supported row no longer shows an overhead machine; captain’s-chair raise now has forearm supports. Several legacy one-frame pictures now have both source frames. Dumbbell RDL remains unavailable rather than showing a barbell or relabeling a stiff-legged variant.
 
-Available photographs come from [yuhonas/free-exercise-db](https://github.com/yuhonas/free-exercise-db), under [The Unlicense](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md). Each local available PNG is a side-by-side composition of `<sourceId>/0.jpg` and `<sourceId>/1.jpg`. See `public/exercises/SOURCE.md`. Program/day covers are outside this 72-exercise audit and are not certified here.
+Available photographs come from [yuhonas/free-exercise-db](https://github.com/yuhonas/free-exercise-db), under [The Unlicense](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md). Each local available PNG is a side-by-side composition of `<sourceId>/0.jpg` and `<sourceId>/1.jpg`. See `public/exercises/SOURCE.md`. Program/day covers are outside this 81-exercise audit and are not certified here.
 
 ## Required renderer treatment (parent/UI agent)
 
@@ -117,3 +117,16 @@ The source column is the exact upstream exercise directory; append `/0.jpg` or `
 | 70 | `core_lying_leg_raise` | Lying Floor Leg Raise | **Unavailable** | — | Existing picture uses a bench, not the floor with lower back pressed down as described. |
 | 71 | `core_bicycle_crunches` | Bicycle Crunches | Available | `Air_Bike` | Replaced single ambiguous pose with air-bike alternating elbow-to-knee sequence. |
 | 72 | `core_hollow_body_hold` | Hollow Body Hold | **Unavailable** | — | Existing picture shows near-vertical limbs, not the described extended hollow-body position. |
+| 73 | `back_landmine_row` | Landmine Meadow's Row | **Unavailable** | — | No verified landmine Meadow's-row image matched the described corner-bar angle. |
+| 74 | `back_single_arm_cable_row` | Single-Arm Cable Row | **Unavailable** | — | Source candidates all demonstrated bilateral seated rows, not the single-arm handle variation. |
+| 75 | `back_incline_reverse_fly` | Incline Dumbbell Reverse Fly | **Unavailable** | — | Available image shows a bent-over standing raise, not the chest-on-incline-bench reverse fly. |
+| 76 | `back_cable_rear_delt_row` | Wide-Grip Cable Row to Collarbone | **Unavailable** | — | No source image captured the high-elbow row pulled to the collarbone line. |
+| 77 | `back_good_morning` | Barbell Good Morning | **Unavailable** | — | No verified good-morning instructional image was found for the database. |
+| 78 | `back_superman_hold` | Superman Hold | **Unavailable** | — | Existing source demonstrated the arms-alternating swim variant, not the static superman hold. |
+| 79 | `leg_sissy_squat` | Sissy Squat | **Unavailable** | — | No verified sissy-squat instructional image matched the described heels-raised knee-slide angle. |
+| 80 | `arm_overhead_cable_curl` | Overhead Cable Curl | **Unavailable** | — | Source demonstrated a standard low-pulley curl, not the arms-overhead high-pulley variation. |
+| 81 | `arm_drag_curl` | Barbell Drag Curl | **Unavailable** | — | Available image was a standard standing barbell curl with elbows forward of the body. |
+
+## Phase-1 angle-coverage expansion (2026-11-14)
+
+Nine exercises were added to close under-covered biomechanical angles (unilateral row, upper-back/rear-delt, lower back, quad isolation, bicep long head). Consistent with the audit policy above, **no unreviewed substitute picture was attached**: each new exercise is explicitly `unavailable` with `null` path/source/hash in `public/exercises/manifest.json` and renders the audited "Image unavailable" placeholder. A future small-sheet review can promote them following the same provenance workflow.

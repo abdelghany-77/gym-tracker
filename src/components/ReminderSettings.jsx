@@ -10,6 +10,9 @@ import {
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 
+// Active-workout hydration quick options (0 = Off)
+const HYDRATION_PRESETS = [0, 10, 15, 20, 30];
+
 export default function ReminderSettings() {
   const remindersEnabled = useWorkoutStore((s) => s.remindersEnabled);
   const toggleReminders = useWorkoutStore((s) => s.toggleReminders);
@@ -17,6 +20,10 @@ export default function ReminderSettings() {
   const toggleSound = useWorkoutStore((s) => s.toggleSound);
   const waterIntervalMinutes = useWorkoutStore((s) => s.waterIntervalMinutes);
   const setWaterInterval = useWorkoutStore((s) => s.setWaterInterval);
+  const hydrationIntervalMinutes = useWorkoutStore(
+    (s) => s.hydrationIntervalMinutes,
+  );
+  const setHydrationInterval = useWorkoutStore((s) => s.setHydrationInterval);
   const notificationsGranted = useWorkoutStore((s) => s.notificationsGranted);
   const setNotificationsGranted = useWorkoutStore(
     (s) => s.setNotificationsGranted,
@@ -24,6 +31,7 @@ export default function ReminderSettings() {
 
   const [permissionError, setPermissionError] = useState("");
   const [requestingPermission, setRequestingPermission] = useState(false);
+  const [customHydration, setCustomHydration] = useState("");
 
   const requestNotificationPermission = async () => {
     setPermissionError("");
@@ -187,6 +195,78 @@ export default function ReminderSettings() {
                 />
                 <span className="text-xs text-slate-500">min</span>
               </div>
+            </div>
+          </div>
+
+          {/* ── Active-Workout Hydration Reminder ── */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Droplets size={12} className="text-cyan-400" />
+              Workout Hydration Reminder
+            </h3>
+            <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-2.5">
+              <p className="text-[10px] text-slate-500">
+                Subtle toast + gentle chime during active workouts.
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                {HYDRATION_PRESETS.map((minutes) => (
+                  <button
+                    key={minutes}
+                    type="button"
+                    onClick={() => setHydrationInterval(minutes)}
+                    aria-pressed={hydrationIntervalMinutes === minutes}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border ${
+                      hydrationIntervalMinutes === minutes
+                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+                        : "bg-slate-900/60 text-slate-400 border-slate-700 hover:text-white"
+                    }`}
+                  >
+                    {minutes === 0 ? "Off" : `${minutes}m`}
+                  </button>
+                ))}
+                <span className="w-px h-5 bg-slate-700" aria-hidden="true" />
+                <input
+                  type="number"
+                  aria-label="Custom hydration interval in minutes"
+                  inputMode="numeric"
+                  min="5"
+                  max="180"
+                  placeholder="min"
+                  value={customHydration}
+                  onChange={(e) => setCustomHydration(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const value = Number(customHydration);
+                      if (Number.isFinite(value) && value > 0) {
+                        setHydrationInterval(value);
+                        setCustomHydration("");
+                      }
+                    }
+                  }}
+                  className="w-16 bg-slate-700 text-white rounded-lg px-2 py-1.5 border border-slate-600 focus:border-cyan-400 focus:outline-none text-sm text-center tabular-nums"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const value = Number(customHydration);
+                    if (Number.isFinite(value) && value > 0) {
+                      setHydrationInterval(value);
+                      setCustomHydration("");
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25"
+                >
+                  Set
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                Current:{" "}
+                <span className="text-cyan-300 font-bold">
+                  {hydrationIntervalMinutes
+                    ? `Every ${hydrationIntervalMinutes} min`
+                    : "Off"}
+                </span>
+              </p>
             </div>
           </div>
         </>

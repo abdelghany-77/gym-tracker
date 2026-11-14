@@ -1,5 +1,6 @@
 // ════════════════════════════════════════════════════════════════════════════════
-// EXERCISE DATABASE — 72-Exercise Biomechanical Catalog (12 per Muscle Group)
+// EXERCISE DATABASE — 81-Exercise Biomechanical Catalog
+// Every angle carries ≥ 2-3 exercises and 2-3 equipment-swap alternatives.
 // ════════════════════════════════════════════════════════════════════════════════
 
 // Human-readable labels for target angles (EN + AR)
@@ -432,6 +433,108 @@ const baseExercisesDatabase = [
     image: "/exercises/back_hyperextension.png",
     tips: "On 45-degree roman chair, bend at hips and extend back to neutral alignment without hyperextending.",
   },
+  {
+    id: "back_landmine_row",
+    name: "Landmine Meadow's Row",
+    nameAr: "سحب ميدو لاندماين",
+    primaryMuscle: "back",
+    muscle: "Back",
+    targetAngle: "unilateral_row",
+    equipment: "barbell",
+    category: "compound",
+    defaultSets: 3,
+    defaultReps: 10,
+    default_sets: 3,
+    default_reps: 10,
+    image: null,
+    imageUnavailableReason: "No verified landmine Meadow's-row image matched the described corner-bar angle.",
+    tips: "Wedge bar end into a landmine corner. Row the sleeve to your hip with a slight torso rotation, one arm at a time.",
+  },
+  {
+    id: "back_single_arm_cable_row",
+    name: "Single-Arm Cable Row",
+    nameAr: "سحب كابل أحادي",
+    primaryMuscle: "back",
+    muscle: "Back",
+    targetAngle: "unilateral_row",
+    equipment: "cable",
+    category: "compound",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: null,
+    imageUnavailableReason: "Source candidates all demonstrated bilateral seated rows, not the single-arm handle variation.",
+    tips: "Sit braced with a slight forward lean. Pull the single handle to your side, rotating the torso only slightly.",
+  },
+  {
+    id: "back_incline_reverse_fly",
+    name: "Incline Dumbbell Reverse Fly",
+    nameAr: "تفتيح خلفي مائل دمبل",
+    primaryMuscle: "back",
+    muscle: "Back",
+    targetAngle: "upper_back_rear_delt",
+    equipment: "dumbbell",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 15,
+    default_sets: 3,
+    default_reps: 15,
+    image: null,
+    imageUnavailableReason: "Available image shows a bent-over standing raise, not the chest-on-incline-bench reverse fly.",
+    tips: "Lie chest-down on a 30-45 degree incline bench. Raise dumbbells out wide with thumbs up to load the upper back.",
+  },
+  {
+    id: "back_cable_rear_delt_row",
+    name: "Wide-Grip Cable Row to Collarbone",
+    nameAr: "سحب كابل واسع للترقوة",
+    primaryMuscle: "back",
+    muscle: "Back",
+    targetAngle: "upper_back_rear_delt",
+    equipment: "cable",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: null,
+    imageUnavailableReason: "No source image captured the high-elbow row pulled to the collarbone line.",
+    tips: "Set cable at mid-torso height. Row the wide handle up to your collarbone with elbows flared high to hit the upper traps/rhomboids.",
+  },
+  {
+    id: "back_good_morning",
+    name: "Barbell Good Morning",
+    nameAr: "صباح الخير بالبار",
+    primaryMuscle: "back",
+    muscle: "Back",
+    targetAngle: "lower_back_posterior",
+    equipment: "barbell",
+    category: "compound",
+    defaultSets: 3,
+    defaultReps: 10,
+    default_sets: 3,
+    default_reps: 10,
+    image: null,
+    imageUnavailableReason: "No verified good-morning instructional image was found for the database.",
+    tips: "Bar across upper traps. Soft knees, hinge forward with a braced neutral spine until hamstrings/lower back load, then extend.",
+  },
+  {
+    id: "back_superman_hold",
+    name: "Superman Hold",
+    nameAr: "تمرين سوبرمان",
+    primaryMuscle: "back",
+    muscle: "Back",
+    targetAngle: "lower_back_posterior",
+    equipment: "bodyweight",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 45,
+    default_sets: 3,
+    default_reps: 45,
+    image: null,
+    imageUnavailableReason: "Existing source demonstrated the arms-alternating swim variant, not the static superman hold.",
+    tips: "Lie face down. Lift chest, arms and legs off the floor into a long X, squeezing the erectors and glutes isometrically.",
+  },
 
   // ==========================================
   // 3. SHOULDERS (الأكتاف - 12 Exercises)
@@ -829,6 +932,23 @@ const baseExercisesDatabase = [
     image: "/exercises/leg_seated_calf_raise.png",
     tips: "Knees bent at 90 degrees to isolate the soleus calf muscle. Pause 1 second at top.",
   },
+  {
+    id: "leg_sissy_squat",
+    name: "Sissy Squat",
+    nameAr: "سكوات سيزي",
+    primaryMuscle: "legs",
+    muscle: "Legs",
+    targetAngle: "quad_isolation",
+    equipment: "bodyweight",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 15,
+    default_sets: 3,
+    default_reps: 15,
+    image: null,
+    imageUnavailableReason: "No verified sissy-squat instructional image matched the described heels-raised knee-slide angle.",
+    tips: "Rise onto the balls of your feet, push knees forward past the toes and lean back in one line for a deep quad stretch.",
+  },
 
   // ==========================================
   // 5. ARMS (الذراعين - 12 Exercises: 6 Biceps + 6 Triceps)
@@ -928,6 +1048,40 @@ const baseExercisesDatabase = [
     default_reps: 12,
     image: "/exercises/arm_concentration_curl.png",
     tips: "Rest tricep against inner thigh. Curl dumbbell without moving upper torso.",
+  },
+  {
+    id: "arm_overhead_cable_curl",
+    name: "Overhead Cable Curl",
+    nameAr: "بايسبس كابل فوق الرأس",
+    primaryMuscle: "arms",
+    muscle: "Arms",
+    targetAngle: "bicep_long_head",
+    equipment: "cable",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: null,
+    imageUnavailableReason: "Source demonstrated a standard low-pulley curl, not the arms-overhead high-pulley variation.",
+    tips: "Set both pulleys high behind you. Curl from an overhead stretched position to keep the long head under tension.",
+  },
+  {
+    id: "arm_drag_curl",
+    name: "Barbell Drag Curl",
+    nameAr: "بايسبس سحب بار",
+    primaryMuscle: "arms",
+    muscle: "Arms",
+    targetAngle: "bicep_long_head",
+    equipment: "barbell",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: null,
+    imageUnavailableReason: "Available image was a standard standing barbell curl with elbows forward of the body.",
+    tips: "Drag the bar straight up your torso, elbows tracking behind the bar, to pin tension on the long head.",
   },
   {
     id: "arm_rope_pushdown",
@@ -1229,11 +1383,59 @@ const baseExercisesDatabase = [
 ];
 
 // ════════════════════════════════════════════════════════════════════════════════
-export const exercisesDatabase = baseExercisesDatabase.map((ex) => {
+
+// ── Smart Rest Timer defaults (seconds) ──
+// Heavy compounds: 150–180s · Isolation/accessory: 60–90s (spec ranges).
+const heavyCompoundRest = new Set([
+  "leg_bb_back_squat",
+  "leg_hack_squat",
+  "leg_45_press",
+  "leg_bb_rdl",
+  "leg_db_rdl",
+  "chest_bb_flat_bench",
+  "chest_bb_incline_press",
+  "chest_db_flat_press",
+  "chest_db_incline_press",
+  "sh_standing_bb_ohp",
+  "back_bb_bent_over_row",
+  "back_tbar_row",
+  "back_good_morning",
+  "arm_close_grip_bench",
+]);
+
+const coreAndCalfRest = new Set([
+  "leg_standing_calf_raise",
+  "leg_seated_calf_raise",
+  "core_hanging_leg_raise",
+  "core_captain_chair_raise",
+  "core_cable_kneeling_crunch",
+  "core_decline_crunch",
+  "core_weighted_plank",
+  "core_side_plank",
+  "core_ab_wheel_rollout",
+  "core_russian_twist",
+  "core_woodchopper",
+  "core_lying_leg_raise",
+  "core_bicycle_crunches",
+  "core_hollow_body_hold",
+  "back_superman_hold",
+]);
+
+const categoryDefaultRest = { compound: 150, machine: 75, isolation: 75, stretch: 75 };
+
+export const getRestSecondsFor = (ex) => {
+  if (!ex) return 75;
+  if (heavyCompoundRest.has(ex.id)) return 180;
+  if (coreAndCalfRest.has(ex.id)) return 60;
+  return categoryDefaultRest[ex.category] ?? 75;
+};
+
+const catalogWithMeta = baseExercisesDatabase.map((ex) => {
   const bio = exerciseBiomechanics[ex.id] || {};
   return {
     ...ex,
     imageStatus: ex.image ? "available" : "unavailable",
+    restSeconds: getRestSecondsFor(ex),
     primaryTarget: bio.primaryTarget || ex.name,
     secondaryMuscles: bio.secondaryMuscles || [],
     jointAction: bio.jointAction || "",
@@ -1242,6 +1444,33 @@ export const exercisesDatabase = baseExercisesDatabase.map((ex) => {
     commonMistakes: bio.commonMistakes || [],
   };
 });
+
+// ── Equipment-swap linking: 2–3 same-angle alternatives, different equipment first ──
+const computeSwapAlternatives = (source, count = 3) => {
+  if (!source?.targetAngle) return [];
+  return catalogWithMeta
+    .filter((ex) => ex.id !== source.id && ex.targetAngle === source.targetAngle)
+    .map((ex) => ({
+      id: ex.id,
+      score:
+        (ex.equipment !== source.equipment ? 0 : 1) +
+        (ex.category === source.category ? 0 : 0.5),
+    }))
+    .sort((a, b) => a.score - b.score || a.id.localeCompare(b.id))
+    .slice(0, count)
+    .map((entry) => entry.id);
+};
+
+export const exercisesDatabase = catalogWithMeta.map((ex) => ({
+  ...ex,
+  alternatives: computeSwapAlternatives(ex),
+}));
+
+const catalogById = new Map(exercisesDatabase.map((ex) => [ex.id, ex]));
+
+/** Linked same-angle swap candidates (2–3), different equipment prioritized. */
+export const getSwapAlternatives = (exerciseId) =>
+  catalogById.get(exerciseId)?.alternatives || [];
 
 // TRAINING PLANS — Multi-Program System (PPL + Upper & Bro Split)
 // ════════════════════════════════════════════════════════════════════════════════

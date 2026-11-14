@@ -6,6 +6,7 @@ import {
   Layers,
   Crosshair,
   Dumbbell,
+  GitCompareArrows,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { exercisesDatabase } from "../data/exercises";
@@ -49,12 +50,60 @@ const MUSCLE_ANGLES = {
   core: ["core_abs"],
 };
 
+// ── Target weekly set distribution (hypertrophy evidence-based defaults) ──
+const MUSCLE_TARGETS = {
+  chest: 22,
+  back: 25,
+  shoulders: 21,
+  legs: 30,
+  arms: 20,
+  core: 6,
+};
+
+const WEEKLY_TARGET_SETS = {
+  // Chest
+  upper_chest: 6,
+  mid_chest: 6,
+  lower_chest: 6,
+  inner_chest: 4,
+  // Back
+  vertical_pull: 6,
+  horizontal_row: 6,
+  unilateral_row: 4,
+  lat_isolation: 3,
+  upper_back_rear_delt: 3,
+  lower_back_posterior: 3,
+  // Shoulders
+  anterior_delt: 6,
+  lateral_delt: 6,
+  posterior_delt: 6,
+  upper_traps: 3,
+  // Legs
+  quad_compound: 9,
+  quad_isolation: 3,
+  hamstring_hinge: 6,
+  hamstring_curl: 6,
+  calves: 6,
+  // Arms
+  bicep_short_head: 4,
+  bicep_long_head: 4,
+  brachialis: 3,
+  tricep_long_head: 4,
+  tricep_lateral_medial: 5,
+  // Core
+  core_abs: 6,
+};
+
+// Angle flagged as neglected when current-week volume < 70% of the target
+const NEGLECT_THRESHOLD = 0.7;
+
 export default function AngleRadarChart({ showRecommendations = true }) {
   const history = useWorkoutStore((s) => s.history);
   const storeExercises = useWorkoutStore((s) => s.exercises);
 
   const [viewMode, setViewMode] = useState("macro"); // "macro" | "micro"
   const [selectedMuscle, setSelectedMuscle] = useState("chest");
+  const [dataMode, setDataMode] = useState("30d"); // "30d" | "week" | "compare"
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [referenceTime] = useState(() => Date.now());
 
@@ -68,15 +117,25 @@ export default function AngleRadarChart({ showRecommendations = true }) {
     return map;
   }, [storeExercises]);
 
-  // Aggregate logged sets over the last 30 days and last 14 days
-  const { setsLast30ByAngle, setsLast14ByAngle, setsLast30ByMuscle } =
+  // Aggregate logged sets over the last 30 days, last 14 days and current week
+  const { setsLast30ByAngle, setsLast14ByAngle, setsLast30ByMuscle, weekByAngle, weekByMuscle } =
     useMemo(() => {
       const ms30Days = 30 * 24 * 60 * 60 * 1000;
       const ms14Days = 14 * 24 * 60 * 60 * 1000;
+      const ms7Days = 7 * 24 * 60 * 60 * 1000;
 
       const last30 = {};
       const last14 = {};
+      const week = {};
       const muscle30 = {
+        chest: 0,
+        back: 0,
+        shoulders: 0,
+        legs: 0,
+        arms: 0,
+        core: 0,
+      };
+      const muscleWeek = {
         chest: 0,
         back: 0,
         shoulders: 0,
@@ -91,11 +150,16 @@ export default function AngleRadarChart({ showRecommendations = true }) {
         ).getTime();
         const in30 = referenceTime - sessionTime <= ms30Days;
         const in14 = referenceTime - sessionTime <= ms14Days;
+        const in7 = referenceTime - sessionTime <= ms7Days;
 
-        if (!in30 && !in14) return;
+        if (!in30 && !in14 && !in7) return;
 
         (session.exercises || []).forEach((exEntry) => {
-          const setsCount = (exEntry.sets || []).length;
+          // Warm-up sets (W) do not count toward training volume coverage
+          const workingSets = (exEntry.sets || []).filter(
+            (s) => s.type !== "W",
+          );
+          const setsCount = workingSets.length;
           if (!setsCount) return;
 
           const exDef = exerciseCatalog.get(exEntry.exerciseId);
@@ -107,10 +171,12 @@ export default function AngleRadarChart({ showRecommendations = true }) {
           if (angle) {
             if (in30) last30[angle] = (last30[angle] || 0) + setsCount;
             if (in14) last14[angle] = (last14[angle] || 0) + setsCount;
+            if (in7) week[angle] = (week[angle] || 0) + setsCount;
           }
 
-          if (muscle && muscle30[muscle] !== undefined) {
+          if (muscle30[muscle] !== undefined) {
             if (in30) muscle30[muscle] += setsCount;
+            if (in7) muscleWeek[muscle] += setsCount;
           }
         });
       });
@@ -119,20 +185,26 @@ export default function AngleRadarChart({ showRecommendations = true }) {
         setsLast30ByAngle: last30,
         setsLast14ByAngle: last14,
         setsLast30ByMuscle: muscle30,
+        weekByAngle: week,
+        weekByMuscle: muscleWeek,
       };
     }, [history, exerciseCatalog, referenceTime]);
 
-  // Determine neglected angles (< 3 sets in the last 14 days)
+  // Determine neglected angles for the audit section (mirrors the chart flagging)
   const neglectedAngles = useMemo(() => {
     const list = [];
+    const useWeek = dataMode !== "30d";
     const targetAngles =
       viewMode === "macro"
         ? Object.values(MUSCLE_ANGLES).flat()
         : MUSCLE_ANGLES[selectedMuscle] || [];
 
     targetAngles.forEach((angle) => {
+      const target = WEEKLY_TARGET_SETS[angle] || 6;
+      const week = weekByAngle[angle] || 0;
       const sets14 = setsLast14ByAngle[angle] || 0;
-      if (sets14 < 3) {
+      const isNeglected = useWeek ? week < NEGLECT_THRESHOLD * target : sets14 < 3;
+      if (isNeglected) {
         // Find matching exercise from exercisesDatabase
         const recommendation =
           exercisesDatabase.find((e) => e.targetAngle === angle) ||
@@ -142,14 +214,21 @@ export default function AngleRadarChart({ showRecommendations = true }) {
           angle,
           label: getAngleLabel(angle).en,
           sets14,
-          sets30: setsLast30ByAngle[angle] || 0,
+          week,
+          target,
           recommendation,
         });
       }
     });
 
     return list;
-  }, [viewMode, selectedMuscle, setsLast14ByAngle, setsLast30ByAngle]);
+  }, [
+    viewMode,
+    selectedMuscle,
+    dataMode,
+    setsLast14ByAngle,
+    weekByAngle,
+  ]);
 
   // SVG Chart Geometry
   const svgSize = 340;
@@ -157,45 +236,65 @@ export default function AngleRadarChart({ showRecommendations = true }) {
   const cy = svgSize / 2;
   const radius = 100;
 
-  // Build axes data based on view mode
+  // Build axes data based on view mode and data mode
   const chartAxes = useMemo(() => {
+    const useWeek = dataMode !== "30d";
     if (viewMode === "macro") {
       return MUSCLE_GROUPS.map((m) => {
-        const val = setsLast30ByMuscle[m.id] || 0;
+        const value = useWeek
+          ? weekByMuscle[m.id] || 0
+          : setsLast30ByMuscle[m.id] || 0;
+        const target = MUSCLE_TARGETS[m.id] || 10;
+        const isNeglected =
+          useWeek ? value < NEGLECT_THRESHOLD * target : false;
         return {
           id: m.id,
           label: m.label,
-          value: val,
+          value,
+          target,
           sets14: null,
-          isNeglected: false,
-          color: m.color,
+          isNeglected,
+          color: isNeglected ? "#F59E0B" : m.color,
         };
       });
     } else {
       const angles = MUSCLE_ANGLES[selectedMuscle] || [];
       return angles.map((angle) => {
-        const val = setsLast30ByAngle[angle] || 0;
+        const value = useWeek
+          ? weekByAngle[angle] || 0
+          : setsLast30ByAngle[angle] || 0;
         const sets14 = setsLast14ByAngle[angle] || 0;
+        const target = WEEKLY_TARGET_SETS[angle] || 6;
+        const isNeglected = useWeek
+          ? value < NEGLECT_THRESHOLD * target
+          : sets14 < 3;
         return {
           id: angle,
           label: getAngleLabel(angle).en,
-          value: val,
+          value,
+          target,
           sets14,
-          isNeglected: sets14 < 3,
-          color: sets14 < 3 ? "#F59E0B" : "#00F0FF",
+          isNeglected,
+          color: isNeglected ? "#F59E0B" : "#00F0FF",
         };
       });
     }
   }, [
     viewMode,
     selectedMuscle,
+    dataMode,
     setsLast30ByMuscle,
     setsLast30ByAngle,
     setsLast14ByAngle,
+    weekByAngle,
+    weekByMuscle,
   ]);
 
   const numAxes = chartAxes.length;
-  const maxVal = Math.max(...chartAxes.map((a) => a.value), 10);
+  const maxVal = Math.max(
+    ...chartAxes.map((a) => Math.max(a.value, dataMode === "compare" ? a.target : 0)),
+    10,
+  );
 
   // Compute vertex positions
   const getCoordinates = (index, total, r) => {
@@ -226,6 +325,18 @@ export default function AngleRadarChart({ showRecommendations = true }) {
     })
     .join(" ");
 
+  // Target distribution polygon points (compare mode)
+  const targetPolygonPoints = chartAxes
+    .map((axis, i) => {
+      const normalizedRatio = Math.max(
+        (axis.target || 0) / maxVal,
+        0.05,
+      );
+      const pt = getCoordinates(i, numAxes, radius * normalizedRatio);
+      return `${pt.x},${pt.y}`;
+    })
+    .join(" ");
+
   return (
     <div className="bg-[#0B0F17] rounded-3xl p-5 border border-slate-800/80 shadow-2xl relative overflow-hidden space-y-4">
       {/* Background ambient neon glow */}
@@ -244,9 +355,15 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             </h2>
           </div>
           <p className="text-[11px] text-slate-400 mt-0.5">
-            {viewMode === "macro"
-              ? "Macro Muscle Balance (Last 30 Days)"
-              : `Micro Angle Coverage: ${MUSCLE_GROUPS.find((m) => m.id === selectedMuscle)?.label} (Last 30 Days)`}
+            {dataMode === "compare"
+              ? "Current Week vs Target Distribution — أسبوعك الحالي مقابل المستهدف"
+              : dataMode === "week"
+                ? viewMode === "macro"
+                  ? "Macro Muscle Balance (Current Week — أسبوعك الحالي)"
+                  : `Micro Angle Coverage: ${MUSCLE_GROUPS.find((m) => m.id === selectedMuscle)?.label} (Current Week)`
+                : viewMode === "macro"
+                  ? "Macro Muscle Balance (Last 30 Days)"
+                  : `Micro Angle Coverage: ${MUSCLE_GROUPS.find((m) => m.id === selectedMuscle)?.label} (Last 30 Days)`}
           </p>
         </div>
 
@@ -281,6 +398,56 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             Micro Angles
           </button>
         </div>
+      </div>
+
+      {/* ── Current Week vs Target Distribution toggle ── */}
+      <div
+        className="flex items-center bg-[#121824] p-1 rounded-xl border border-slate-800 relative z-10 self-stretch sm:self-auto"
+        role="group"
+        aria-label="Chart data comparison"
+      >
+        <button
+          onClick={() => {
+            setDataMode("30d");
+            setActiveTooltip(null);
+          }}
+          className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+            dataMode === "30d"
+              ? "bg-slate-700/60 text-white border border-slate-600"
+              : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Layers size={12} />
+          30 Days
+        </button>
+        <button
+          onClick={() => {
+            setDataMode("week");
+            setActiveTooltip(null);
+          }}
+          className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+            dataMode === "week"
+              ? "bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30"
+              : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Crosshair size={12} />
+          أسبوعك الحالي
+        </button>
+        <button
+          onClick={() => {
+            setDataMode("compare");
+            setActiveTooltip(null);
+          }}
+          className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+            dataMode === "compare"
+              ? "bg-[#A855F7]/15 text-[#A855F7] border border-[#A855F7]/30"
+              : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <GitCompareArrows size={12} />
+          المقارنة
+        </button>
       </div>
 
       {/* Per-Muscle Filter Pills (Visible in Micro Mode) */}
@@ -359,7 +526,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             );
           })}
 
-          {/* Filled Data Polygon */}
+          {/* Filled Data Polygon (Current) */}
           <polygon
             points={dataPolygonPoints}
             fill="url(#radarNeonFill)"
@@ -369,6 +536,19 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             filter="url(#glow)"
             className="transition-all duration-500 ease-out"
           />
+
+          {/* Target Distribution polygon (semi-transparent overlay, compare mode) */}
+          {dataMode === "compare" && (
+            <polygon
+              points={targetPolygonPoints}
+              fill="rgba(168, 85, 247, 0.12)"
+              stroke="#A855F7"
+              strokeWidth="2"
+              strokeDasharray="6,4"
+              strokeLinejoin="round"
+              className="transition-all duration-500 ease-out"
+            />
+          )}
 
           {/* Interactive Vertex Dots */}
           {chartAxes.map((axis, i) => {
@@ -430,8 +610,15 @@ export default function AngleRadarChart({ showRecommendations = true }) {
               >
                 {axis.label}
                 <tspan className="fill-slate-500 text-[9px] font-normal" dx="3">
-                  ({axis.value}s)
+                  {dataMode === "compare"
+                    ? `(${axis.value}/${axis.target})`
+                    : `(${axis.value}s)`}
                 </tspan>
+                {axis.isNeglected && (
+                  <tspan className="fill-[#F59E0B]" dx="2" role="img" aria-label="Neglected warning">
+                    ⚠
+                  </tspan>
+                )}
               </text>
             );
           })}
@@ -478,6 +665,23 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             })()}
           </div>
         )}
+
+        {/* Compare-mode legend */}
+        {dataMode === "compare" && (
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 whitespace-nowrap z-10 bg-[#0B0F17]/80 px-3 py-1 rounded-full border border-slate-800">
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[#00F0FF]">
+              <span className="w-2.5 h-2.5 rounded-sm bg-[#00F0FF]/70 border border-[#00F0FF]" aria-hidden="true" />
+              Current Week · أسبوعك الحالي
+            </span>
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[#A855F7]">
+              <span
+                className="w-2.5 h-2.5 rounded-sm bg-[#A855F7]/20 border border-dashed border-[#A855F7]"
+                aria-hidden="true"
+              />
+              Target · المتوسط المستهدف
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Neglected Angles Audit & Prescription Section ── */}
@@ -488,7 +692,9 @@ export default function AngleRadarChart({ showRecommendations = true }) {
               {neglectedAngles.length > 0 ? (
                 <>
                   <AlertTriangle size={14} className="text-[#F59E0B]" />
-                  Neglected Biomechanical Angles (&lt; 3 sets in 14d)
+                  {dataMode === "30d"
+                    ? "Neglected Biomechanical Angles (< 3 sets in 14d)"
+                    : "Neglected Biomechanical Angles (< 70% of Target)"}
                 </>
               ) : (
                 <>
@@ -528,7 +734,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
           ) : (
             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
               {neglectedAngles.map(
-                ({ angle, label, sets14, recommendation }) => (
+                ({ angle, label, sets14, week, target, recommendation }) => (
                   <div
                     key={angle}
                     className="bg-[#121824] rounded-2xl p-3 border border-slate-800 hover:border-[#F59E0B]/40 transition-all flex items-center justify-between gap-3"
@@ -540,7 +746,9 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                           {label}
                         </span>
                         <span className="text-[10px] text-slate-500">
-                          {sets14} sets logged in 14d
+                          {dataMode === "30d"
+                            ? `${sets14} sets logged in 14d`
+                            : `${week}/${target} sets this week · ${target > 0 ? Math.round((week / target) * 100) : 0}% of target`}
                         </span>
                       </div>
 

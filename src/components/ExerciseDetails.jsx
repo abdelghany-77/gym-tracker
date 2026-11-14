@@ -11,7 +11,7 @@ export default function ExerciseDetails({ exercise, isOpen, onClose }) {
     <Modal isOpen={isOpen} onClose={onClose} title={exercise.name} maxWidth="max-w-xl" position="bottom">
       <div className="p-4 sm:p-5 space-y-5 text-sm">
         {exercise.nameAr && <p lang="ar" dir="rtl" className="text-slate-400">{exercise.nameAr}</p>}
-        <ExerciseImage exercise={exercise} className="w-full aspect-[2/1] rounded-xl border border-slate-700" />
+        <ExerciseImage exercise={exercise} className="w-full aspect-[2/1] rounded-xl border border-slate-700" zoomable />
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-slate-800 px-3 py-1 text-slate-300">{exercise.muscle}</span>
           {exercise.equipment && <span className="capitalize text-slate-400">{exercise.equipment}</span>}

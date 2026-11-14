@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-30",
+  "auditedAt": "2026-11-14",
   "sourceRoot": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main",
   "license": "Unlicense",
   "reviewScope": "Visual identification using 160px contact-sheet tiles plus source metadata; not a form, safety, or biomechanical certification.",
@@ -652,6 +652,87 @@
       "path": null,
       "sha256": null,
       "note": "Existing picture shows near-vertical limbs, not the described extended hollow-body position."
+    },
+    {
+      "id": "back_landmine_row",
+      "name": "Landmine Meadow's Row",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "No verified landmine Meadow's-row image matched the described corner-bar angle."
+    },
+    {
+      "id": "back_single_arm_cable_row",
+      "name": "Single-Arm Cable Row",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Source candidates all demonstrated bilateral seated rows, not the single-arm handle variation."
+    },
+    {
+      "id": "back_incline_reverse_fly",
+      "name": "Incline Dumbbell Reverse Fly",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Available image shows a bent-over standing raise, not the chest-on-incline-bench reverse fly."
+    },
+    {
+      "id": "back_cable_rear_delt_row",
+      "name": "Wide-Grip Cable Row to Collarbone",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "No source image captured the high-elbow row pulled to the collarbone line."
+    },
+    {
+      "id": "back_good_morning",
+      "name": "Barbell Good Morning",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "No verified good-morning instructional image was found for the database."
+    },
+    {
+      "id": "back_superman_hold",
+      "name": "Superman Hold",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Existing source demonstrated the arms-alternating swim variant, not the static superman hold."
+    },
+    {
+      "id": "leg_sissy_squat",
+      "name": "Sissy Squat",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "No verified sissy-squat instructional image matched the described heels-raised knee-slide angle."
+    },
+    {
+      "id": "arm_overhead_cable_curl",
+      "name": "Overhead Cable Curl",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Source demonstrated a standard low-pulley curl, not the arms-overhead high-pulley variation."
+    },
+    {
+      "id": "arm_drag_curl",
+      "name": "Barbell Drag Curl",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Available image was a standard standing barbell curl with elbows forward of the body."
     }
   ]
 }

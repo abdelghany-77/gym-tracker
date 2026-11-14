@@ -50,6 +50,8 @@ export default function WorkoutReceiptModal({
         volumeTons: "0",
         totalSets: 0,
         totalReps: 0,
+        warmupSets: 0,
+        avgIntensity: 0,
         newPRs: [],
         anglesHit: [],
       };
@@ -82,6 +84,9 @@ export default function WorkoutReceiptModal({
     let totalVolumeKg = 0;
     let totalSets = 0;
     let totalReps = 0;
+    let warmupSets = 0;
+    let intensitySum = 0;
+    let workingSetCount = 0;
     const newPRs = [];
     const anglesSet = new Set();
 
@@ -95,9 +100,16 @@ export default function WorkoutReceiptModal({
       (exEntry.sets || []).forEach((s) => {
         const w = Number(s.weight) || 0;
         const r = Number(s.reps) || 0;
+        // Warm-up sets are excluded from all working metrics & PR detection
+        if (s.type === "W") {
+          warmupSets += 1;
+          return;
+        }
         totalVolumeKg += w * r;
         totalSets += 1;
         totalReps += r;
+        intensitySum += w;
+        workingSetCount += 1;
         if (w > maxSessionWeight) maxSessionWeight = w;
       });
 
@@ -121,6 +133,8 @@ export default function WorkoutReceiptModal({
       volumeTons: (totalVolumeKg / 1000).toFixed(2),
       totalSets,
       totalReps,
+      warmupSets,
+      avgIntensity: workingSetCount > 0 ? intensitySum / workingSetCount : 0,
       newPRs,
       anglesHit: Array.from(anglesSet),
     };
@@ -303,6 +317,17 @@ export default function WorkoutReceiptModal({
     ctx.font = "11px system-ui, sans-serif";
     ctx.fillText("GYM PWA • PROGRESSIVE OVERLOAD", width - 240, footerY + 44);
 
+    // Warm-up footnote (excluded from working metrics)
+    if (metrics.warmupSets > 0) {
+      ctx.fillStyle = "#64748B";
+      ctx.font = "italic 11px system-ui, sans-serif";
+      ctx.fillText(
+        `* ${metrics.warmupSets} warm-up set(s) excluded from working volume & records`,
+        50,
+        footerY - 8,
+      );
+    }
+
     return canvas;
   };
 
@@ -422,29 +447,38 @@ export default function WorkoutReceiptModal({
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-[#0B0F17] rounded-xl p-2.5 border border-slate-800">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Volume</p>
-              <p className="text-sm font-black text-[#00F0FF] mt-0.5">
+              <p className="text-sm font-black text-[#00F0FF] mt-0.5 tabular-nums">
                 {metrics.totalVolumeKg.toLocaleString()}
                 <span className="text-[10px] font-normal text-slate-400 ml-0.5">kg</span>
               </p>
-              <p className="text-[9px] text-slate-500 font-mono mt-0.5">{metrics.volumeTons} tons</p>
+              <p className="text-[9px] text-slate-500 font-mono mt-0.5 tabular-nums">{metrics.volumeTons} tons</p>
             </div>
 
             <div className="bg-[#0B0F17] rounded-xl p-2.5 border border-slate-800">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Sets</p>
-              <p className="text-sm font-black text-[#10B981] mt-0.5">
+              <p className="text-sm font-black text-[#10B981] mt-0.5 tabular-nums">
                 {metrics.totalSets}
               </p>
-              <p className="text-[9px] text-slate-500 font-mono mt-0.5">Crushed</p>
+              <p className="text-[9px] text-slate-500 font-mono mt-0.5">Working</p>
             </div>
 
             <div className="bg-[#0B0F17] rounded-xl p-2.5 border border-slate-800">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Reps</p>
-              <p className="text-sm font-black text-neon-purple mt-0.5">
+              <p className="text-sm font-black text-neon-purple mt-0.5 tabular-nums">
                 {metrics.totalReps}
               </p>
-              <p className="text-[9px] text-slate-500 font-mono mt-0.5">Total</p>
+              <p className="text-[9px] text-slate-500 font-mono mt-0.5 tabular-nums">
+                Avg {metrics.avgIntensity.toFixed(1)} kg/set
+              </p>
             </div>
           </div>
+
+          {/* Warm-up footnote */}
+          {metrics.warmupSets > 0 && (
+            <p className="text-[10px] text-slate-500 text-center -mt-1" role="note">
+              * {metrics.warmupSets} warm-up set{metrics.warmupSets === 1 ? "" : "s"} excluded from working volume, sets & records
+            </p>
+          )}
 
           {/* New PRs Broken Today */}
           <div className="space-y-2">
@@ -463,7 +497,7 @@ export default function WorkoutReceiptModal({
                     <span className="text-xs font-semibold text-white truncate mr-2">
                       {pr.name}
                     </span>
-                    <span className="text-xs font-black text-[#FCD34D] shrink-0 bg-[#0B0F17] px-2 py-0.5 rounded-lg border border-[#F59E0B]/40 shadow-sm">
+                    <span className="text-xs font-black text-[#FCD34D] shrink-0 bg-[#0B0F17] px-2 py-0.5 rounded-lg border border-[#F59E0B]/40 shadow-sm tabular-nums">
                       {pr.newWeight} kg
                       {pr.diff && (
                         <span className="text-[10px] text-emerald-400 font-bold ml-1">

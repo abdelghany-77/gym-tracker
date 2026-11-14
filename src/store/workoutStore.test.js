@@ -21,17 +21,26 @@ describe('WorkoutStore & Biomechanical Database', () => {
     expect(trainingPlans.bro_split).toBeDefined();
   });
 
-  it('verifies pristine 72-exercise catalog with exactly 12 exercises per muscle group and no duplicates', () => {
-    expect(exercises.length).toBe(72);
+  it('verifies pristine 81-exercise catalog with every angle covered by 2-3+ exercises and no duplicates', () => {
+    expect(exercises.length).toBe(81);
 
     const ids = exercises.map(e => e.id);
     const uniqueIds = new Set(ids);
-    expect(uniqueIds.size).toBe(72);
+    expect(uniqueIds.size).toBe(81);
 
-    const muscleGroups = ['chest', 'back', 'shoulders', 'legs', 'arms', 'core'];
-    muscleGroups.forEach((m) => {
+    const muscleCounts = { chest: 12, back: 18, shoulders: 12, legs: 13, arms: 14, core: 12 };
+    Object.entries(muscleCounts).forEach(([m, expected]) => {
       const count = exercises.filter(e => e.primaryMuscle === m).length;
-      expect(count, `Expected 12 exercises for ${m}, found ${count}`).toBe(12);
+      expect(count, `Expected ${expected} exercises for ${m}, found ${count}`).toBe(expected);
+    });
+
+    // Phase-1 coverage audit: every biomechanical angle has at least 2 distinct exercises
+    const angleCounts = {};
+    exercises.forEach((e) => {
+      angleCounts[e.targetAngle] = (angleCounts[e.targetAngle] || 0) + 1;
+    });
+    Object.entries(angleCounts).forEach(([angle, count]) => {
+      expect(count, `Angle ${angle} has only ${count} exercise(s); need at least 2`).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -141,7 +150,7 @@ describe('WorkoutStore & Biomechanical Database', () => {
 
     expect(localStorage.getItem('gym_db_version')).toBe('3.0.0');
     const syncedExercises = JSON.parse(localStorage.getItem('gym_exercises'));
-    expect(syncedExercises.length).toBe(72);
+    expect(syncedExercises.length).toBe(81);
     expect(syncedExercises.some(e => e.id === 'chest_bb_flat_bench')).toBe(true);
     expect(localStorage.getItem('gym_custom_program_overrides')).toBeNull();
   });

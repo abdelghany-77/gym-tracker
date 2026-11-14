@@ -13,6 +13,7 @@ export const createWorkoutSlice = (set, get) => ({
   activeWorkout: null,
   restTimerTrigger: 0,
   restTimerExerciseId: null,
+  restTimerSetType: null,
   personalRecords: loadFromStorage("gym_prs", {}),
   showConfetti: false,
   customProgramOverrides: loadProgramOverrides(),
@@ -306,6 +307,7 @@ export const createWorkoutSlice = (set, get) => ({
         weight: "",
         reps: "",
         done: false,
+        type: "N",
       }));
       return {
         exerciseId: exId,
@@ -355,6 +357,25 @@ export const createWorkoutSlice = (set, get) => ({
         restTimerExerciseId: newDoneState
           ? exercises[exerciseIndex].exerciseId
           : state.restTimerExerciseId,
+        restTimerSetType: newDoneState
+          ? sets[setIndex].type || "N"
+          : state.restTimerSetType,
+      };
+    });
+  },
+
+  // Set-type tagging: N (normal working set) → W (warm-up) → F (failure) → N
+  cycleSetType: (exerciseIndex, setIndex) => {
+    set((state) => {
+      if (!state.activeWorkout) return state;
+      const exercises = [...state.activeWorkout.exercises];
+      const sets = [...exercises[exerciseIndex].sets];
+      const cycle = { N: "W", W: "F", F: "N" };
+      const nextType = cycle[sets[setIndex].type || "N"] || "N";
+      sets[setIndex] = { ...sets[setIndex], type: nextType };
+      exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
+      return {
+        activeWorkout: { ...state.activeWorkout, exercises },
       };
     });
   },
@@ -365,7 +386,7 @@ export const createWorkoutSlice = (set, get) => ({
       const exercises = [...state.activeWorkout.exercises];
       const sets = [
         ...exercises[exerciseIndex].sets,
-        { weight: "", reps: "", done: false },
+        { weight: "", reps: "", done: false, type: "N" },
       ];
       exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
       return {
@@ -407,6 +428,7 @@ export const createWorkoutSlice = (set, get) => ({
           weight: "",
           reps: "",
           done: false,
+          type: "N",
         })),
       };
 
@@ -458,21 +480,30 @@ export const createWorkoutSlice = (set, get) => ({
         exerciseId: ex.exerciseId,
         sets: ex.sets
           .filter((s) => s.done)
-          .map((s) => ({
-            weight: Number(s.weight) || 0,
-            reps: Number(s.reps) || 0,
-          })),
+          .map((s) =>
+            // Working sets (N) keep the compact legacy shape; W/F are tagged.
+            s.type === "N" || !s.type
+              ? { weight: Number(s.weight) || 0, reps: Number(s.reps) || 0 }
+              : {
+                  weight: Number(s.weight) || 0,
+                  reps: Number(s.reps) || 0,
+                  type: s.type,
+                },
+          ),
       })),
     };
 
     const updatedPRs = { ...personalRecords };
     session.exercises.forEach((ex) => {
-      ex.sets.forEach((s) => {
-        const currentPR = updatedPRs[ex.exerciseId] || 0;
-        if (s.weight > currentPR) {
-          updatedPRs[ex.exerciseId] = s.weight;
-        }
-      });
+      // Warm-up sets never set personal records.
+      ex.sets
+        .filter((s) => s.type !== "W")
+        .forEach((s) => {
+          const currentPR = updatedPRs[ex.exerciseId] || 0;
+          if (s.weight > currentPR) {
+            updatedPRs[ex.exerciseId] = s.weight;
+          }
+        });
     });
 
     const updatedHistory = [...history, session];
@@ -492,7 +523,7 @@ export const createWorkoutSlice = (set, get) => ({
   },
 
   cancelWorkout: () => {
-    set({ activeWorkout: null, restTimerExerciseId: null });
+    set({ activeWorkout: null, restTimerExerciseId: null, restTimerSetType: null });
   },
 
   clearHistory: () => {

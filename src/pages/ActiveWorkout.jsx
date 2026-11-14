@@ -7,7 +7,10 @@ import {
   Dumbbell,
   Flag,
   ChevronDown,
+  ChevronRight,
   Layers,
+  Droplets,
+  CheckCircle2,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import ExerciseCard from "../components/ExerciseCard";
@@ -16,7 +19,36 @@ import AngleCoverageBadge from "../components/AngleCoverageBadge";
 import SwapExerciseModal from "../components/SwapExerciseModal";
 import Modal, { ConfirmDialog } from "../components/Modal";
 import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+
+// Hydration quick-pick options (0 = Off) + custom minute input
+const HYDRATION_PRESETS = [0, 10, 15, 20, 30];
+
+// Gentle two-tone water chime (Web Audio API)
+function playHydrationChime() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const playTone = (freq, startTime, duration) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.18, startTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+    const now = audioCtx.currentTime;
+    playTone(783.99, now, 0.22); // G5
+    playTone(1046.5, now + 0.14, 0.3); // C6
+    setTimeout(() => audioCtx.close(), 1200);
+  } catch {
+    // Audio unavailable — silent fallback
+  }
+}
 
 export default function ActiveWorkout() {
   const navigate = useNavigate();
@@ -25,6 +57,10 @@ export default function ActiveWorkout() {
   const cancelWorkout = useWorkoutStore((s) => s.cancelWorkout);
   const exercises = useWorkoutStore((s) => s.exercises);
   const personalRecords = useWorkoutStore((s) => s.personalRecords);
+  const hydrationIntervalMinutes = useWorkoutStore(
+    (s) => s.hydrationIntervalMinutes,
+  );
+  const setHydrationInterval = useWorkoutStore((s) => s.setHydrationInterval);
 
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
@@ -35,7 +71,13 @@ export default function ActiveWorkout() {
   const [elapsed, setElapsed] = useState(0);
   const [swapTargetAngle, setSwapTargetAngle] = useState(null);
   const [showAngleSwapModal, setShowAngleSwapModal] = useState(false);
+  const [showHydrationMenu, setShowHydrationMenu] = useState(false);
+  const [advanceNotice, setAdvanceNotice] = useState(false);
+  const [hydrationToast, setHydrationToast] = useState(false);
+  const [customHydration, setCustomHydration] = useState("");
   const timerRef = useRef(null);
+  const advanceTimeoutRef = useRef(null);
+  const nextHydrationAtRef = useRef(null);
 
   // Live elapsed timer
   useEffect(() => {
@@ -48,6 +90,67 @@ export default function ActiveWorkout() {
     timerRef.current = setInterval(tick, 1000);
     return () => clearInterval(timerRef.current);
   }, [activeWorkout]);
+
+  // ── Auto-advance: brief confirmation, then move to the next exercise ──
+  const totalExercises = activeWorkout?.exercises.length || 0;
+
+  const goNextExercise = useCallback(() => {
+    setCurrentIndex((index) => Math.min(index + 1, totalExercises - 1));
+  }, [totalExercises]);
+
+  const handleAllSetsComplete = useCallback(() => {
+    // Nothing to advance to on the last exercise.
+    if (totalExercises < 2) return;
+    if (currentIndex >= totalExercises - 1) return;
+    setAdvanceNotice(true);
+    clearTimeout(advanceTimeoutRef.current);
+    advanceTimeoutRef.current = setTimeout(() => {
+      setAdvanceNotice(false);
+      goNextExercise();
+    }, 1600);
+  }, [currentIndex, totalExercises, goNextExercise]);
+
+  useEffect(() => {
+    return () => clearTimeout(advanceTimeoutRef.current);
+  }, []);
+
+  const dismissAdvanceNotice = useCallback(() => {
+    clearTimeout(advanceTimeoutRef.current);
+    setAdvanceNotice(false);
+  }, []);
+
+  // ── Configurable hydration reminder during active workouts ──
+  useEffect(() => {
+    if (!activeWorkout || !hydrationIntervalMinutes) {
+      nextHydrationAtRef.current = null;
+      return undefined;
+    }
+    // Arm the next reminder relative to now (wall-clock, background-safe)
+    if (
+      nextHydrationAtRef.current === null ||
+      nextHydrationAtRef.current < Date.now()
+    ) {
+      nextHydrationAtRef.current =
+        Date.now() + hydrationIntervalMinutes * 60_000;
+    }
+    const check = () => {
+      if (Date.now() >= nextHydrationAtRef.current) {
+        nextHydrationAtRef.current =
+          Date.now() + hydrationIntervalMinutes * 60_000;
+        setHydrationToast(true);
+        playHydrationChime();
+        try {
+          navigator.vibrate?.([80, 60, 80]);
+        } catch {
+          /* unsupported */
+        }
+        setTimeout(() => setHydrationToast(false), 5000);
+      }
+    };
+    const interval = setInterval(check, 10_000);
+    check();
+    return () => clearInterval(interval);
+  }, [activeWorkout, hydrationIntervalMinutes]);
 
   const progress = useMemo(() => {
     if (!activeWorkout) return { totalSets: 0, doneSets: 0, percent: 0 };
@@ -115,7 +218,6 @@ export default function ActiveWorkout() {
     );
   }
 
-  const totalExercises = activeWorkout.exercises.length;
   const currentExercise = activeWorkout.exercises[currentIndex];
   const handleFinish = () => {
     setPreviousPRsSnapshot({ ...personalRecords });
@@ -173,6 +275,19 @@ export default function ActiveWorkout() {
 
           <button
             type="button"
+            onClick={() => setShowHydrationMenu((open) => !open)}
+            aria-label="Hydration reminder settings"
+            title={`Hydration reminder: ${hydrationIntervalMinutes ? `every ${hydrationIntervalMinutes} min` : "Off"}`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+              hydrationIntervalMinutes
+                ? "text-cyan-400 hover:bg-cyan-500/10"
+                : "text-slate-400 hover:bg-slate-800 hover:text-cyan-400"
+            }`}
+          >
+            <Droplets size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
             onClick={() => setShowCoverage(true)}
             aria-label="Training coverage"
             title="Training coverage"
@@ -203,6 +318,65 @@ export default function ActiveWorkout() {
             style={{ width: `${progress.percent}%` }}
           />
         </div>
+
+        {/* ── Hydration reminder quick settings ── */}
+        {showHydrationMenu && (
+          <div className="rounded-xl bg-slate-900/95 border border-slate-700 p-2.5 space-y-2 animate-fadeIn">
+            <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold flex items-center gap-1.5">
+              <Droplets size={11} className="text-cyan-400" /> Remind me to drink water every
+            </p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {HYDRATION_PRESETS.map((minutes) => (
+                <button
+                  key={minutes}
+                  type="button"
+                  onClick={() => setHydrationInterval(minutes)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all border ${
+                    hydrationIntervalMinutes === minutes
+                      ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+                      : "bg-slate-800/60 text-slate-400 border-slate-700/50 hover:text-white"
+                  }`}
+                >
+                  {minutes === 0 ? "Off" : `${minutes}m`}
+                </button>
+              ))}
+              <span className="w-px h-5 bg-slate-700 mx-0.5" aria-hidden="true" />
+              <input
+                type="number"
+                inputMode="numeric"
+                min="5"
+                max="180"
+                placeholder="min"
+                value={customHydration}
+                onChange={(event) => setCustomHydration(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    const value = Number(customHydration);
+                    if (Number.isFinite(value) && value > 0) {
+                      setHydrationInterval(value);
+                      setCustomHydration("");
+                    }
+                  }
+                }}
+                className="w-14 bg-slate-800 text-white rounded-lg px-2 py-1 border border-slate-600 focus:border-cyan-400 focus:outline-none text-xs text-center tabular-nums"
+                aria-label="Custom hydration interval in minutes"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const value = Number(customHydration);
+                  if (Number.isFinite(value) && value > 0) {
+                    setHydrationInterval(value);
+                    setCustomHydration("");
+                  }
+                }}
+                className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25"
+              >
+                Set
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ═══ EXERCISE ARROW NAVIGATION ═══ */}
@@ -271,11 +445,42 @@ export default function ActiveWorkout() {
 
       {/* ═══ CENTER WORKOUT EXECUTION AREA (Zero Scroll Optimized) ═══ */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 space-y-3 custom-scrollbar">
+        {/* Auto-advance confirmation (brief, cancellable) — Rest Timer stays docked below */}
+        {advanceNotice && (
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-neon-emerald/10 border border-neon-emerald/30 animate-fadeIn">
+            <div className="flex items-center gap-2 text-xs min-w-0">
+              <CheckCircle2 size={16} className="text-neon-emerald shrink-0" />
+              <span className="text-white font-semibold">Exercise complete!</span>
+              <span className="text-slate-400 truncate">Advancing…</span>
+            </div>
+            <div className="flex gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={dismissAdvanceNotice}
+                className="text-[10px] px-2 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
+              >
+                Stay
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  dismissAdvanceNotice();
+                  goNextExercise();
+                }}
+                className="text-[10px] px-2 py-1 rounded-lg bg-neon-cyan/15 text-neon-cyan flex items-center gap-0.5"
+              >
+                Next <ChevronRight size={11} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {currentExercise && (
           <div key={currentExercise.exerciseId} className="animate-fadeIn">
             <ExerciseCard
               exerciseIndex={currentIndex}
               exerciseData={currentExercise}
+              onAllSetsComplete={handleAllSetsComplete}
             />
           </div>
         )}
@@ -297,6 +502,18 @@ export default function ActiveWorkout() {
       </div>
 
       {/* ═══ DIALOGS & MODALS ═══ */}
+      {/* Hydration toast (subtle, non-intrusive) */}
+      {hydrationToast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slideUp pointer-events-none px-4">
+          <div className="flex items-center gap-2.5 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-cyan-500/30 px-4 py-2.5 shadow-2xl shadow-black/50">
+            <Droplets size={16} className="text-cyan-400 shrink-0" aria-hidden="true" />
+            <p className="text-xs text-white font-medium">
+              Time to hydrate 💧 Take a few sips of water.
+            </p>
+          </div>
+        </div>
+      )}
+
       <Modal
         isOpen={showCoverage}
         onClose={() => setShowCoverage(false)}
