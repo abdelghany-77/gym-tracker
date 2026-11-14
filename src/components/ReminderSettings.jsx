@@ -9,6 +9,9 @@ import {
   VolumeX,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
+import {
+  requestNotificationPermission as requestPermission,
+} from "../utils/notificationService";
 
 // Active-workout hydration quick options (0 = Off)
 const HYDRATION_PRESETS = [0, 10, 15, 20, 30];
@@ -35,13 +38,11 @@ export default function ReminderSettings() {
 
   const requestNotificationPermission = async () => {
     setPermissionError("");
-    if (!("Notification" in window)) {
-      setPermissionError("This browser does not support notifications.");
-      return;
-    }
     setRequestingPermission(true);
     try {
-      const perm = await Notification.requestPermission();
+      // Routes through the notification service: Web Notification API in the
+      // browser, Android 13+ POST_NOTIFICATIONS runtime permission on native.
+      const perm = await requestPermission();
       setNotificationsGranted(perm === "granted");
       if (perm === "denied")
         setPermissionError(

@@ -656,20 +656,20 @@
     {
       "id": "back_landmine_row",
       "name": "Landmine Meadow's Row",
-      "status": "unavailable",
-      "sourceId": null,
-      "path": null,
-      "sha256": null,
-      "note": "No verified landmine Meadow's-row image matched the described corner-bar angle."
+      "status": "available",
+      "sourceId": "One-Arm_Long_Bar_Row",
+      "path": "/exercises/back_landmine_row.png",
+      "sha256": "33443ead2d0fe9eb5f771c166d99204b6d7f1a8cfe48825db20d3628cc493f1b",
+      "note": "Single-arm landmine corner (long-bar) row; two-stage demonstration."
     },
     {
       "id": "back_single_arm_cable_row",
       "name": "Single-Arm Cable Row",
-      "status": "unavailable",
-      "sourceId": null,
-      "path": null,
-      "sha256": null,
-      "note": "Source candidates all demonstrated bilateral seated rows, not the single-arm handle variation."
+      "status": "available",
+      "sourceId": "Seated_One-arm_Cable_Pulley_Rows",
+      "path": "/exercises/back_single_arm_cable_row.png",
+      "sha256": "c07fdeb7a9e12c25a62e71fb7cf1ebbce8c3cfb8fce35982684b4cf94a77c6ea",
+      "note": "Seated single-arm cable pulley row; two-stage demonstration."
     },
     {
       "id": "back_incline_reverse_fly",
@@ -692,47 +692,119 @@
     {
       "id": "back_good_morning",
       "name": "Barbell Good Morning",
-      "status": "unavailable",
-      "sourceId": null,
-      "path": null,
-      "sha256": null,
-      "note": "No verified good-morning instructional image was found for the database."
+      "status": "available",
+      "sourceId": "Good_Morning",
+      "path": "/exercises/back_good_morning.png",
+      "sha256": "1594a5a389ab04042d8680a4af0084c1418bca207f24d91bb9b1536840b76e61",
+      "note": "Standing barbell good morning; two-stage hip-hinge demonstration."
     },
     {
       "id": "back_superman_hold",
       "name": "Superman Hold",
-      "status": "unavailable",
-      "sourceId": null,
-      "path": null,
-      "sha256": null,
-      "note": "Existing source demonstrated the arms-alternating swim variant, not the static superman hold."
+      "status": "available",
+      "sourceId": "Superman",
+      "path": "/exercises/back_superman_hold.png",
+      "sha256": "5314e0ca9b1c4bed54901b7cb661c53776e034e1a86e70af501f32881a56baf5",
+      "note": "Prone superman raise; chest and limbs lifted off the floor."
     },
     {
       "id": "leg_sissy_squat",
       "name": "Sissy Squat",
-      "status": "unavailable",
-      "sourceId": null,
-      "path": null,
-      "sha256": null,
-      "note": "No verified sissy-squat instructional image matched the described heels-raised knee-slide angle."
+      "status": "available",
+      "sourceId": "Weighted_Sissy_Squat",
+      "path": "/exercises/leg_sissy_squat.png",
+      "sha256": "4945888aafeb9a8b8093b60af3b0f77c66cc07f6da02961c19a33fdbc1847c9c",
+      "note": "Sissy squat with plate/rack support; heels-raised knee-slide in two stages."
     },
     {
       "id": "arm_overhead_cable_curl",
       "name": "Overhead Cable Curl",
-      "status": "unavailable",
-      "sourceId": null,
-      "path": null,
-      "sha256": null,
-      "note": "Source demonstrated a standard low-pulley curl, not the arms-overhead high-pulley variation."
+      "status": "available",
+      "sourceId": "Overhead_Cable_Curl",
+      "path": "/exercises/arm_overhead_cable_curl.png",
+      "sha256": "2d48fadd166aa5c4a2374113a72da56edf3c0e36eb5f2671445021167d3ffd39",
+      "note": "Overhead high-pulley cable curl; two-stage demonstration."
     },
     {
       "id": "arm_drag_curl",
       "name": "Barbell Drag Curl",
-      "status": "unavailable",
-      "sourceId": null,
-      "path": null,
-      "sha256": null,
-      "note": "Available image was a standard standing barbell curl with elbows forward of the body."
+      "status": "available",
+      "sourceId": "Drag_Curl",
+      "path": "/exercises/arm_drag_curl.png",
+      "sha256": "718145f0ee5a79f853e4977d2fc9c5bd6271a91aac52062ec40eb573cf2a4556",
+      "note": "Barbell drag curl; two-stage demonstration."
+    },
+    {
+      "id": "chest_flat_bench_cable_fly",
+      "name": "Flat Bench Cable Fly",
+      "status": "available",
+      "sourceId": "Flat_Bench_Cable_Flyes",
+      "path": "/exercises/chest_flat_bench_cable_fly.png",
+      "sha256": "f78a78bc834757bb1e4b4192ed4ed9a6807651968db17c21c9a797f5b96d591a",
+      "note": "Flat-bench cable fly; arms swept in an arc across the chest."
+    },
+    {
+      "id": "back_bb_pullover",
+      "name": "Bent-Arm Barbell Pullover",
+      "status": "available",
+      "sourceId": "Bent-Arm_Barbell_Pullover",
+      "path": "/exercises/back_bb_pullover.png",
+      "sha256": "63acdd2bded758b212a607ebb4dd5828944f2ea5f05b551b20702e6e00b83b0a",
+      "note": "Bent-arm barbell pullover; bar lowered behind the head to lat stretch."
+    },
+    {
+      "id": "sh_cable_shrug",
+      "name": "Cable Shrug",
+      "status": "available",
+      "sourceId": "Cable_Shrugs",
+      "path": "/exercises/sh_cable_shrug.png",
+      "sha256": "01a4d3fbd5049edbacb37b7d93bfae348cb7de346feb57eae84ce76dd57d3f62",
+      "note": "Cable shrug with straight-bar attachment; scapular elevation."
+    },
+    {
+      "id": "leg_single_leg_extension",
+      "name": "Single-Leg Leg Extension",
+      "status": "available",
+      "sourceId": "Single-Leg_Leg_Extension",
+      "path": "/exercises/leg_single_leg_extension.png",
+      "sha256": "8ec74be0eb3a037d100f9ce326821ea3c8d5d6068ea3f49b174606435dd5adb2",
+      "note": "Unilateral leg extension; one leg extended to full lockout."
+    },
+    {
+      "id": "leg_bb_deadlift",
+      "name": "Barbell Deadlift",
+      "status": "available",
+      "sourceId": "Barbell_Deadlift",
+      "path": "/exercises/leg_bb_deadlift.png",
+      "sha256": "6081b270e550f4b82c2ae2874a3e4604521e8b9120893564fb8703015f684d9e",
+      "note": "Conventional barbell deadlift; floor pull to standing lockout."
+    },
+    {
+      "id": "leg_ball_hamstring_curl",
+      "name": "Stability Ball Leg Curl",
+      "status": "available",
+      "sourceId": "Ball_Leg_Curl",
+      "path": "/exercises/leg_ball_hamstring_curl.png",
+      "sha256": "c10e33bad50a623895c58d3c660cf8a455f82cd951bf30db08fe419d36f631b3",
+      "note": "Supine stability-ball leg curl; hips bridged, knees flexed."
+    },
+    {
+      "id": "leg_db_calf_raise",
+      "name": "Dumbbell Calf Raise",
+      "status": "available",
+      "sourceId": "Calf_Raise_On_A_Dumbbell",
+      "path": "/exercises/leg_db_calf_raise.png",
+      "sha256": "4ade7ca41487713195d682fdf5e6ccb517d5166a7f501e87eceeb0191e7d28d3",
+      "note": "Standing calf raise performed on a dumbbell for elevated range."
+    },
+    {
+      "id": "arm_zottman_curl",
+      "name": "Zottman Curl",
+      "status": "available",
+      "sourceId": "Zottman_Curl",
+      "path": "/exercises/arm_zottman_curl.png",
+      "sha256": "a469716fb1e0825503cafdff226dc6836de7d22f2791b40c60d60e98459f5b0c",
+      "note": "Zottman curl; supinated curl with pronated lower."
     }
   ]
 }

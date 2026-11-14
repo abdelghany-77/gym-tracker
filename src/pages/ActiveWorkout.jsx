@@ -19,36 +19,22 @@ import AngleCoverageBadge from "../components/AngleCoverageBadge";
 import SwapExerciseModal from "../components/SwapExerciseModal";
 import Modal, { ConfirmDialog } from "../components/Modal";
 import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
+import { primeAudio, playHydrationChime } from "../utils/audioUtil";
+import {
+  isNative,
+  keepAwake,
+  allowSleep,
+  scheduleHydrationNotifications,
+  cancelHydrationNotifications,
+} from "../utils/nativeBridge";
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+} from "../utils/notificationService";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 
 // Hydration quick-pick options (0 = Off) + custom minute input
 const HYDRATION_PRESETS = [0, 10, 15, 20, 30];
-
-// Gentle two-tone water chime (Web Audio API)
-function playHydrationChime() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const playTone = (freq, startTime, duration) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, startTime);
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.18, startTime + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-      osc.start(startTime);
-      osc.stop(startTime + duration);
-    };
-    const now = audioCtx.currentTime;
-    playTone(783.99, now, 0.22); // G5
-    playTone(1046.5, now + 0.14, 0.3); // C6
-    setTimeout(() => audioCtx.close(), 1200);
-  } catch {
-    // Audio unavailable — silent fallback
-  }
-}
 
 export default function ActiveWorkout() {
   const navigate = useNavigate();
@@ -114,6 +100,34 @@ export default function ActiveWorkout() {
     return () => clearTimeout(advanceTimeoutRef.current);
   }, []);
 
+  // Unlock the shared AudioContext early (web gesture policy; no-op on native)
+  useEffect(() => {
+    primeAudio();
+  }, []);
+
+  // ── Keep the screen awake for the whole session; release on finish/close ──
+  useEffect(() => {
+    if (!activeWorkout) return undefined;
+    void keepAwake();
+    return () => {
+      void allowSleep();
+    };
+  }, [activeWorkout]);
+
+  // ── Native: request notification permission at first workout start so the
+  // rest timer / hydration alerts are cleared for background delivery ──
+  useEffect(() => {
+    if (!activeWorkout || !isNative()) return;
+    void (async () => {
+      try {
+        const permission = await getNotificationPermission();
+        if (permission === "default") await requestNotificationPermission();
+      } catch {
+        /* surfaced later by the in-app permission UI */
+      }
+    })();
+  }, [activeWorkout]);
+
   const dismissAdvanceNotice = useCallback(() => {
     clearTimeout(advanceTimeoutRef.current);
     setAdvanceNotice(false);
@@ -148,8 +162,23 @@ export default function ActiveWorkout() {
       }
     };
     const interval = setInterval(check, 10_000);
+    // Wall-clock timestamps survive backgrounding; re-check immediately when
+    // the app resumes so a due reminder fires right away (never late/drifted).
+    const onVisible = () => {
+      if (document.visibilityState === "visible") check();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     check();
-    return () => clearInterval(interval);
+    // Native: pre-schedule a batch of spaced reminders so hydration alerts
+    // also fire while the WebView is backgrounded or the screen is locked
+    // (foreground JS timers are throttled). Cancelled on interval change /
+    // workout end and re-scheduled at the current interval.
+    void scheduleHydrationNotifications(hydrationIntervalMinutes);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+      void cancelHydrationNotifications();
+    };
   }, [activeWorkout, hydrationIntervalMinutes]);
 
   const progress = useMemo(() => {

@@ -21,26 +21,45 @@ describe('WorkoutStore & Biomechanical Database', () => {
     expect(trainingPlans.bro_split).toBeDefined();
   });
 
-  it('verifies pristine 81-exercise catalog with every angle covered by 2-3+ exercises and no duplicates', () => {
-    expect(exercises.length).toBe(81);
+  it('verifies pristine 89-exercise catalog with every angle covered by 3+ exercises and no duplicates', () => {
+    expect(exercises.length).toBe(89);
 
     const ids = exercises.map(e => e.id);
     const uniqueIds = new Set(ids);
-    expect(uniqueIds.size).toBe(81);
+    expect(uniqueIds.size).toBe(89);
 
-    const muscleCounts = { chest: 12, back: 18, shoulders: 12, legs: 13, arms: 14, core: 12 };
+    const muscleCounts = { chest: 13, back: 19, shoulders: 13, legs: 17, arms: 15, core: 12 };
     Object.entries(muscleCounts).forEach(([m, expected]) => {
       const count = exercises.filter(e => e.primaryMuscle === m).length;
       expect(count, `Expected ${expected} exercises for ${m}, found ${count}`).toBe(expected);
     });
 
-    // Phase-1 coverage audit: every biomechanical angle has at least 2 distinct exercises
+    // Pre-build audit: every biomechanical angle has at least 3 distinct exercises
     const angleCounts = {};
     exercises.forEach((e) => {
       angleCounts[e.targetAngle] = (angleCounts[e.targetAngle] || 0) + 1;
     });
     Object.entries(angleCounts).forEach(([angle, count]) => {
-      expect(count, `Angle ${angle} has only ${count} exercise(s); need at least 2`).toBeGreaterThanOrEqual(2);
+      expect(count, `Angle ${angle} has only ${count} exercise(s); need at least 3`).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  it('verifies equipment-swap links are bidirectional and capped at 3 per exercise', () => {
+    const byId = new Map(exercises.map(e => [e.id, e]));
+    exercises.forEach((e) => {
+      expect(Array.isArray(e.alternatives), `${e.id} missing alternatives`).toBe(true);
+      expect(e.alternatives.length, `${e.id} has too many swap links`).toBeLessThanOrEqual(3);
+      e.alternatives.forEach((altId) => {
+        const alt = byId.get(altId);
+        expect(alt, `${e.id} links to unknown exercise ${altId}`).toBeDefined();
+        // Same biomechanical angle required for a valid swap
+        expect(alt.targetAngle, `${e.id} -> ${altId} angle mismatch`).toBe(e.targetAngle);
+        // Bidirectionality: B must list A back
+        expect(
+          alt.alternatives.includes(e.id),
+          `${e.id} lists ${altId} but ${altId} does not list ${e.id} back`,
+        ).toBe(true);
+      });
     });
   });
 
@@ -150,7 +169,7 @@ describe('WorkoutStore & Biomechanical Database', () => {
 
     expect(localStorage.getItem('gym_db_version')).toBe('3.0.0');
     const syncedExercises = JSON.parse(localStorage.getItem('gym_exercises'));
-    expect(syncedExercises.length).toBe(81);
+    expect(syncedExercises.length).toBe(89);
     expect(syncedExercises.some(e => e.id === 'chest_bb_flat_bench')).toBe(true);
     expect(localStorage.getItem('gym_custom_program_overrides')).toBeNull();
   });

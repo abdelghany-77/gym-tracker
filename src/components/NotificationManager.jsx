@@ -2,38 +2,11 @@ import { useEffect, useState, useCallback } from "react";
 import { todayKey } from "../store/helpers";
 import { X, Droplets, Pill } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-
-// ── Generate notification sound using Web Audio API ──
-function playNotificationSound() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    // Create a pleasant two-tone chime
-    const playTone = (freq, startTime, duration) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, startTime);
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-      osc.start(startTime);
-      osc.stop(startTime + duration);
-    };
-
-    const now = audioCtx.currentTime;
-    playTone(587.33, now, 0.25); // D5
-    playTone(880, now + 0.15, 0.35); // A5
-    playTone(1174.66, now + 0.3, 0.45); // D6
-
-    // Close context after sounds finish
-    setTimeout(() => audioCtx.close(), 1500);
-  } catch {
-    // Audio not supported — silent fallback
-  }
-}
+import { playNotificationChime, primeAudio } from "../utils/audioUtil";
+import {
+  showLocalNotification,
+  getNotificationPermission,
+} from "../utils/notificationService";
 
 // ── In-app toast notification ──
 function Toast({ id, message, icon: Icon, color, onClose }) {
@@ -75,26 +48,17 @@ export default function NotificationManager() {
 
   // Show a notification (browser push + sound + in-app toast)
   const showNotification = useCallback((title, body, icon, color) => {
-    // Play sound if enabled
+    // Play sound if enabled (shared unlocked AudioContext)
     if (useWorkoutStore.getState().soundEnabled) {
-      playNotificationSound();
+      playNotificationChime();
     }
 
-    // Browser notification (works even when tab is backgrounded / PWA installed)
-    if ("Notification" in window && Notification.permission === "granted") {
-      try {
-        new Notification(title, {
-          body,
-          icon: "/gym-tracker/icon.png",
-          badge: "/gym-tracker/icon.png",
-          vibrate: [200, 100, 200],
-          tag: title, // prevents duplicate stacking
-          renotify: true,
-        });
-      } catch {
-        // Fallback: SW-based notifications not available
-      }
-    }
+    // Browser/native notification (works when tab is backgrounded / PWA installed / native shell)
+    void showLocalNotification({
+      title,
+      body,
+      tag: title, // prevents duplicate stacking
+    });
 
     // Always show in-app toast
     const id = crypto.randomUUID();
@@ -102,14 +66,18 @@ export default function NotificationManager() {
   }, []);
 
   useEffect(() => {
+    // Unlock the shared AudioContext early (first user gesture resumes it).
+    primeAudio();
     const checkReminders = () => {
       // Also roll over tracking when reminders are disabled or the tab resumes.
       useWorkoutStore.getState().ensureDailyChecklist();
       const state = useWorkoutStore.getState();
-      const granted =
-        "Notification" in window && Notification.permission === "granted";
-      if (granted !== state.notificationsGranted)
-        state.setNotificationsGranted(granted);
+      // Sync the persisted permission flag with the platform (web or native).
+      void getNotificationPermission().then((permission) => {
+        const granted = permission === "granted";
+        if (granted !== state.notificationsGranted)
+          state.setNotificationsGranted(granted);
+      });
       if (!state.remindersEnabled) return;
 
       const waterGoal = state.getWaterGoal();

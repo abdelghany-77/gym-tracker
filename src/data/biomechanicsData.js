@@ -1155,4 +1155,117 @@ export const exerciseBiomechanics = {
       "Elbows drifting forward, shifting tension off the long head."
     ],
   },
+  // ── PRE-BUILD AUDIT ADDITIONS ──
+  chest_flat_bench_cable_fly: {
+    primaryTarget: "Pectoralis Major (Sternal Head, Inner Focus)",
+    secondaryMuscles: ["Anterior Deltoids", "Biceps (stabilizers)"],
+    jointAction: "Horizontal Shoulder Adduction on Cables",
+    setupAlignment: "Flat bench between low pulleys, light-to-moderate stack, palms up",
+    executionCues: [
+      "Sweep the handles up and together in a wide hugging arc.",
+      "Squeeze the inner chest at the midline for a one-second hold."
+    ],
+    commonMistakes: [
+      "Pressing (pushing) instead of flying — turns it into a triceps movement.",
+      "Letting the cables yank the arms past a comfortable shoulder stretch."
+    ],
+  },
+  back_bb_pullover: {
+    primaryTarget: "Latissimus Dorsi (Isolated Lengthening)",
+    secondaryMuscles: ["Teres Major", "Pectoralis (Sternal)", "Triceps (stabilizers)"],
+    jointAction: "Shoulder Extension from Overhead Flexion",
+    setupAlignment: "Supine across a flat bench, bent-arm grip on a plate-loaded barbell",
+    executionCues: [
+      "Lower the bar in a controlled arc behind the head until the lats stretch.",
+      "Pull back over with the lats, keeping elbows bent and ribcage down."
+    ],
+    commonMistakes: [
+      "Arching the lumbar spine off the bench under load.",
+      "Turning it into a triceps press by extending the elbows."
+    ],
+  },
+  sh_cable_shrug: {
+    primaryTarget: "Upper Trapezius",
+    secondaryMuscles: ["Levator Scapulae", "Rhomboids"],
+    jointAction: "Scapular Elevation under Constant Cable Tension",
+    setupAlignment: "Facing a low pulley, straight-bar attachment, shoulder-width overhand grip",
+    executionCues: [
+      "Elevate the shoulders straight up toward the ears without rolling them.",
+      "Pause at the top; the stack never rests, keeping tension constant."
+    ],
+    commonMistakes: [
+      "Rolling the shoulders backward, straining the cervical spine.",
+      "Using arm flexion to lift rather than pure scapular elevation."
+    ],
+  },
+  leg_single_leg_extension: {
+    primaryTarget: "Quadriceps (Unilateral Isolation)",
+    secondaryMuscles: ["Vastus Medialis (VMO emphasis)"],
+    jointAction: "Open-Chain Unilateral Knee Extension",
+    setupAlignment: "Seated in the extension machine, one shin under the roller pad",
+    executionCues: [
+      "Extend the working leg to full lockout and pause one second.",
+      "Lower for three seconds; the resting leg stays grounded."
+    ],
+    commonMistakes: [
+      "Swinging the thigh up by driving the hip off the seat.",
+      "Rushing the eccentric and letting the stack slam down."
+    ],
+  },
+  leg_bb_deadlift: {
+    primaryTarget: "Posterior Chain (Hamstrings, Glutes, Erector Spinae)",
+    secondaryMuscles: ["Quadriceps", "Trapezius", "Forearms", "Lats (stabilizers)"],
+    jointAction: "Squat-Pattern Pull to Hip-Dominant Lockout",
+    setupAlignment: "Mid-foot bar position, hip-width stance, wedge grip with braced 360° core",
+    executionCues: [
+      "Push the floor away and let the bar travel up the shins and thighs.",
+      "Finish tall with hips and knees locked out; never hyperextend the back."
+    ],
+    commonMistakes: [
+      "Rounding the lumbar spine from a soft, unbaced start position.",
+      "Jerking the bar off the floor instead of removing the slack first."
+    ],
+  },
+  leg_ball_hamstring_curl: {
+    primaryTarget: "Hamstrings (Knee Flexion + Hip Extension)",
+    secondaryMuscles: ["Glutes", "Erector Spinae", "Calves"],
+    jointAction: "Closed-Chain Hip Extension with Knee Flexion",
+    setupAlignment: "Supine, heels on a stability ball, hips bridged in a straight line",
+    executionCues: [
+      "Keep the hips bridged high as you curl the ball toward you.",
+      "Extend the legs back out without letting the hips sag."
+    ],
+    commonMistakes: [
+      "Dropping the hips, converting the curl into a sit-up assist.",
+      "Pulling the ball in with the lats and arms instead of the hamstrings."
+    ],
+  },
+  leg_db_calf_raise: {
+    primaryTarget: "Gastrocnemius",
+    secondaryMuscles: ["Soleus", "Flexor Hallucis (stabilizers)"],
+    jointAction: "Straight-Knee Ankle Plantarflexion (Elevated ROM)",
+    setupAlignment: "Balls of the feet on a dumbbell, working hand holding a rack for balance",
+    executionCues: [
+      "Lower the heels below platform level for a full gastroc stretch.",
+      "Press up to the highest possible rise and pause at the top."
+    ],
+    commonMistakes: [
+      "Bouncing reps out of the stretch reflex without pauses.",
+      "Bending the knees, which shifts tension to the soleus."
+    ],
+  },
+  arm_zottman_curl: {
+    primaryTarget: "Biceps, Brachialis & Brachioradialis (Rotational Load)",
+    secondaryMuscles: ["Forearm Flexors", "Supinator"],
+    jointAction: "Supinated Elbow Flexion with Pronated Flexion-Dominant Descent",
+    setupAlignment: "Standing, dumbbells at sides, supinated shoulder-width grip",
+    executionCues: [
+      "Curl up normally with the palms supinated.",
+      "Rotate to a pronated grip at the top and lower slowly for 3 seconds."
+    ],
+    commonMistakes: [
+      "Rushing the pronated descent instead of controlling the eccentric.",
+      "Rotating the wrist early, losing the biceps-biased ascent."
+    ],
+  },
 };

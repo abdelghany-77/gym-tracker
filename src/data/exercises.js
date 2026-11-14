@@ -1,6 +1,6 @@
 // ════════════════════════════════════════════════════════════════════════════════
-// EXERCISE DATABASE — 81-Exercise Biomechanical Catalog
-// Every angle carries ≥ 2-3 exercises and 2-3 equipment-swap alternatives.
+// EXERCISE DATABASE — 89-Exercise Biomechanical Catalog
+// Every angle carries ≥ 3 exercises and bidirectional equipment-swap links.
 // ════════════════════════════════════════════════════════════════════════════════
 
 // Human-readable labels for target angles (EN + AR)
@@ -446,8 +446,7 @@ const baseExercisesDatabase = [
     defaultReps: 10,
     default_sets: 3,
     default_reps: 10,
-    image: null,
-    imageUnavailableReason: "No verified landmine Meadow's-row image matched the described corner-bar angle.",
+    image: "/exercises/back_landmine_row.png",
     tips: "Wedge bar end into a landmine corner. Row the sleeve to your hip with a slight torso rotation, one arm at a time.",
   },
   {
@@ -463,8 +462,7 @@ const baseExercisesDatabase = [
     defaultReps: 12,
     default_sets: 3,
     default_reps: 12,
-    image: null,
-    imageUnavailableReason: "Source candidates all demonstrated bilateral seated rows, not the single-arm handle variation.",
+    image: "/exercises/back_single_arm_cable_row.png",
     tips: "Sit braced with a slight forward lean. Pull the single handle to your side, rotating the torso only slightly.",
   },
   {
@@ -514,8 +512,7 @@ const baseExercisesDatabase = [
     defaultReps: 10,
     default_sets: 3,
     default_reps: 10,
-    image: null,
-    imageUnavailableReason: "No verified good-morning instructional image was found for the database.",
+    image: "/exercises/back_good_morning.png",
     tips: "Bar across upper traps. Soft knees, hinge forward with a braced neutral spine until hamstrings/lower back load, then extend.",
   },
   {
@@ -531,8 +528,7 @@ const baseExercisesDatabase = [
     defaultReps: 45,
     default_sets: 3,
     default_reps: 45,
-    image: null,
-    imageUnavailableReason: "Existing source demonstrated the arms-alternating swim variant, not the static superman hold.",
+    image: "/exercises/back_superman_hold.png",
     tips: "Lie face down. Lift chest, arms and legs off the floor into a long X, squeezing the erectors and glutes isometrically.",
   },
 
@@ -945,8 +941,7 @@ const baseExercisesDatabase = [
     defaultReps: 15,
     default_sets: 3,
     default_reps: 15,
-    image: null,
-    imageUnavailableReason: "No verified sissy-squat instructional image matched the described heels-raised knee-slide angle.",
+    image: "/exercises/leg_sissy_squat.png",
     tips: "Rise onto the balls of your feet, push knees forward past the toes and lean back in one line for a deep quad stretch.",
   },
 
@@ -1062,8 +1057,7 @@ const baseExercisesDatabase = [
     defaultReps: 12,
     default_sets: 3,
     default_reps: 12,
-    image: null,
-    imageUnavailableReason: "Source demonstrated a standard low-pulley curl, not the arms-overhead high-pulley variation.",
+    image: "/exercises/arm_overhead_cable_curl.png",
     tips: "Set both pulleys high behind you. Curl from an overhead stretched position to keep the long head under tension.",
   },
   {
@@ -1079,8 +1073,7 @@ const baseExercisesDatabase = [
     defaultReps: 12,
     default_sets: 3,
     default_reps: 12,
-    image: null,
-    imageUnavailableReason: "Available image was a standard standing barbell curl with elbows forward of the body.",
+    image: "/exercises/arm_drag_curl.png",
     tips: "Drag the bar straight up your torso, elbows tracking behind the bar, to pin tension on the long head.",
   },
   {
@@ -1380,6 +1373,135 @@ const baseExercisesDatabase = [
     imageUnavailableReason: "Existing picture shows near-vertical limbs, not the described extended hollow-body position.",
     tips: "Press lower back into floor, extend arms back and legs forward, holding the banana shape.",
   },
+  // ── PRE-BUILD AUDIT ADDITIONS (every angle now ≥ 3 exercises, verified local images) ──
+  {
+    id: "chest_flat_bench_cable_fly",
+    name: "Flat Bench Cable Fly",
+    nameAr: "تجميع كابل بنش مستوي",
+    primaryMuscle: "chest",
+    muscle: "Chest",
+    targetAngle: "inner_chest",
+    equipment: "cable",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: "/exercises/chest_flat_bench_cable_fly.png",
+    tips: "Lie on a flat bench between low pulleys. Sweep the handles up and together in a hug arc, squeezing the inner chest.",
+  },
+  {
+    id: "back_bb_pullover",
+    name: "Bent-Arm Barbell Pullover",
+    nameAr: "بول أوفر بار بمرفق مثني",
+    primaryMuscle: "back",
+    muscle: "Back",
+    targetAngle: "lat_isolation",
+    equipment: "barbell",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: "/exercises/back_bb_pullover.png",
+    tips: "Lie across a bench holding a barbell with bent arms. Lower the bar in an arc behind your head until the lats stretch, then pull back over.",
+  },
+  {
+    id: "sh_cable_shrug",
+    name: "Cable Shrug",
+    nameAr: "ترابيس كابل",
+    primaryMuscle: "shoulders",
+    muscle: "Shoulders",
+    targetAngle: "upper_traps",
+    equipment: "cable",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: "/exercises/sh_cable_shrug.png",
+    tips: "Stand facing a low pulley holding a straight bar. Elevate the shoulders straight up toward the ears with constant cable tension.",
+  },
+  {
+    id: "leg_single_leg_extension",
+    name: "Single-Leg Leg Extension",
+    nameAr: "جهاز رجل أمامي أحادي",
+    primaryMuscle: "legs",
+    muscle: "Legs",
+    targetAngle: "quad_isolation",
+    equipment: "machine",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: "/exercises/leg_single_leg_extension.png",
+    tips: "Extend one leg at a time to full lockout, pausing at the top. Unilateral work exposes and fixes side-to-side quad imbalances.",
+  },
+  {
+    id: "leg_bb_deadlift",
+    name: "Barbell Deadlift",
+    nameAr: "رفعة ميتة بار",
+    primaryMuscle: "legs",
+    muscle: "Legs",
+    targetAngle: "hamstring_hinge",
+    equipment: "barbell",
+    category: "compound",
+    defaultSets: 3,
+    defaultReps: 5,
+    default_sets: 3,
+    default_reps: 5,
+    image: "/exercises/leg_bb_deadlift.png",
+    tips: "Push the floor away with a braced neutral spine, then drive the hips forward to standing. The cornerstone posterior-chain hinge.",
+  },
+  {
+    id: "leg_ball_hamstring_curl",
+    name: "Stability Ball Leg Curl",
+    nameAr: "خلفية كرة سويسرية",
+    primaryMuscle: "legs",
+    muscle: "Legs",
+    targetAngle: "hamstring_curl",
+    equipment: "bodyweight",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: "/exercises/leg_ball_hamstring_curl.png",
+    tips: "Bridge hips up with feet on a stability ball, then curl the ball toward you by flexing the knees without dropping the hips.",
+  },
+  {
+    id: "leg_db_calf_raise",
+    name: "Dumbbell Calf Raise",
+    nameAr: "سمانة دمبل",
+    primaryMuscle: "legs",
+    muscle: "Legs",
+    targetAngle: "calves",
+    equipment: "dumbbell",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 15,
+    default_sets: 3,
+    default_reps: 15,
+    image: "/exercises/leg_db_calf_raise.png",
+    tips: "Stand with the balls of your feet on a dumbbell. Lower heels for a deep stretch, then press up to a full calf contraction.",
+  },
+  {
+    id: "arm_zottman_curl",
+    name: "Zottman Curl",
+    nameAr: "بايسبس زوتمان",
+    primaryMuscle: "arms",
+    muscle: "Arms",
+    targetAngle: "brachialis",
+    equipment: "dumbbell",
+    category: "isolation",
+    defaultSets: 3,
+    defaultReps: 10,
+    default_sets: 3,
+    default_reps: 10,
+    image: "/exercises/arm_zottman_curl.png",
+    tips: "Curl supinated, then rotate to pronated grip at the top and lower slowly. One movement trains biceps, brachialis and forearms.",
+  },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -1401,6 +1523,7 @@ const heavyCompoundRest = new Set([
   "back_tbar_row",
   "back_good_morning",
   "arm_close_grip_bench",
+  "leg_bb_deadlift",
 ]);
 
 const coreAndCalfRest = new Set([
@@ -1419,6 +1542,7 @@ const coreAndCalfRest = new Set([
   "core_bicycle_crunches",
   "core_hollow_body_hold",
   "back_superman_hold",
+  "leg_db_calf_raise",
 ]);
 
 const categoryDefaultRest = { compound: 150, machine: 75, isolation: 75, stretch: 75 };
@@ -1445,25 +1569,44 @@ const catalogWithMeta = baseExercisesDatabase.map((ex) => {
   };
 });
 
-// ── Equipment-swap linking: 2–3 same-angle alternatives, different equipment first ──
-const computeSwapAlternatives = (source, count = 3) => {
-  if (!source?.targetAngle) return [];
-  return catalogWithMeta
-    .filter((ex) => ex.id !== source.id && ex.targetAngle === source.targetAngle)
-    .map((ex) => ({
-      id: ex.id,
-      score:
-        (ex.equipment !== source.equipment ? 0 : 1) +
-        (ex.category === source.category ? 0 : 0.5),
-    }))
-    .sort((a, b) => a.score - b.score || a.id.localeCompare(b.id))
-    .slice(0, count)
-    .map((entry) => entry.id);
+// ── Equipment-swap linking: bidirectional (symmetric) same-angle graph, ──
+// different equipment prioritized, at most 3 links per exercise.
+// Unordered same-angle pairs are scored, then applied greedily in score order
+// while both endpoints have capacity — guaranteeing that if A lists B as a
+// swap, B always lists A back.
+const buildSwapLinks = () => {
+  const links = new Map(catalogWithMeta.map((ex) => [ex.id, new Set()]));
+  const pairs = [];
+  for (let i = 0; i < catalogWithMeta.length; i++) {
+    for (let j = i + 1; j < catalogWithMeta.length; j++) {
+      const a = catalogWithMeta[i];
+      const b = catalogWithMeta[j];
+      if (!a.targetAngle || a.targetAngle !== b.targetAngle) continue;
+      const score =
+        (a.equipment !== b.equipment ? 0 : 1) +
+        (a.category === b.category ? 0 : 0.5);
+      pairs.push({ a: a.id, b: b.id, score });
+    }
+  }
+  pairs.sort(
+    (x, y) =>
+      x.score - y.score ||
+      x.a.localeCompare(y.a) ||
+      x.b.localeCompare(y.b),
+  );
+  for (const { a, b } of pairs) {
+    if (links.get(a).size >= 3 || links.get(b).size >= 3) continue;
+    links.get(a).add(b);
+    links.get(b).add(a);
+  }
+  return links;
 };
+
+const swapLinks = buildSwapLinks();
 
 export const exercisesDatabase = catalogWithMeta.map((ex) => ({
   ...ex,
-  alternatives: computeSwapAlternatives(ex),
+  alternatives: Array.from(swapLinks.get(ex.id) || []),
 }));
 
 const catalogById = new Map(exercisesDatabase.map((ex) => [ex.id, ex]));

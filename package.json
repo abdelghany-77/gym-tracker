@@ -9,6 +9,7 @@
     "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "vite build",
+    "build:capacitor": "node scripts/build-capacitor.mjs",
     "lint": "eslint .",
     "sync:exercise-images": "node scripts/sync-exercise-images.mjs",
     "preview": "vite preview",
@@ -16,6 +17,13 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@capacitor-community/keep-awake": "^8.0.1",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -26,6 +34,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/vite": "^4.1.18",
     "@testing-library/jest-dom": "^6.9.1",
@@ -41,6 +50,7 @@
     "jsdom": "^29.0.1",
     "sharp": "^0.35.4",
     "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vitest": "^4.1.2"
   }

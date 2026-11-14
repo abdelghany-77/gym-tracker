@@ -10,6 +10,14 @@ import {
   Timer,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
+import { playTone } from "../utils/audioUtil";
+import { showLocalNotification } from "../utils/notificationService";
+import {
+  isNative,
+  scheduleRestNotification,
+  cancelRestNotification,
+} from "../utils/nativeBridge";
+import { haptics } from "../utils/haptics";
 
 const RADIUS = 32;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -20,22 +28,20 @@ const PRESETS = [30, 45, 60, 90, 120, 180];
 // Shorter optional timer for warm-up sets (full defaults apply to working sets)
 const WARMUP_REST_SECONDS = 45;
 
-// ── Web Notification API alert on completion (works with the screen locked / app backgrounded) ──
-const notifyRestComplete = () => {
-  if ("Notification" in window && Notification.permission === "granted") {
-    try {
-      new Notification("Rest complete 💪", {
-        body: "Time for your next set!",
-        icon: "/gym-tracker/icon.png",
-        badge: "/gym-tracker/icon.png",
-        tag: "rest-complete",
-        renotify: true,
-        vibrate: [200, 100, 200],
-      });
-    } catch {
-      // Notification constructor unavailable — vibrate/chime already fired
-    }
+// ── Completion alert ──
+// Native: the exact notification was already scheduled at the deadline (it
+// survives backgrounding / a killed WebView) — just clean it up. Web: fire the
+// Web Notification now (SW-backed so it works while backgrounded).
+const notifyRestComplete = async () => {
+  if (isNative()) {
+    await cancelRestNotification();
+    return;
   }
+  await showLocalNotification({
+    title: "Rest complete 💪",
+    body: "Time for your next set!",
+    tag: "rest-complete",
+  });
 };
 
 export default function RestTimer({ inline = false }) {
@@ -86,42 +92,11 @@ export default function RestTimer({ inline = false }) {
     getRestTimeForExercise,
   ]);
 
-  // Audio Context Ref
-  const audioContextRef = useRef(null);
-
+  // Shared, gesture-unlocked audio context (mobile WebView autoplay policy)
   const playBeep = useCallback(() => {
-    try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (
-          window.AudioContext || window.webkitAudioContext
-        )();
-      }
-      if (audioContextRef.current.state === "suspended") {
-        audioContextRef.current.resume();
-      }
-
-      const ctx = audioContextRef.current;
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(880, ctx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(
-        440,
-        ctx.currentTime + 0.5,
-      );
-
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-
-      oscillator.start();
-      oscillator.stop(ctx.currentTime + 0.5);
-    } catch (e) {
-      console.error("Audio playback failed", e);
-    }
+    // Descending two-tone (880 → 440) via the unlocked shared context.
+    playTone(880, 0, 0.28, 0.12);
+    playTone(440, 0.28, 0.32, 0.1);
   }, []);
 
   // Use wall-clock time so background-tab throttling does not extend a rest.
@@ -132,14 +107,36 @@ export default function RestTimer({ inline = false }) {
       setTimeLeft(remaining);
       if (remaining === 0) {
         setIsRunning(false);
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        haptics.warning(); // native Haptics plugin, web navigator.vibrate fallback
         playBeep();
         notifyRestComplete();
       }
     };
     const intervalId = setInterval(tick, 1000);
-    return () => clearInterval(intervalId);
+    // Re-sync immediately when the app becomes visible again (lock screen /
+    // backgrounded WebView resume) so the countdown never drifts and the
+    // completion alert fires right away instead of on the next 1s tick.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [isRunning, deadline, activeWorkout, playBeep]);
+
+  // Native: schedule the exact "Rest complete" notification at the wall-clock
+  // deadline so it fires even if the WebView is backgrounded or killed.
+  // Pause/skip/reset stops the effect (isRunning false / deadline change) and
+  // cancels the pending notification — resume re-schedules at the new deadline.
+  useEffect(() => {
+    if (!isNative() || !isRunning || deadline === null) return undefined;
+    void scheduleRestNotification(deadline);
+    return () => {
+      void cancelRestNotification();
+    };
+  }, [isRunning, deadline]);
 
   const toggleRunning = () => {
     if (isRunning) {

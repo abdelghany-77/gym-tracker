@@ -12,6 +12,7 @@ import {
 import useWorkoutStore from "../store/workoutStore";
 import ExerciseImage from "./ExerciseImage";
 import { getAngleLabel } from "../utils/angleUtils";
+import { haptics } from "../utils/haptics";
 import { getSwapAlternatives } from "../data/exercises";
 import AngleBadge from "./AngleBadge";
 
@@ -83,6 +84,7 @@ export default function SwapExerciseModal({
   if (!isOpen) return null;
 
   const handleSelect = (newExerciseId) => {
+    haptics.medium();
     swapExercise(exerciseIndex, newExerciseId, permanent);
     setSearch("");
     setShowAllMuscle(false);
