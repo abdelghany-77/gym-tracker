@@ -805,6 +805,51 @@
       "path": "/exercises/arm_zottman_curl.png",
       "sha256": "a469716fb1e0825503cafdff226dc6836de7d22f2791b40c60d60e98459f5b0c",
       "note": "Zottman curl; supinated curl with pronated lower."
+    },
+    {
+      "id": "glute_bb_hip_thrust",
+      "name": "Barbell Hip Thrust",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Covered by the v2 verified dual-asset pilot pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed."
+    },
+    {
+      "id": "leg_front_squat",
+      "name": "Barbell Front Squat",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed."
+    },
+    {
+      "id": "leg_hip_adduction",
+      "name": "Seated Hip Adduction Machine",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed."
+    },
+    {
+      "id": "arm_single_arm_cable_ext",
+      "name": "Single-Arm Overhead Cable Extension",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed."
+    },
+    {
+      "id": "forearm_farmer_walk",
+      "name": "Kettlebell Farmer's Walk",
+      "status": "unavailable",
+      "sourceId": null,
+      "path": null,
+      "sha256": null,
+      "note": "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed."
     }
   ]
 }
