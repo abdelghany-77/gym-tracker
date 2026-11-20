@@ -18,6 +18,7 @@ const emptyChecklist = () => ({
   caloriesConsumed: 0,
   mealsEaten: [],
   mealCalories: {},
+  quickFoods: [],
 });
 
 const currentChecklist = (state) =>
@@ -93,6 +94,56 @@ export const createNutritionSlice = (set, get) => ({
     get().ensureDailyChecklist();
     set((state) => {
       const updated = { ...state.dailyChecklist, caloriesConsumed: calories };
+      saveToStorage("gym_checklist_" + todayKey(), updated);
+      return { dailyChecklist: updated };
+    });
+  },
+
+  addQuickFood: ({ name, calories, protein = 0 }) => {
+    const cleanCal = Number(calories);
+    const cleanProt = Number(protein) || 0;
+    if (!Number.isFinite(cleanCal) || cleanCal <= 0) return;
+    get().ensureDailyChecklist();
+    set((state) => {
+      const existing = Array.isArray(state.dailyChecklist.quickFoods)
+        ? state.dailyChecklist.quickFoods
+        : [];
+      const entry = {
+        id: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        name: String(name || "Quick Snack").trim() || "Quick Snack",
+        calories: Math.round(cleanCal),
+        protein: Math.max(0, Math.round(cleanProt)),
+        addedAt: new Date().toISOString(),
+      };
+      const updated = {
+        ...state.dailyChecklist,
+        quickFoods: [...existing, entry],
+        caloriesConsumed:
+          (state.dailyChecklist.caloriesConsumed || 0) + entry.calories,
+      };
+      saveToStorage("gym_checklist_" + todayKey(), updated);
+      return { dailyChecklist: updated };
+    });
+  },
+
+  removeQuickFood: (entryId) => {
+    if (!entryId) return;
+    get().ensureDailyChecklist();
+    set((state) => {
+      const existing = Array.isArray(state.dailyChecklist.quickFoods)
+        ? state.dailyChecklist.quickFoods
+        : [];
+      const target = existing.find((item) => item.id === entryId);
+      if (!target) return state;
+      const updated = {
+        ...state.dailyChecklist,
+        quickFoods: existing.filter((item) => item.id !== entryId),
+        caloriesConsumed: Math.max(
+          0,
+          (state.dailyChecklist.caloriesConsumed || 0) -
+            (Number(target.calories) || 0),
+        ),
+      };
       saveToStorage("gym_checklist_" + todayKey(), updated);
       return { dailyChecklist: updated };
     });

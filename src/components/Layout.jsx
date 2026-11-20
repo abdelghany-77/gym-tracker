@@ -5,6 +5,7 @@ import Confetti from "./Confetti";
 import NotificationManager from "./NotificationManager";
 import OfflineIndicator from "./OfflineIndicator";
 import LoadingSkeleton from "./LoadingSkeleton";
+import PWAInstallButton from "./PWAInstallButton";
 import useWorkoutStore from "../store/workoutStore";
 
 const navItems = [
@@ -37,7 +38,7 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-dvh bg-bg-deep text-white">
+    <div className="min-h-dvh w-full overflow-x-hidden bg-bg-deep text-white">
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
@@ -45,90 +46,114 @@ export default function Layout() {
       <Confetti />
       <NotificationManager />
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-52 flex-col border-r border-border-slate bg-bg-surface p-4 lg:flex">
+      {/* ── Desktop Sidebar (>= lg) ── */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 flex-col border-r border-slate-800 bg-bg-surface p-4 lg:flex">
         <NavLink
           to="/"
-          className="mb-8 flex items-center gap-3 px-2 py-4"
+          className="mb-6 flex items-center gap-3 px-2 py-3 rounded-xl hover:bg-slate-800/40 transition-colors"
           aria-label="GymTracker home"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-neon-cyan/10 text-neon-cyan">
-            <Dumbbell size={22} aria-hidden="true" />
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-950 shrink-0">
+            <Dumbbell size={20} aria-hidden="true" />
           </span>
-          <span className="text-base font-bold">
-            Gym<span className="text-neon-cyan">Tracker</span>
+          <span className="text-base font-bold tracking-tight text-white">
+            GymTracker
           </span>
         </NavLink>
-        <nav aria-label="Main navigation" className="space-y-2">
+
+        <nav aria-label="Main navigation" className="space-y-1.5">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
               end={to === "/"}
               className={({ isActive }) =>
-                `flex min-h-12 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${isActive ? "bg-neon-cyan/10 text-neon-cyan" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`
+                `flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-slate-100 text-slate-950 font-semibold"
+                    : "text-slate-400 hover:bg-slate-800/70 hover:text-white"
+                }`
               }
             >
-              <Icon size={20} aria-hidden="true" />
+              <Icon size={18} aria-hidden="true" />
               {label}
             </NavLink>
           ))}
         </nav>
-        <div className="mt-auto rounded-2xl border border-border-slate p-4">
-          {activeWorkout ? (
-            <NavLink
-              to="/workout/active"
-              className="block text-sm font-semibold text-neon-emerald"
-            >
-              Resume workout
-              <span className="mt-1 block text-xs font-normal text-slate-400">
-                {activeWorkout.programName}
-              </span>
-            </NavLink>
-          ) : (
-            <p className="text-xs leading-relaxed text-slate-400">
-              Small steps. Stronger habits.
-              <br />
-              Your next session starts here.
-            </p>
-          )}
+
+        <div className="mt-auto space-y-3">
+          <PWAInstallButton compact />
+          <div className="rounded-2xl border border-slate-800 bg-bg-deep/70 p-3.5">
+            {activeWorkout ? (
+              <NavLink
+                to="/workout/active"
+                className="block text-xs font-semibold text-emerald-400 hover:text-emerald-300"
+              >
+                Resume workout →
+                <span className="mt-1 block text-xs font-normal text-slate-300 truncate">
+                  {activeWorkout.programName}
+                </span>
+              </NavLink>
+            ) : (
+              <p className="text-xs leading-relaxed text-slate-400">
+                Small steps. Stronger habits.
+                <br />
+                Your next session starts here.
+              </p>
+            )}
+          </div>
         </div>
       </aside>
 
+      {/* ── Main Content Area ── */}
       <main
         id="main-content"
         ref={mainRef}
         tabIndex={-1}
-        className="app-main min-h-dvh lg:ml-52 lg:pb-8"
+        className="app-main min-h-dvh w-full min-w-0 lg:pl-56 lg:pb-8"
       >
-        <div key={location.pathname} className="animate-fadeIn">
+        <div key={location.pathname} className="animate-fadeIn w-full min-w-0">
           <Suspense fallback={<LoadingSkeleton />}>
             <Outlet />
           </Suspense>
         </div>
       </main>
 
+      {/* ── Mobile & Tablet Bottom Navigation (< lg) ── */}
       <nav
-        className="mobile-nav fixed bottom-0 inset-x-0 z-50 border-t border-border-slate bg-bg-surface/95 backdrop-blur-xl lg:hidden"
+        className="mobile-nav fixed bottom-0 inset-x-0 z-50 border-t border-slate-800 bg-bg-surface/95 backdrop-blur-xl lg:hidden"
         aria-label="Mobile navigation"
       >
-        <div className="mx-auto flex h-16 max-w-xl items-center px-1">
+        <div className="mx-auto grid h-16 max-w-2xl grid-cols-6 items-center px-1">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
               end={to === "/"}
               className={({ isActive }) =>
-                `relative flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 transition-colors ${isActive ? "text-neon-cyan" : "text-slate-400 hover:text-slate-200"}`
+                `relative flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 transition-colors ${
+                  isActive
+                    ? "text-white font-semibold"
+                    : "text-slate-400 hover:text-slate-200"
+                }`
               }
             >
               {({ isActive }) => (
                 <>
+                  {isActive && (
+                    <span
+                      className="absolute top-0.5 h-0.5 w-6 rounded-full bg-sky-400"
+                      aria-hidden="true"
+                    />
+                  )}
                   <Icon
-                    size={21}
-                    strokeWidth={isActive ? 2.5 : 1.8}
+                    size={19}
+                    strokeWidth={isActive ? 2.4 : 1.8}
                     aria-hidden="true"
                   />
-                  <span className="text-[10px] font-medium">{label}</span>
+                  <span className="max-w-full truncate text-[10px] leading-tight">
+                    {label}
+                  </span>
                 </>
               )}
             </NavLink>

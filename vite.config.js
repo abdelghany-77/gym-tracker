@@ -19,8 +19,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.png", "icons/icon-192.png", "icons/icon-512.png"],
       manifest: {
-        name: "Gym",
-        short_name: "Gym",
+        id: "./",
+        name: "GymTracker",
+        short_name: "GymTracker",
         description:
           "Track your hypertrophy journey with biomechanically complete programs",
         start_url: BASE,
@@ -50,6 +51,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        importScripts: ["sw-notifications.js"],
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,jpg,jpeg}"],

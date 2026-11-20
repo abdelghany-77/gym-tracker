@@ -1,35 +1,35 @@
-// ── Notification Service: Web-first with a Capacitor-ready native seam ──
+// ── Notification Service: Unified Native (Capacitor) + PWA Service Worker layer ──
 //
-// BROWSER MODE: uses the Web Notification API through the registered service
-// worker (persistent + actionable) with a `new Notification()` fallback.
+// NATIVE MODE (Android / iOS Capacitor shell):
+//   • Uses @capacitor/local-notifications with allowWhileIdle OS alarms so
+//     Rest Timers, Hydration, Daily Water, Vitamin, and Workout Day reminders
+//     fire reliably even when the app is completely closed or screen locked.
 //
-// NATIVE MODE (Phase 2 — Capacitor installed): the same call signature
-// transparently routes to @capacitor/local-notifications, including:
-//   • Android 13+ runtime `POST_NOTIFICATIONS` permission via checkPermissions()
-//     / requestPermissions() before schedule()
-//   • the shared high-priority Android notification channel ("gym-timer-channel",
-//     created by nativeBridge.ensureNotificationChannel at app startup)
-//   • scheduled future alerts (rest timer deadline, hydration batch) are handled
-//     by nativeBridge; this module covers immediate notifications + permissions.
-//
-// All call sites (RestTimer, NotificationManager, hydration reminders) MUST go
-// through this module or nativeBridge instead of using the Notification API
-// directly.
+// WEB / PWA MODE:
+//   • Routes notifications through the Service Worker (sw-notifications.js),
+//     syncs reminder state into CacheStorage, registers Periodic Background Sync
+//     when installed as a PWA, and uses Notification Triggers / SW timers for
+//     delayed background delivery.
 
-import { CHANNEL_ID } from "./nativeBridge";
+import {
+  CHANNEL_ID,
+  scheduleDailyBackgroundReminders,
+  cancelDailyBackgroundReminders,
+  scheduleNativeDelayedNotification,
+} from "./nativeBridge";
 
-const NOTIFICATION_ICON = () => `${import.meta.env.BASE_URL}icon.png`;
+const NOTIFICATION_ICON = () => `${import.meta.env.BASE_URL}icons/icon-192.png`;
 
 /** True when running inside a Capacitor native shell. */
 export const isNativePlatform = () =>
-  typeof window !== "undefined" &&
-  !!window.Capacitor?.isNativePlatform?.();
+  typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
 
-/**
- * Capacitor LocalNotifications plugin handle (native mode only).
- * Uses the runtime bridge proxy (window.Capacitor.Plugins) — the installed
- * @capacitor/local-notifications package registers itself under that key.
- */
+/** True when running as an installed standalone PWA. */
+export const isStandalonePWA = () =>
+  typeof window !== "undefined" &&
+  (window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.navigator?.standalone === true);
+
 const getCapacitorNotifications = () => {
   if (!isNativePlatform()) return null;
   return window.Capacitor?.Plugins?.LocalNotifications || null;
@@ -42,11 +42,11 @@ export const ensureNativeChannel = async () => {
   try {
     await LocalNotifications.createChannel({
       id: CHANNEL_ID,
-      name: "Rest & Hydration Timer",
-      importance: 5, // IMPORTANCE_HIGH → heads-up + lock screen
-      visibility: 1, // PUBLIC
+      name: "Workouts, Rest & Hydration",
+      description: "Rest timers, daily hydration, vitamin, and workout reminders",
+      importance: 5,
+      visibility: 1,
       vibration: true,
-      sound: "notify.wav",
     });
   } catch {
     /* channel may already exist */
@@ -60,17 +60,12 @@ export const ensureNativeChannel = async () => {
 export const requestNotificationPermission = async () => {
   const LocalNotifications = getCapacitorNotifications();
   if (LocalNotifications) {
-    try {
-      const current = await LocalNotifications.checkPermissions();
-      if (current.display !== "granted") {
-        const requested = await LocalNotifications.requestPermissions();
-        return requested.display === "granted" ? "granted" : "denied";
-      }
-      return "granted";
-    } catch (error) {
-      // Surface the failure (callers distinguish "denied" from "failed").
-      throw error;
+    const current = await LocalNotifications.checkPermissions();
+    if (current.display !== "granted") {
+      const requested = await LocalNotifications.requestPermissions();
+      return requested.display === "granted" ? "granted" : "denied";
     }
+    return "granted";
   }
   if (typeof window === "undefined" || !("Notification" in window)) {
     throw new Error("Notifications unsupported in this environment.");
@@ -96,9 +91,159 @@ export const getNotificationPermission = async () => {
   return Notification.permission;
 };
 
+/** Describe the current device's background notification delivery capability. */
+export const getBackgroundCapability = () => {
+  if (isNativePlatform()) {
+    return {
+      mode: "native",
+      label: "Native OS Alarms (works when app is closed)",
+    };
+  }
+  if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+    if (isStandalonePWA()) {
+      return {
+        mode: "pwa",
+        label: "Installed PWA Service Worker (background sync active)",
+      };
+    }
+    return {
+      mode: "web-sw",
+      label: "Browser Service Worker (install app for best background delivery)",
+    };
+  }
+  return {
+    mode: "tab-only",
+    label: "Foreground browser tab only",
+  };
+};
+
+async function getActiveServiceWorkerRegistration() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    return null;
+  }
+  try {
+    const reg =
+      (await navigator.serviceWorker.getRegistration?.()) ||
+      (await navigator.serviceWorker.ready);
+    return reg || null;
+  } catch {
+    return null;
+  }
+}
+
+async function postToServiceWorker(message) {
+  const reg = await getActiveServiceWorkerRegistration();
+  const target = reg?.active || navigator.serviceWorker?.controller;
+  if (target?.postMessage) {
+    target.postMessage(message);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Sync daily reminders (Water, Vitamin, Workout Days) to the OS alarm manager
+ * (on Android/iOS native) AND to the PWA Service Worker + PeriodicSync (on web).
+ */
+export const syncBackgroundReminders = async (payload) => {
+  if (isNativePlatform()) {
+    if (!payload?.enabled) {
+      await cancelDailyBackgroundReminders();
+      return 0;
+    }
+    return scheduleDailyBackgroundReminders(payload);
+  }
+
+  // Web / PWA: persist reminder state inside the Service Worker cache
+  await postToServiceWorker({
+    type: "SYNC_REMINDERS",
+    payload: {
+      remindersEnabled: Boolean(payload?.enabled),
+      waterIntervalMinutes: payload?.waterIntervalMinutes || 60,
+      waterCount: payload?.waterCount || 0,
+      waterGoal: payload?.waterGoal || 8,
+      vitaminDone: Boolean(payload?.vitaminDone),
+      lastWaterReminderTime: payload?.lastWaterReminderTime || 0,
+      lastVitaminReminderDate: payload?.lastVitaminReminderDate || null,
+      today: payload?.today || "",
+    },
+  });
+
+  // Register Periodic Background Sync on supported Chromium/Android PWAs
+  try {
+    const reg = await getActiveServiceWorkerRegistration();
+    if (reg?.periodicSync) {
+      if (payload?.enabled) {
+        const minInterval = Math.max(
+          30 * 60_000,
+          (Number(payload?.waterIntervalMinutes) || 60) * 60_000,
+        );
+        await reg.periodicSync.register("gym-reminders-sync", {
+          minInterval,
+        });
+      } else {
+        await reg.periodicSync.unregister("gym-reminders-sync");
+      }
+    }
+  } catch {
+    // Periodic sync requires installed PWA + engagement score on Chromium; fail silently
+  }
+
+  return 1;
+};
+
+/**
+ * Schedule a delayed notification (used for Rest Timer on Web/PWA and the 5s
+ * background test alert on both Native and Web/PWA).
+ */
+export const scheduleDelayedNotification = async ({
+  title,
+  body,
+  delayMs = 5000,
+  tag = "gym-delayed",
+  url = "#/",
+  nativeId,
+}) => {
+  if (isNativePlatform()) {
+    return scheduleNativeDelayedNotification({
+      title,
+      body,
+      delayMs,
+      id: nativeId,
+      url,
+    });
+  }
+
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return false;
+  }
+  if (Notification.permission !== "granted") return false;
+
+  const posted = await postToServiceWorker({
+    type: "SCHEDULE_DELAYED_NOTIFICATION",
+    payload: { title, body, delayMs, tag, url },
+  });
+  if (posted) return true;
+
+  // Fallback timer if SW isn't active yet
+  setTimeout(() => {
+    void showLocalNotification({ title, body, tag, url });
+  }, Math.max(0, delayMs));
+  return true;
+};
+
+/** Cancel a pending delayed notification by tag on Web/PWA. */
+export const cancelDelayedNotification = async (tag) => {
+  if (isNativePlatform() || !tag) return;
+  await postToServiceWorker({
+    type: "CANCEL_DELAYED_NOTIFICATION",
+    tag,
+  });
+};
+
 /**
  * Show a local notification right now.
- * @param {{ title: string, body: string, tag?: string, id?: number, vibrate?: number[] }} options
+ * @param {{ title: string, body: string, tag?: string, id?: number, vibrate?: number[], url?: string }} options
  */
 export const showLocalNotification = async ({
   title,
@@ -106,6 +251,7 @@ export const showLocalNotification = async ({
   tag = "gym-alert",
   id = Math.floor(Math.random() * 2_000_000_000),
   vibrate = [200, 100, 200],
+  url = "#/",
 }) => {
   const LocalNotifications = getCapacitorNotifications();
   if (LocalNotifications) {
@@ -117,8 +263,8 @@ export const showLocalNotification = async ({
             title,
             body,
             channelId: CHANNEL_ID,
-            schedule: { at: new Date(Date.now() + 1) },
-            extra: { tag },
+            schedule: { at: new Date(Date.now() + 250), allowWhileIdle: true },
+            extra: { tag, url },
           },
         ],
       });
@@ -132,9 +278,7 @@ export const showLocalNotification = async ({
   if (Notification.permission !== "granted") return;
 
   try {
-    // Prefer the service-worker registration so notifications persist while
-    // the (PWA/WebView) page is backgrounded.
-    const registration = await navigator.serviceWorker?.getRegistration?.();
+    const registration = await getActiveServiceWorkerRegistration();
     if (registration?.showNotification) {
       await registration.showNotification(title, {
         body,
@@ -143,6 +287,7 @@ export const showLocalNotification = async ({
         tag,
         renotify: true,
         vibrate,
+        data: { url },
       });
     } else {
       new Notification(title, { body, icon: NOTIFICATION_ICON(), tag });

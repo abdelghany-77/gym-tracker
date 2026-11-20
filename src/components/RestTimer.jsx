@@ -11,7 +11,11 @@ import {
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import { playTone } from "../utils/audioUtil";
-import { showLocalNotification } from "../utils/notificationService";
+import {
+  showLocalNotification,
+  scheduleDelayedNotification,
+  cancelDelayedNotification,
+} from "../utils/notificationService";
 import {
   isNative,
   scheduleRestNotification,
@@ -29,18 +33,19 @@ const PRESETS = [30, 45, 60, 90, 120, 180];
 const WARMUP_REST_SECONDS = 45;
 
 // ── Completion alert ──
-// Native: the exact notification was already scheduled at the deadline (it
-// survives backgrounding / a killed WebView) — just clean it up. Web: fire the
-// Web Notification now (SW-backed so it works while backgrounded).
+// Native & SW-backed Web: cancel any pending background trigger to avoid
+// double firing, then deliver immediate web notification if foregrounded.
 const notifyRestComplete = async () => {
   if (isNative()) {
     await cancelRestNotification();
     return;
   }
+  await cancelDelayedNotification("rest-complete");
   await showLocalNotification({
-    title: "Rest complete 💪",
+    title: "Rest complete",
     body: "Time for your next set!",
     tag: "rest-complete",
+    url: "#/workout/active",
   });
 };
 
@@ -126,15 +131,30 @@ export default function RestTimer({ inline = false }) {
     };
   }, [isRunning, deadline, activeWorkout, playBeep]);
 
-  // Native: schedule the exact "Rest complete" notification at the wall-clock
-  // deadline so it fires even if the WebView is backgrounded or killed.
-  // Pause/skip/reset stops the effect (isRunning false / deadline change) and
-  // cancels the pending notification — resume re-schedules at the new deadline.
+  // Schedule the exact "Rest complete" notification at the wall-clock deadline
+  // on BOTH Native Android/iOS (exact OS alarm) AND Web/PWA (Service Worker trigger)
+  // so it fires even if the app is backgrounded, minimized, or screen locked.
   useEffect(() => {
-    if (!isNative() || !isRunning || deadline === null) return undefined;
-    void scheduleRestNotification(deadline);
+    if (!isRunning || deadline === null) return undefined;
+    const delayMs = deadline - Date.now();
+    if (delayMs <= 0) return undefined;
+
+    if (isNative()) {
+      void scheduleRestNotification(deadline);
+      return () => {
+        void cancelRestNotification();
+      };
+    }
+
+    void scheduleDelayedNotification({
+      title: "Rest complete",
+      body: "Time for your next set!",
+      delayMs,
+      tag: "rest-complete",
+      url: "#/workout/active",
+    });
     return () => {
-      void cancelRestNotification();
+      void cancelDelayedNotification("rest-complete");
     };
   }, [isRunning, deadline]);
 

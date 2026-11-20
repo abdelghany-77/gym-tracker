@@ -168,6 +168,7 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
+  message,
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "danger",
@@ -192,7 +193,7 @@ export function ConfirmDialog({
     >
       <div className="p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <p className="text-sm text-slate-400">{description}</p>
+        <p className="text-sm text-slate-400">{description ?? message}</p>
         <div className="flex gap-3">
           <button
             onClick={onClose}

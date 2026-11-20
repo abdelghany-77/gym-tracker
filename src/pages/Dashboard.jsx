@@ -11,10 +11,10 @@ import {
   Coffee,
   Moon,
   Target,
-  Zap,
-  Crown,
   Play,
   BarChart2,
+  Check,
+  Receipt,
 } from "lucide-react";
 import ActivityChart from "../components/ActivityChart";
 import useWorkoutStore from "../store/workoutStore";
@@ -23,13 +23,43 @@ import ReminderWidget from "../components/ReminderWidget";
 import { trainingPlans } from "../data/exercises";
 import AngleRadarChart from "../components/AngleRadarChart";
 import Modal from "../components/Modal";
+import WorkoutReceiptModal from "../components/WorkoutReceiptModal";
 import { parseLocalDate } from "../utils/dateUtils";
+
+const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function computeSessionVolume(session) {
+  if (!session?.exercises) return 0;
+  return Math.round(
+    session.exercises.reduce(
+      (sum, ex) =>
+        sum +
+        (ex.sets || []).reduce(
+          (setSum, s) =>
+            s.type === "W"
+              ? setSum
+              : setSum + (Number(s.weight) || 0) * (Number(s.reps) || 0),
+          0,
+        ),
+      0,
+    ),
+  );
+}
+
+function formatDuration(session) {
+  if (!session?.startedAt || !session?.finishedAt) return null;
+  const mins = Math.round(
+    (new Date(session.finishedAt) - new Date(session.startedAt)) / 60000,
+  );
+  return mins > 0 ? `${mins}m` : "<1m";
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [editingSchedule, setEditingSchedule] = useState(false);
+  const [editingDayIndex, setEditingDayIndex] = useState(null);
   const [activityDate, setActivityDate] = useState(new Date());
-  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(true);
+  const [receiptSession, setReceiptSession] = useState(null);
 
   const history = useWorkoutStore((s) => s.history);
   const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
@@ -51,9 +81,59 @@ export default function Dashboard() {
   );
 
   const lastSession = useMemo(() => {
-    if (history.length === 0) return null;
+    if (!Array.isArray(history) || history.length === 0) return null;
     return history[history.length - 1];
   }, [history]);
+
+  const lastSessionMetrics = useMemo(() => {
+    if (!lastSession) return null;
+    return {
+      volume: computeSessionVolume(lastSession),
+      sets: (lastSession.exercises || []).reduce(
+        (acc, e) => acc + (e.sets || []).length,
+        0,
+      ),
+      duration: formatDuration(lastSession),
+    };
+  }, [lastSession]);
+
+  const weekStrip = useMemo(() => {
+    const now = new Date();
+    const todayIndex = (now.getDay() + 6) % 7;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - todayIndex);
+    monday.setHours(0, 0, 0, 0);
+
+    return WEEK_DAYS.map((label, idx) => {
+      const dateObj = new Date(monday);
+      dateObj.setDate(monday.getDate() + idx);
+      const dateStr = dateObj.toLocaleDateString("en-CA");
+      const schedId = weeklySchedule?.[idx];
+      const isRest = !schedId || schedId === "rest";
+      const program = !isRest ? programs?.[schedId] : null;
+      return {
+        idx,
+        label,
+        dayNum: dateObj.getDate(),
+        dateStr,
+        isToday: idx === todayIndex,
+        completed: Boolean(heatmapData?.[dateStr]),
+        isRest: isRest || !program,
+        shortLabel: program ? (program.name || "Workout").split(" ")[0] : "Rest",
+        fullLabel: program ? program.name || "Workout" : "Rest Day",
+      };
+    });
+  }, [weeklySchedule, programs, heatmapData]);
+
+  const weeklyTargetDays = useMemo(() => {
+    const scheduleValues = Array.isArray(weeklySchedule)
+      ? weeklySchedule
+      : Object.values(weeklySchedule || {});
+    const active = scheduleValues.filter(
+      (id) => id && id !== "rest" && programs?.[id],
+    ).length;
+    return active > 0 ? active : 4;
+  }, [weeklySchedule, programs]);
 
   const stats = useMemo(() => {
     const totalSessions = history.length;
@@ -82,51 +162,42 @@ export default function Dashboard() {
     return { totalSessions, thisWeek, streak };
   }, [history, heatmapData]);
 
+  const editingProgramId =
+    editingDayIndex !== null ? weeklySchedule?.[editingDayIndex] : null;
+
   return (
-    <div className="px-4 pt-4 pb-20 max-w-lg mx-auto space-y-3.5 animate-fadeIn bg-bg-deep min-h-screen">
+    <div className="px-4 pt-4 pb-24 max-w-3xl mx-auto space-y-4 animate-fadeIn bg-bg-deep min-h-screen">
       {/* ── Compact Header ── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
           <img
             src={getImageUrl("icon.png")}
             alt="GymTracker Logo"
-            className="w-9 h-9 object-contain"
+            className="w-9 h-9 object-contain shrink-0"
           />
-          <div>
+          <div className="min-w-0">
             <h1 className="text-base font-bold text-white tracking-tight leading-none">
-              Gym<span className="text-neon-cyan">Tracker</span>
+              GymTracker
             </h1>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+            <p className="text-xs text-slate-400 font-medium mt-1 truncate">
               {new Date().toLocaleDateString("en-US", {
                 weekday: "short",
                 month: "short",
                 day: "numeric",
-              })}
+              })}{" "}
+              · {activePlan.name}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div
-            className={`flex items-center gap-1 rounded-full px-2.5 py-1 border text-[10px] font-bold uppercase tracking-wider ${
-              activeProgram === "ppl_upper"
-                ? "bg-neon-cyan/10 border-neon-cyan/25 text-neon-cyan"
-                : "bg-vivid-purple/10 border-vivid-purple/25 text-vivid-purple"
-            }`}
-          >
-            {activeProgram === "ppl_upper" ? (
-              <Zap size={10} />
-            ) : (
-              <Crown size={10} />
-            )}
-            {activePlan.name}
-          </div>
-          <div className="flex items-center gap-1 bg-slate-900 rounded-full px-2.5 py-1 border border-slate-800">
-            <Flame size={13} className="text-orange-400 fill-orange-400/20" />
-            <span className="text-xs font-bold text-white">
-              {stats.streak}d
-            </span>
-          </div>
+        <div className="flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 border border-slate-800 shrink-0">
+          <Flame size={14} className="text-amber-400" aria-hidden="true" />
+          <span className="text-xs font-bold font-mono tabular-nums text-white">
+            {stats.streak}d
+          </span>
+          <span className="text-[11px] text-slate-400 hidden sm:inline">
+            streak
+          </span>
         </div>
       </div>
 
@@ -134,16 +205,16 @@ export default function Dashboard() {
       {activeWorkout && (
         <button
           onClick={() => navigate("/workout/active")}
-          className="w-full bg-emerald-500/10 rounded-2xl p-3.5 border border-emerald-500/30 hover:border-emerald-500/50 transition-all text-left active:scale-[0.99] btn-press shadow-md"
+          className="w-full bg-emerald-500/10 rounded-2xl p-4 border border-emerald-500/35 hover:border-emerald-500/60 transition-all text-left active:scale-[0.99] min-h-11"
           aria-label={`Resume ${activeWorkout.programName} workout`}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500 text-bg-deep flex items-center justify-center font-bold shrink-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-bold shrink-0">
                 <Play size={16} fill="currentColor" className="ml-0.5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                <p className="text-[11px] text-emerald-400 font-semibold uppercase tracking-wider">
                   In Progress
                 </p>
                 <p className="text-sm font-bold text-white truncate mt-0.5">
@@ -151,8 +222,8 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 shrink-0">
-              Resume <ChevronRight size={14} />
+            <div className="flex items-center gap-1 text-xs font-semibold text-emerald-400 shrink-0">
+              Resume <ChevronRight size={15} />
             </div>
           </div>
         </button>
@@ -160,40 +231,29 @@ export default function Dashboard() {
 
       {/* ── Today / Next Workout Hero Card ── */}
       {nextWorkout && !activeWorkout && (
-        <div
-          className={`w-full rounded-2xl p-3.5 border transition-all text-left relative overflow-hidden ${
-            nextWorkout.isRest
-              ? "bg-slate-900/70 border-slate-800"
-              : "bg-slate-900/90 border-border-slate hover:border-neon-cyan/40 shadow-md"
-          }`}
-        >
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-3 min-w-0">
+        <div className="w-full rounded-2xl p-4 border border-slate-800 bg-bg-surface transition-colors">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3.5 min-w-0">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${
                   nextWorkout.isRest
-                    ? "bg-slate-800 text-slate-400"
-                    : "bg-neon-cyan text-bg-deep font-bold"
+                    ? "bg-slate-800/80 border-slate-700 text-slate-400"
+                    : "bg-slate-100 border-slate-100 text-slate-950"
                 }`}
               >
                 {nextWorkout.isRest ? (
-                  <Coffee size={18} />
+                  <Coffee size={19} />
                 ) : (
-                  <Dumbbell size={18} />
+                  <Dumbbell size={19} />
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium mb-0.5">
-                  <Calendar
-                    size={10}
-                    className={
-                      nextWorkout.isRest ? "text-slate-400" : "text-neon-cyan"
-                    }
-                  />
+                <p className="text-xs text-slate-400 flex items-center gap-1.5 font-medium">
+                  <Calendar size={12} className="text-slate-400 shrink-0" />
                   <span
                     className={
                       nextWorkout.daysUntil === 0
-                        ? "text-neon-cyan font-bold"
+                        ? "text-sky-400 font-semibold"
                         : "text-slate-400"
                     }
                   >
@@ -202,12 +262,12 @@ export default function Dashboard() {
                       : `In ${nextWorkout.daysUntil} day${nextWorkout.daysUntil > 1 ? "s" : ""}`}
                   </span>
                 </p>
-                <p className="text-sm font-bold text-white truncate">
+                <p className="text-base font-bold text-white truncate mt-0.5">
                   {nextWorkout.isRest
                     ? "Rest & Recovery"
                     : nextWorkout.program?.name}
                 </p>
-                <p className="text-[11px] text-slate-400 truncate">
+                <p className="text-xs text-slate-400 truncate mt-0.5">
                   {nextWorkout.isRest
                     ? "Muscle recovery and hydration"
                     : nextWorkout.program?.muscles?.join(" · ")}
@@ -215,39 +275,35 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0 ml-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingSchedule(true);
-                }}
-                className="w-8 h-8 rounded-lg bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                onClick={() => setEditingDayIndex(nextWorkout.dayIndex ?? 0)}
+                className="min-w-11 min-h-11 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                 aria-label="Edit schedule"
                 title="Change day target"
               >
-                <Edit2 size={13} />
+                <Edit2 size={15} />
               </button>
-              {!nextWorkout.isRest ? (
+              {!nextWorkout.isRest && nextWorkout.program ? (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     useWorkoutStore
                       .getState()
                       .startWorkout(nextWorkout.program.id);
                     navigate("/workout/active");
                   }}
-                  className="bg-neon-cyan text-bg-deep px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-neon-cyan/90 active:scale-95 transition-all flex items-center gap-1 btn-press shadow-sm"
+                  className="min-h-11 bg-slate-100 text-slate-950 px-4 rounded-xl text-xs font-bold hover:bg-white active:scale-[0.98] transition-all flex items-center gap-1"
                   aria-label={`Start ${nextWorkout.program?.name}`}
                 >
-                  Start <ChevronRight size={13} strokeWidth={2.5} />
+                  Start <ChevronRight size={14} strokeWidth={2.5} />
                 </button>
               ) : (
                 <button
                   onClick={() => navigate("/workout")}
                   aria-label="Choose a workout"
-                  className="w-8 h-8 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-400 hover:text-white"
+                  className="min-h-11 px-3.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 hover:text-white hover:bg-slate-700 transition-colors flex items-center gap-1"
                 >
-                  <ChevronRight size={15} />
+                  Browse <ChevronRight size={14} />
                 </button>
               )}
             </div>
@@ -255,126 +311,196 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Quick Stats: Compact 3-Column Row ── */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* ── 7-Day Interactive Week Strip (Mon–Sun) ── */}
+      <div className="rounded-2xl border border-slate-800 bg-bg-surface p-3.5 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-semibold text-slate-300">This Week</h2>
+          <span className="text-[11px] text-slate-500">
+            Tap any day to adjust schedule
+          </span>
+        </div>
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+          {weekStrip.map((day) => (
+            <button
+              key={day.idx}
+              type="button"
+              onClick={() => setEditingDayIndex(day.idx)}
+              aria-label={`${day.label}: ${day.fullLabel}${day.completed ? ", completed" : ""}`}
+              className={`min-h-14 rounded-xl border px-0.5 sm:px-1.5 py-2 flex flex-col items-center justify-between transition-colors ${
+                day.isToday
+                  ? "border-sky-400/60 bg-sky-500/10 text-white"
+                  : day.completed
+                    ? "border-emerald-500/30 bg-emerald-500/5 text-slate-200 hover:border-emerald-500/50"
+                    : "border-slate-800 bg-bg-deep/70 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+              }`}
+            >
+              <span className="text-[10px] font-medium text-slate-400">
+                {day.label}
+              </span>
+              <span className="text-xs font-bold font-mono tabular-nums">
+                {day.completed ? (
+                  <Check
+                    size={13}
+                    className="text-emerald-400 mx-auto"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  day.dayNum
+                )}
+              </span>
+              <span
+                className={`text-[9px] truncate max-w-full px-0.5 ${
+                  day.isRest ? "text-slate-500" : "text-slate-300 font-medium"
+                }`}
+              >
+                {day.shortLabel}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Quick Stats: Clean 3-Column Row ── */}
+      <div className="grid grid-cols-3 gap-2.5">
         {[
           {
             label: "This Week",
             value: stats.thisWeek,
             icon: Calendar,
-            color: "text-neon-cyan",
+            color: "text-sky-400",
           },
           {
-            label: "Total Done",
+            label: "Total Sessions",
             value: stats.totalSessions,
             icon: TrendingUp,
-            color: "text-neon-green",
+            color: "text-emerald-400",
           },
           {
             label: "Streak",
             value: `${stats.streak}d`,
             icon: Flame,
-            color: "text-orange-400",
+            color: "text-amber-400",
           },
         ].map(({ label, value, icon, color }) => {
           const Icon = icon;
           return (
             <div
               key={label}
-              className="glass-card p-2.5 text-center border border-border-slate"
+              className="rounded-2xl bg-bg-surface p-3 border border-slate-800 flex flex-col items-center text-center"
             >
-              <div className="w-6 h-6 rounded-md bg-slate-800/60 flex items-center justify-center mx-auto mb-1">
-                <Icon size={12} className={color} />
-              </div>
-              <p className="text-base font-bold text-white leading-tight">
+              <Icon size={14} className={`${color} mb-1.5`} aria-hidden="true" />
+              <p className="text-lg font-bold font-mono tabular-nums text-white leading-tight">
                 {value}
               </p>
-              <p className="text-[10px] text-slate-400 font-medium">{label}</p>
+              <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                {label}
+              </p>
             </div>
           );
         })}
       </div>
 
-      {/* ── Quick Reminder Widget (Water & Vitamins) ── */}
-      <ReminderWidget />
+      {/* ── Quick Reminder Widget + Last Completed Session (2-col on desktop) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-start">
+        <ReminderWidget />
 
-      {/* ── Last Completed Session (Compact 1-Row Summary) ── */}
-      {lastSession && (
-        <div className="glass-card p-3 border border-border-slate space-y-1">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-              <Calendar size={11} className="text-neon-cyan" />
-              Last Session
-            </h2>
-            <span className="text-[10px] text-slate-400">
-              {new Date(lastSession.date).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          <div className="flex items-center justify-between pt-0.5">
-            <p className="text-xs font-bold text-white truncate max-w-[200px]">
-              {lastSession.programName}
-            </p>
-            <div className="flex items-center gap-2 text-[10px] text-slate-400">
-              <span>{lastSession.exercises.length} exercises</span>
-              <span>•</span>
-              <span>
-                {lastSession.exercises.reduce(
-                  (acc, e) => acc + e.sets.length,
-                  0,
-                )}{" "}
-                sets
+        {/* Last Completed Session (Clickable to open Receipt) */}
+        {lastSession && lastSessionMetrics ? (
+          <button
+            type="button"
+            onClick={() => setReceiptSession(lastSession)}
+            className="w-full text-left rounded-2xl bg-bg-surface p-4 border border-slate-800 hover:border-slate-700 transition-colors space-y-2.5 min-h-11"
+            aria-label={`View receipt for ${lastSession.programName}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                <Receipt size={13} className="text-slate-400" />
+                Last Session
+              </span>
+              <span className="text-xs text-slate-400">
+                {parseLocalDate(lastSession.date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
               </span>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* ── Empty State CTA (When no sessions exist) ── */}
-      {stats.totalSessions === 0 && !activeWorkout && (
-        <div className="glass-card p-5 text-center space-y-2.5 border border-border-slate">
-          <div className="w-11 h-11 mx-auto rounded-xl bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center">
-            <Target size={20} className="text-neon-cyan" />
-          </div>
-          <h3 className="text-sm font-bold text-white">Start Your Journey</h3>
-          <p className="text-xs text-slate-400 max-w-[240px] mx-auto leading-relaxed">
-            Select a workout routine to log your sets, reps, and track
-            progressive overload.
-          </p>
-          <button
-            onClick={() => navigate("/workout")}
-            className="bg-neon-cyan text-bg-deep px-4 py-2 rounded-xl text-xs font-bold hover:bg-neon-cyan/90 active:scale-95 transition-all inline-flex items-center gap-1.5 btn-press shadow-sm"
-          >
-            Start Workout <ChevronRight size={13} strokeWidth={2.5} />
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-bold text-white truncate">
+                {lastSession.programName}
+              </p>
+              <span className="text-xs text-sky-400 font-medium flex items-center gap-0.5 shrink-0">
+                Receipt <ChevronRight size={13} />
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-400 font-mono tabular-nums pt-1 border-t border-slate-800/80">
+              <span>{(lastSession.exercises || []).length} exercises</span>
+              <span>·</span>
+              <span>{lastSessionMetrics.sets} sets</span>
+              {lastSessionMetrics.volume > 0 && (
+                <>
+                  <span>·</span>
+                  <span className="text-slate-200 font-semibold">
+                    {lastSessionMetrics.volume.toLocaleString()} kg
+                  </span>
+                </>
+              )}
+              {lastSessionMetrics.duration && (
+                <>
+                  <span>·</span>
+                  <span>{lastSessionMetrics.duration}</span>
+                </>
+              )}
+            </div>
           </button>
-        </div>
-      )}
+        ) : (
+          !activeWorkout && (
+            <div className="rounded-2xl bg-bg-surface p-5 text-center space-y-2.5 border border-slate-800">
+              <div className="w-11 h-11 mx-auto rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
+                <Target size={20} className="text-sky-400" />
+              </div>
+              <h3 className="text-sm font-bold text-white">
+                Start Your Journey
+              </h3>
+              <p className="text-xs text-slate-400 max-w-[260px] mx-auto leading-relaxed">
+                Select a workout routine to log your sets, reps, and track
+                progressive overload.
+              </p>
+              <button
+                onClick={() => navigate("/workout")}
+                className="min-h-11 bg-slate-100 text-slate-950 px-4 rounded-xl text-xs font-bold hover:bg-white active:scale-[0.98] transition-all inline-flex items-center gap-1.5"
+              >
+                Start Workout <ChevronRight size={14} strokeWidth={2.5} />
+              </button>
+            </div>
+          )
+        )}
+      </div>
 
       {/* ── Collapsible Analytics Section (Heatmap & Biomechanical Angles) ── */}
-      <div className="glass-card overflow-hidden border border-border-slate">
+      <div className="rounded-2xl overflow-hidden border border-slate-800 bg-bg-surface">
         <button
           onClick={() => setShowAnalytics(!showAnalytics)}
-          className="w-full p-3 flex items-center justify-between text-left hover:bg-slate-800/40 transition-colors"
+          className="w-full min-h-12 p-4 flex items-center justify-between text-left hover:bg-slate-800/40 transition-colors"
           aria-expanded={showAnalytics}
         >
-          <div className="flex items-center gap-2">
-            <BarChart2 size={15} className="text-neon-cyan" />
+          <div className="flex items-center gap-2.5">
+            <BarChart2 size={16} className="text-slate-300" />
             <div>
               <span className="text-xs font-bold text-white block">
                 Activity Heatmap & Muscle Angles
               </span>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[11px] text-slate-400">
                 {showAnalytics
                   ? "Tap to collapse"
-                  : "Tap to view charts & training coverage"}
+                  : "Monthly consistency and muscle coverage"}
               </span>
             </div>
           </div>
           <ChevronRight
-            size={15}
+            size={16}
             className={`text-slate-400 transition-transform duration-200 ${
               showAnalytics ? "rotate-90" : ""
             }`}
@@ -382,13 +508,12 @@ export default function Dashboard() {
         </button>
 
         {showAnalytics && (
-          <div className="p-3.5 pt-1 border-t border-border-slate animate-fadeIn space-y-4">
-            {/* Heatmap Month Picker */}
+          <div className="p-4 pt-2 border-t border-slate-800 animate-fadeIn space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white">
+              <span className="text-xs font-semibold text-white">
                 Monthly Consistency
               </span>
-              <div className="flex items-center gap-1 bg-slate-900 rounded-lg border border-slate-800 p-0.5">
+              <div className="flex items-center gap-1 bg-bg-deep rounded-xl border border-slate-800 p-0.5">
                 <button
                   onClick={() =>
                     setActivityDate(
@@ -399,12 +524,12 @@ export default function Dashboard() {
                       ),
                     )
                   }
-                  className="p-1 rounded text-slate-400 hover:text-white transition-colors"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                   aria-label="Previous month"
                 >
-                  <ChevronLeft size={12} />
+                  <ChevronLeft size={14} />
                 </button>
-                <span className="text-[10px] font-semibold text-white min-w-[70px] text-center select-none">
+                <span className="text-xs font-semibold text-white min-w-[78px] text-center select-none">
                   {activityDate.toLocaleDateString("en-US", {
                     month: "short",
                     year: "numeric",
@@ -420,92 +545,98 @@ export default function Dashboard() {
                       ),
                     )
                   }
-                  className="p-1 rounded text-slate-400 hover:text-white transition-colors"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                   aria-label="Next month"
                 >
-                  <ChevronRight size={12} />
+                  <ChevronRight size={14} />
                 </button>
               </div>
             </div>
 
-            <ActivityChart data={heatmapData} currentDate={activityDate} />
+            <ActivityChart
+              data={heatmapData}
+              currentDate={activityDate}
+              weeklyTargetDays={weeklyTargetDays}
+            />
 
-            <div className="h-px bg-border-slate/60" />
+            <div className="h-px bg-slate-800" />
 
-            {/* Biomechanical Radar Chart */}
             <AngleRadarChart showRecommendations={false} />
           </div>
         )}
       </div>
 
-      {/* ── Edit Today's Schedule Modal ── */}
+      {/* ── Edit Day's Schedule Modal ── */}
       <Modal
-        isOpen={editingSchedule}
-        onClose={() => setEditingSchedule(false)}
-        title="Change day's workout"
+        isOpen={editingDayIndex !== null}
+        onClose={() => setEditingDayIndex(null)}
+        title={
+          editingDayIndex !== null
+            ? `Change ${WEEK_DAYS[editingDayIndex]}'s workout`
+            : "Change day's workout"
+        }
       >
-        <div className="p-2.5 space-y-1.5 max-h-[60vh] overflow-y-auto custom-scrollbar">
+        <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
           <button
             onClick={() => {
-              const dayIndex = nextWorkout?.dayIndex;
-              if (dayIndex !== undefined) {
-                useWorkoutStore.getState().setSchedule(dayIndex, "rest");
-                setEditingSchedule(false);
+              if (editingDayIndex !== null) {
+                useWorkoutStore
+                  .getState()
+                  .setSchedule(editingDayIndex, "rest");
+                setEditingDayIndex(null);
               }
             }}
-            className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
-              nextWorkout?.isRest
-                ? "bg-slate-800 border-neon-cyan/40"
+            className={`w-full min-h-12 flex items-center gap-3 p-3 rounded-xl transition-colors border ${
+              !editingProgramId || editingProgramId === "rest"
+                ? "bg-slate-800 border-sky-400/50"
                 : "border-slate-800 hover:bg-slate-800/50"
             }`}
           >
-            <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
-              <Moon size={15} />
+            <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
+              <Moon size={16} />
             </div>
             <div className="text-left flex-1">
               <p className="text-xs font-semibold text-white">Rest Day</p>
-              <p className="text-[10px] text-slate-400">Take time to recover</p>
+              <p className="text-[11px] text-slate-400">
+                Take time to recover
+              </p>
             </div>
           </button>
 
-          {Object.values(programs).map((program) => {
-            const isCurrent =
-              !nextWorkout?.isRest && nextWorkout?.program?.id === program.id;
+          {Object.values(programs || {}).map((program) => {
+            const isCurrent = editingProgramId === program.id;
             return (
               <button
                 key={program.id}
                 onClick={() => {
-                  const dayIndex = nextWorkout?.dayIndex;
-                  if (dayIndex !== undefined) {
+                  if (editingDayIndex !== null) {
                     useWorkoutStore
                       .getState()
-                      .setSchedule(dayIndex, program.id);
-                    setEditingSchedule(false);
+                      .setSchedule(editingDayIndex, program.id);
+                    setEditingDayIndex(null);
                   }
                 }}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
+                className={`w-full min-h-12 flex items-center gap-3 p-3 rounded-xl transition-colors border ${
                   isCurrent
-                    ? "bg-neon-cyan/10 border-neon-cyan/40"
+                    ? "bg-sky-500/10 border-sky-400/50"
                     : "border-slate-800 hover:bg-slate-800/50"
                 }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                     isCurrent
-                      ? "bg-neon-cyan text-bg-deep font-bold"
+                      ? "bg-slate-100 text-slate-950 font-bold"
                       : "bg-slate-800 text-slate-400"
                   }`}
                 >
-                  <Dumbbell size={15} />
+                  <Dumbbell size={16} />
                 </div>
                 <div className="text-left flex-1 min-w-0">
-                  <p
-                    className={`text-xs font-semibold truncate ${isCurrent ? "text-neon-cyan" : "text-white"}`}
-                  >
+                  <p className="text-xs font-semibold truncate text-white">
                     {program.name}
                   </p>
-                  <p className="text-[10px] text-slate-400 truncate">
-                    {program.muscles.join(", ")}
+                  <p className="text-[11px] text-slate-400 truncate">
+                    {(program.muscles || []).join(" · ")}
                   </p>
                 </div>
               </button>
@@ -513,6 +644,15 @@ export default function Dashboard() {
           })}
         </div>
       </Modal>
+
+      {/* ── Shareable Receipt Modal ── */}
+      {receiptSession && (
+        <WorkoutReceiptModal
+          isOpen={Boolean(receiptSession)}
+          session={receiptSession}
+          onClose={() => setReceiptSession(null)}
+        />
+      )}
     </div>
   );
 }

@@ -17,6 +17,7 @@ export const createWorkoutSlice = (set, get) => ({
   personalRecords: loadFromStorage("gym_prs", {}),
   showConfetti: false,
   customProgramOverrides: loadProgramOverrides(),
+  exerciseNotes: loadFromStorage("gym_exercise_notes", {}),
 
   // Getters
   getAchievements: () => {
@@ -530,5 +531,20 @@ export const createWorkoutSlice = (set, get) => ({
     saveToStorage("gym_history", []);
     saveToStorage("gym_prs", {});
     set({ history: [], personalRecords: {} });
+  },
+
+  setExerciseNote: (exerciseId, note) => {
+    if (!exerciseId) return;
+    set((state) => {
+      const trimmed = String(note ?? "");
+      const updated = { ...state.exerciseNotes };
+      if (trimmed.trim()) {
+        updated[exerciseId] = trimmed;
+      } else {
+        delete updated[exerciseId];
+      }
+      saveToStorage("gym_exercise_notes", updated);
+      return { exerciseNotes: updated };
+    });
   },
 });

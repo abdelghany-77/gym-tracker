@@ -6,11 +6,18 @@ import AchievementsList from "./AchievementsList";
 import DataManagement from "./DataManagement";
 
 vi.mock("../Modal", () => ({
-  ConfirmDialog: ({ isOpen, title, message, onConfirm, confirmText }) =>
+  ConfirmDialog: ({
+    isOpen,
+    title,
+    description,
+    message,
+    onConfirm,
+    confirmText,
+  }) =>
     isOpen ? (
       <div role="dialog">
         <h2>{title}</h2>
-        <p>{message}</p>
+        <p>{description ?? message}</p>
         <button onClick={onConfirm}>{confirmText}</button>
       </div>
     ) : null,

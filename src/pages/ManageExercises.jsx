@@ -271,7 +271,7 @@ export default function ManageExercises() {
   };
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-lg mx-auto space-y-4 animate-fadeIn">
+    <div className="px-4 pt-4 pb-24 max-w-3xl mx-auto space-y-4 animate-fadeIn">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
@@ -438,7 +438,7 @@ export default function ManageExercises() {
           )}
 
           {/* Available Exercises (with checkboxes) */}
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {availableExercises.map((ex) => {
               const selected = isInProgram(ex.id);
               const colors = muscleColors[ex.muscle] || muscleColors.Chest;
@@ -555,6 +555,7 @@ export default function ManageExercises() {
                     <div className="h-px bg-slate-800 flex-1" />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {items.map((ex) => (
                     <div
                       key={ex.id}
@@ -616,6 +617,7 @@ export default function ManageExercises() {
                       </div>
                     </div>
                   ))}
+                  </div>
                 </div>
               );
             })}
@@ -629,10 +631,10 @@ export default function ManageExercises() {
         </>
       )}
 
-      {/* Add/Edit Form (overlay bottom sheet) */}
+      {/* Add/Edit Form (responsive bottom sheet on mobile, centered modal on sm+) */}
       {(showAddForm || editingId) && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 w-full max-w-md rounded-t-3xl border-t border-slate-700 p-5 space-y-4 animate-slideUp">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm sm:p-4">
+          <div className="bg-bg-surface w-full max-w-md rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-700 p-5 space-y-4 animate-slideUp max-h-[90dvh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-white">
                 {editingId ? "Edit Exercise" : "New Exercise"}

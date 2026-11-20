@@ -78,7 +78,7 @@ export default function ActiveWorkout() {
   }, [activeWorkout]);
 
   // ── Auto-advance: brief confirmation, then move to the next exercise ──
-  const totalExercises = activeWorkout?.exercises.length || 0;
+  const totalExercises = activeWorkout?.exercises?.length || 0;
 
   const goNextExercise = useCallback(() => {
     setCurrentIndex((index) => Math.min(index + 1, totalExercises - 1));
@@ -182,20 +182,21 @@ export default function ActiveWorkout() {
   }, [activeWorkout, hydrationIntervalMinutes]);
 
   const progress = useMemo(() => {
+    const activeExList = activeWorkout?.exercises || [];
     if (!activeWorkout)
       return { totalSets: 0, doneSets: 0, percent: 0, workingVolume: 0 };
-    const totalSets = activeWorkout.exercises.reduce(
-      (acc, e) => acc + e.sets.length,
+    const totalSets = activeExList.reduce(
+      (acc, e) => acc + (e.sets || []).length,
       0,
     );
-    const doneSets = activeWorkout.exercises.reduce(
-      (acc, e) => acc + e.sets.filter((s) => s.done).length,
+    const doneSets = activeExList.reduce(
+      (acc, e) => acc + (e.sets || []).filter((s) => s.done).length,
       0,
     );
-    const workingVolume = activeWorkout.exercises.reduce(
+    const workingVolume = activeExList.reduce(
       (acc, e) =>
         acc +
-        e.sets.reduce((sAcc, s) => {
+        (e.sets || []).reduce((sAcc, s) => {
           if (!s.done || s.type === "W") return sAcc;
           return sAcc + (Number(s.weight) || 0) * (Number(s.reps) || 0);
         }, 0),
@@ -258,7 +259,7 @@ export default function ActiveWorkout() {
     );
   }
 
-  const currentExercise = activeWorkout.exercises[currentIndex];
+  const currentExercise = (activeWorkout.exercises || [])[currentIndex];
   const handleFinish = () => {
     setPreviousPRsSnapshot({ ...personalRecords });
     const session = finishWorkout();
@@ -446,7 +447,7 @@ export default function ActiveWorkout() {
               className="w-full min-h-9 cursor-pointer appearance-none rounded-lg border-0 bg-transparent pl-2 pr-7 text-xs font-medium text-white truncate focus-visible:ring-1 focus-visible:ring-neon-cyan/40"
             >
               {!totalExercises && <option value={0}>No exercises</option>}
-              {activeWorkout.exercises.map((entry, index) => (
+              {(activeWorkout.exercises || []).map((entry, index) => (
                 <option
                   key={`${entry.exerciseId}-${index}`}
                   value={index}
@@ -456,7 +457,8 @@ export default function ActiveWorkout() {
                   {exercises.find(
                     (exercise) => exercise.id === entry.exerciseId,
                   )?.name || "Exercise"}
-                  {entry.sets.length > 0 && entry.sets.every((set) => set.done)
+                  {(entry.sets || []).length > 0 &&
+                  (entry.sets || []).every((set) => set.done)
                     ? " ✓"
                     : ""}
                 </option>
@@ -490,10 +492,11 @@ export default function ActiveWorkout() {
             className="mt-1.5 flex items-center gap-1 overflow-x-auto pb-0.5"
             aria-label="Exercise progress steps"
           >
-            {activeWorkout.exercises.map((entry, idx) => {
+            {(activeWorkout.exercises || []).map((entry, idx) => {
+              const entrySets = entry.sets || [];
               const allDone =
-                entry.sets.length > 0 && entry.sets.every((s) => s.done);
-              const anyDone = entry.sets.some((s) => s.done);
+                entrySets.length > 0 && entrySets.every((s) => s.done);
+              const anyDone = entrySets.some((s) => s.done);
               const isCurrent = idx === currentIndex;
               const exName =
                 exercises.find((e) => e.id === entry.exerciseId)?.name ||

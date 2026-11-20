@@ -12,11 +12,14 @@ import {
   ChevronUp,
   Copy,
   AlertTriangle,
+  Disc3,
+  StickyNote,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
 import ActiveExerciseMediaPanel from "./ActiveExerciseMediaPanel";
 import ExerciseDetails from "./ExerciseDetails";
 import SwapExerciseModal from "./SwapExerciseModal";
+import PlateCalculatorModal from "./PlateCalculatorModal";
 import AngleBadge from "./AngleBadge";
 import { haptics } from "../utils/haptics";
 
@@ -56,9 +59,13 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
   const removeSet = useWorkoutStore((s) => s.removeSet);
   const history = useWorkoutStore((s) => s.history);
   const exercises = useWorkoutStore((s) => s.exercises);
+  const savedNote = useWorkoutStore((s) => s.exerciseNotes?.[exerciseId] || "");
+  const setExerciseNote = useWorkoutStore((s) => s.setExerciseNote);
   const [showSwap, setShowSwap] = useState(false);
   const [showTechniqueModal, setShowTechniqueModal] = useState(false);
   const [showQuickCues, setShowQuickCues] = useState(false);
+  const [showPlateCalc, setShowPlateCalc] = useState(false);
+  const [showNoteEditor, setShowNoteEditor] = useState(false);
 
   const exercise = useMemo(
     () =>
@@ -228,7 +235,21 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                 <AngleBadge angle={exercise.targetAngle} size="sm" />
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShowNoteEditor((v) => !v)}
+                aria-expanded={showNoteEditor}
+                className={`inline-flex min-h-9 items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  savedNote
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/15"
+                    : "border-slate-700/80 bg-slate-800/70 text-slate-200 hover:bg-slate-700"
+                }`}
+                title="Persistent personal note for this exercise"
+              >
+                <StickyNote size={13} aria-hidden="true" />
+                {savedNote ? "Note" : "Add note"}
+              </button>
               {hasQuickCues && (
                 <button
                   type="button"
@@ -253,6 +274,41 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
               </button>
             </div>
           </div>
+
+          {/* Persistent Exercise Note preview or editor */}
+          {savedNote && !showNoteEditor && (
+            <button
+              type="button"
+              onClick={() => setShowNoteEditor(true)}
+              className="w-full text-left rounded-xl border border-amber-500/25 bg-amber-950/15 px-3 py-2 text-xs text-amber-100/90 hover:border-amber-500/40 transition-colors flex items-start gap-2"
+            >
+              <StickyNote
+                size={13}
+                className="text-amber-400 shrink-0 mt-0.5"
+                aria-hidden="true"
+              />
+              <span className="leading-relaxed">{savedNote}</span>
+            </button>
+          )}
+
+          {showNoteEditor && (
+            <div className="rounded-xl border border-slate-700 bg-slate-900/80 p-2.5 space-y-1.5 animate-fadeIn">
+              <label
+                htmlFor={`note-${exerciseId}`}
+                className="block text-[11px] font-medium text-slate-400"
+              >
+                Saved cue / seat setting (persists for future sessions)
+              </label>
+              <textarea
+                id={`note-${exerciseId}`}
+                rows={2}
+                value={savedNote}
+                onChange={(e) => setExerciseNote(exerciseId, e.target.value)}
+                placeholder="e.g., Bench notch 3 · Pause 1s at bottom · Wide grip"
+                className="w-full rounded-lg border border-slate-700 bg-bg-deep px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:border-slate-400 focus:outline-none resize-none"
+              />
+            </div>
+          )}
 
           {/* Inline Collapsible Quick Cues Drawer (no modal interruption) */}
           {showQuickCues && hasQuickCues && (
@@ -332,16 +388,26 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
 
         {/* Sets Table */}
         <div className="p-3 space-y-2">
-          {/* Quick +/- Weight Stepper for the Active Set (one-handed gym convenience) */}
+          {/* Quick +/- Weight Stepper + Plate Calculator for the Active Set */}
           {activeSetIdx >= 0 && (
-            <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/90 bg-slate-900/50 px-2.5 py-1.5 text-[11px]">
-              <span className="text-slate-400">
-                Set{" "}
-                <strong className="text-white tabular-nums">
-                  {activeSetIdx + 1}
-                </strong>{" "}
-                quick weight
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800/90 bg-slate-900/50 px-2.5 py-1.5 text-[11px]">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-400">
+                  Set{" "}
+                  <strong className="text-white tabular-nums">
+                    {activeSetIdx + 1}
+                  </strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowPlateCalc(true)}
+                  className="inline-flex min-h-8 items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-800 px-2 text-[11px] font-medium text-slate-200 hover:bg-slate-700 transition-colors"
+                  aria-label="Open plate calculator"
+                  title="Calculate barbell plates per side"
+                >
+                  <Disc3 size={12} aria-hidden="true" /> Plates
+                </button>
+              </div>
               <div className="flex items-center gap-1.5">
                 {[-5, -2.5, +2.5, +5].map((delta) => (
                   <button
@@ -468,23 +534,42 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                   <Check size={18} strokeWidth={set.done ? 3 : 2} />
                 </button>
 
-                {/* Progressive Overload Indicator */}
+                {/* Progressive Overload Delta (vs previous session same set) */}
                 {ghostData?.sets[si] &&
-                  set.weight &&
-                  (set.type || "N") !== "W" && (
-                    <div
-                      className="absolute -right-1 -top-1"
-                      aria-hidden="true"
-                    >
-                      {Number(set.weight) > ghostData.sets[si].weight ? (
-                        <span className="flex items-center text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 rounded-full border border-emerald-500/30 font-bold">
-                          <TrendingUp size={9} className="mr-0.5" /> +PR
-                        </span>
-                      ) : Number(set.weight) < ghostData.sets[si].weight ? (
-                        <TrendingDown size={10} className="text-red-400" />
-                      ) : null}
-                    </div>
-                  )}
+                  (set.weight || set.reps) &&
+                  (set.type || "N") !== "W" && (() => {
+                    const prevW = Number(ghostData.sets[si].weight) || 0;
+                    const prevR = Number(ghostData.sets[si].reps) || 0;
+                    const curW = Number(set.weight) || 0;
+                    const curR = Number(set.reps) || 0;
+                    const wDiff = Math.round((curW - prevW) * 10) / 10;
+                    const rDiff = curR - prevR;
+                    if (curW > 0 && wDiff > 0) {
+                      return (
+                        <div className="col-span-5 flex items-center justify-end gap-1 text-[10px] font-mono tabular-nums text-emerald-400 pr-1">
+                          <TrendingUp size={10} aria-hidden="true" />
+                          <span>+{wDiff} kg vs last session</span>
+                        </div>
+                      );
+                    }
+                    if (curW > 0 && wDiff === 0 && curR > 0 && rDiff > 0) {
+                      return (
+                        <div className="col-span-5 flex items-center justify-end gap-1 text-[10px] font-mono tabular-nums text-emerald-400 pr-1">
+                          <TrendingUp size={10} aria-hidden="true" />
+                          <span>+{rDiff} rep{rDiff > 1 ? "s" : ""} vs last session</span>
+                        </div>
+                      );
+                    }
+                    if (curW > 0 && wDiff < 0) {
+                      return (
+                        <div className="col-span-5 flex items-center justify-end gap-1 text-[10px] font-mono tabular-nums text-slate-400 pr-1">
+                          <TrendingDown size={10} className="text-rose-400" aria-hidden="true" />
+                          <span>{wDiff} kg vs last session</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
               </div>
             );
           })}
@@ -533,6 +618,22 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
         onClose={() => setShowSwap(false)}
         exerciseIndex={exerciseIndex}
         currentExerciseId={exerciseId}
+      />
+
+      {/* Barbell Plate Calculator Modal */}
+      <PlateCalculatorModal
+        isOpen={showPlateCalc}
+        onClose={() => setShowPlateCalc(false)}
+        initialWeight={
+          (activeSetIdx >= 0 && sets[activeSetIdx]?.weight) ||
+          ghostData?.sets[Math.max(0, activeSetIdx)]?.weight ||
+          60
+        }
+        onApplyWeight={
+          activeSetIdx >= 0
+            ? (val) => updateSet(exerciseIndex, activeSetIdx, "weight", val)
+            : undefined
+        }
       />
     </>
   );
