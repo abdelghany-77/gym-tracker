@@ -22,16 +22,16 @@ const byId = new Map(
 );
 
 describe("exercise image audit integrity", () => {
-  it("covers all 89 exercises once, including explicit unavailable decisions", () => {
-    expect(exercisesDatabase).toHaveLength(89);
+  it("covers all 94 exercises once, including explicit unavailable decisions", () => {
+    expect(exercisesDatabase).toHaveLength(94);
     expect(manifest.schemaVersion).toBe(1);
-    expect(manifest.images).toHaveLength(89);
-    expect(new Set(manifest.images.map((entry) => entry.id)).size).toBe(89);
+    expect(manifest.images).toHaveLength(94);
+    expect(new Set(manifest.images.map((entry) => entry.id)).size).toBe(94);
     expect(manifest.images.map((entry) => entry.id).sort()).toEqual(
       [...byId.keys()].sort(),
     );
     expect(available).toHaveLength(77);
-    expect(unavailable).toHaveLength(12);
+    expect(unavailable).toHaveLength(17);
     for (const entry of manifest.images) {
       const exercise = byId.get(entry.id);
       expect(entry.name).toBe(exercise.name);

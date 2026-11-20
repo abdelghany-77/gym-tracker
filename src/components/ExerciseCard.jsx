@@ -8,9 +8,13 @@ import {
   ArrowLeftRight,
   TrendingUp,
   TrendingDown,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  AlertTriangle,
 } from "lucide-react";
 import useWorkoutStore from "../store/workoutStore";
-import ExerciseImage from "./ExerciseImage";
+import ActiveExerciseMediaPanel from "./ActiveExerciseMediaPanel";
 import ExerciseDetails from "./ExerciseDetails";
 import SwapExerciseModal from "./SwapExerciseModal";
 import AngleBadge from "./AngleBadge";
@@ -34,11 +38,12 @@ const SET_TYPE_META = {
     label: "F",
     nameAr: "فشل عضلي",
     nameEn: "Failure",
-    badge: "bg-rose-600/15 text-rose-400 border-rose-600/40 shadow-[0_0_10px_rgba(244,63,94,0.25)]",
+    badge: "bg-rose-600/15 text-rose-400 border-rose-600/40",
   },
 };
 
-const SET_GRID = "grid grid-cols-[1.5rem_2.25rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 items-center";
+const SET_GRID =
+  "grid grid-cols-[1.5rem_2.25rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 items-center";
 
 function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
   const { exerciseId, sets } = exerciseData;
@@ -53,6 +58,7 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
   const exercises = useWorkoutStore((s) => s.exercises);
   const [showSwap, setShowSwap] = useState(false);
   const [showTechniqueModal, setShowTechniqueModal] = useState(false);
+  const [showQuickCues, setShowQuickCues] = useState(false);
 
   const exercise = useMemo(
     () =>
@@ -60,6 +66,7 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
       getExerciseById(exerciseId),
     [getExerciseById, exerciseId, exercises],
   );
+
   // Working sets only — warm-up sets are excluded from previous-performance baselines.
   const ghostData = useMemo(() => {
     if (!history.length) return null;
@@ -70,21 +77,51 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
     return { ...ghost, sets: workingSets };
   }, [getGhostData, exerciseId, history]);
 
+  // Live working volume & best estimated 1RM (Epley) for this exercise
+  const liveStats = useMemo(() => {
+    let workingVolume = 0;
+    let bestE1rm = 0;
+    for (const set of sets) {
+      if (!set.done || set.type === "W") continue;
+      const w = Number(set.weight) || 0;
+      const r = Number(set.reps) || 0;
+      if (w > 0 && r > 0) {
+        workingVolume += w * r;
+        const e1rm = r === 1 ? w : Math.round(w * (1 + r / 30));
+        if (e1rm > bestE1rm) bestE1rm = e1rm;
+      }
+    }
+    return { workingVolume: Math.round(workingVolume), bestE1rm };
+  }, [sets]);
+
+  const activeSetIdx = useMemo(
+    () => sets.findIndex((s) => !s.done),
+    [sets],
+  );
+
   if (!exercise) return null;
 
   const handleToggleDone = (si) => {
     const set = sets[si];
-    // If fields empty, auto-fill from ghost data or defaults for fast mobile logging
+    // If fields empty, auto-fill from previous set, ghost data, or defaults for fast mobile logging
     if (!set.done) {
-      if (!set.weight && ghostData?.sets[si]?.weight) {
-        updateSet(exerciseIndex, si, "weight", ghostData.sets[si].weight);
+      const prevSet = si > 0 ? sets[si - 1] : null;
+      if (!set.weight) {
+        const fallbackWeight =
+          ghostData?.sets[si]?.weight ?? prevSet?.weight ?? "";
+        if (fallbackWeight) {
+          updateSet(exerciseIndex, si, "weight", fallbackWeight);
+        }
       }
       if (!set.reps) {
         updateSet(
           exerciseIndex,
           si,
           "reps",
-          ghostData?.sets[si]?.reps || exercise.default_reps || 10,
+          ghostData?.sets[si]?.reps ||
+            prevSet?.reps ||
+            exercise.default_reps ||
+            10,
         );
       }
       navigator.vibrate?.(50);
@@ -95,56 +132,236 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
     // Auto-advance: the just-completed set was the final one and every set is now done.
     if (!set.done && onAllSetsComplete) {
       const allDone =
-        sets.length > 0 &&
-        sets.every((s, idx) => s.done || idx === si);
+        sets.length > 0 && sets.every((s, idx) => s.done || idx === si);
       if (allDone) onAllSetsComplete();
     }
   };
 
+  // One-tap auto-fill unfinished sets from previous session or first filled set
+  const handleQuickFill = () => {
+    const firstFilled = sets.find((s) => s.weight || s.reps);
+    sets.forEach((set, idx) => {
+      if (set.done) return;
+      const targetWeight =
+        ghostData?.sets[idx]?.weight ??
+        ghostData?.sets[0]?.weight ??
+        firstFilled?.weight ??
+        "";
+      const targetReps =
+        ghostData?.sets[idx]?.reps ??
+        ghostData?.sets[0]?.reps ??
+        firstFilled?.reps ??
+        exercise.default_reps ??
+        10;
+      if (!set.weight && targetWeight !== "") {
+        updateSet(exerciseIndex, idx, "weight", String(targetWeight));
+      }
+      if (!set.reps && targetReps !== "") {
+        updateSet(exerciseIndex, idx, "reps", String(targetReps));
+      }
+    });
+    haptics.light();
+  };
+
+  // Micro weight nudge for the currently active (next incomplete) set
+  const handleNudgeActiveWeight = (delta) => {
+    if (activeSetIdx < 0) return;
+    const set = sets[activeSetIdx];
+    const base =
+      Number(set.weight) ||
+      Number(ghostData?.sets[activeSetIdx]?.weight) ||
+      (activeSetIdx > 0 ? Number(sets[activeSetIdx - 1]?.weight) : 0) ||
+      0;
+    const next = Math.max(0, Math.round((base + delta) * 10) / 10);
+    updateSet(exerciseIndex, activeSetIdx, "weight", String(next));
+    haptics.light();
+  };
+
+  const hasQuickCues = Boolean(
+    exercise.setupAlignment ||
+      exercise.executionCues?.length > 0 ||
+      exercise.commonMistakes?.length > 0,
+  );
+
   return (
     <>
-      <div className="glass-card overflow-hidden shadow-xl shadow-black/40 border border-border-slate transition-all">
-        <div className="p-3 space-y-3 border-b border-border-slate">
+      <div className="glass-card overflow-hidden shadow-xl shadow-black/40 border border-slate-800 transition-all">
+        <div className="p-3 space-y-3 border-b border-slate-800">
+          {/* Exercise Title + Swap Action */}
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-bold text-white">{exercise.name}</h3>
-              {exercise.nameAr && <p className="mt-1 text-[11px] text-slate-400" dir="rtl">{exercise.nameAr}</p>}
+              <h3 className="text-sm sm:text-base font-bold text-white">
+                {exercise.name}
+              </h3>
+              {exercise.nameAr && (
+                <p className="mt-0.5 text-xs text-slate-400" dir="rtl" lang="ar">
+                  {exercise.nameAr}
+                </p>
+              )}
             </div>
-            <button type="button" onClick={() => setShowSwap(true)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-800 text-slate-400 hover:text-neon-cyan hover:border-neon-cyan/40 transition-colors" aria-label={`Swap ${exercise.name} for another exercise`}>
+            <button
+              type="button"
+              onClick={() => setShowSwap(true)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+              aria-label={`Swap ${exercise.name} for another exercise`}
+              title="Swap for same-angle alternative"
+            >
               <ArrowLeftRight size={16} />
             </button>
           </div>
-          {/* Tight 2:1 framing — matches the 768×384 dual-frame sources with zero letterboxing */}
-          <div className="w-full aspect-[2/1] overflow-hidden rounded-xl border border-border-slate bg-[#0B0F17]">
-            <ExerciseImage exercise={exercise} className="h-full w-full" zoomable />
-          </div>
+
+          {/* Side-by-Side Image Slider + Continuous Video */}
+          <ActiveExerciseMediaPanel exercise={exercise} />
+
+          {/* Muscle / Angle + Inline Quick Cues & Full Details triggers */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-slate-400">{exercise.muscle}</span>
-              {exercise.targetAngle && <AngleBadge angle={exercise.targetAngle} size="sm" />}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-slate-300 font-medium">
+                {exercise.muscle}
+              </span>
+              {exercise.equipment && (
+                <span className="text-xs text-slate-400 capitalize">
+                  · {exercise.equipment}
+                </span>
+              )}
+              {exercise.targetAngle && (
+                <AngleBadge angle={exercise.targetAngle} size="sm" />
+              )}
             </div>
-            <button type="button" onClick={() => setShowTechniqueModal(true)} className="inline-flex items-center gap-1 text-xs font-semibold text-neon-cyan py-1">
-              <Info size={13} /> Form & tips
-            </button>
+            <div className="flex items-center gap-2">
+              {hasQuickCues && (
+                <button
+                  type="button"
+                  onClick={() => setShowQuickCues((v) => !v)}
+                  aria-expanded={showQuickCues}
+                  className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-800/70 px-2.5 py-1 text-xs font-medium text-slate-200 hover:bg-slate-700 transition-colors"
+                >
+                  Quick cues
+                  {showQuickCues ? (
+                    <ChevronUp size={13} aria-hidden="true" />
+                  ) : (
+                    <ChevronDown size={13} aria-hidden="true" />
+                  )}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowTechniqueModal(true)}
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-800/70 px-2.5 py-1 text-xs font-medium text-slate-200 hover:bg-slate-700 transition-colors"
+              >
+                <Info size={13} aria-hidden="true" /> Full guide
+              </button>
+            </div>
           </div>
+
+          {/* Inline Collapsible Quick Cues Drawer (no modal interruption) */}
+          {showQuickCues && hasQuickCues && (
+            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3 space-y-2 text-xs animate-fadeIn">
+              {exercise.setupAlignment && (
+                <p className="text-slate-300 leading-relaxed">
+                  <span className="font-semibold text-white">Setup: </span>
+                  {exercise.setupAlignment}
+                </p>
+              )}
+              {exercise.executionCues?.length > 0 && (
+                <ol className="list-decimal pl-4 space-y-1 text-slate-300 leading-relaxed">
+                  {exercise.executionCues.map((cue, idx) => (
+                    <li key={idx}>{cue}</li>
+                  ))}
+                </ol>
+              )}
+              {exercise.commonMistakes?.length > 0 && (
+                <div className="pt-1 border-t border-slate-800 flex items-start gap-1.5 text-slate-400">
+                  <AlertTriangle
+                    size={13}
+                    className="text-amber-500 shrink-0 mt-0.5"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <strong className="text-slate-200">Avoid: </strong>
+                    {exercise.commonMistakes[0]}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Previous performance (working sets only) */}
-        <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border-slate/50 bg-bg-deep/40 text-[10px]">
-          <span className="text-slate-500">Previous Performance</span>
-          <span className="text-slate-300 font-mono truncate tabular-nums">
-            {ghostData
-              ? ghostData.sets
-                  .map((s) => `${s.weight || 0} kg × ${s.reps || 0} reps`)
-                  .join("  ·  ")
-              : "No previous performance"}
-          </span>
+        {/* Previous Performance + Live Exercise Volume/e1RM + One-Tap Fill */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 border-b border-slate-800/80 bg-bg-deep/50 text-[11px]">
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <div className="flex items-center gap-2 text-slate-400">
+              <span>Previous:</span>
+              <span className="text-slate-200 font-mono truncate tabular-nums">
+                {ghostData
+                  ? ghostData.sets
+                      .map((s) => `${s.weight || 0}×${s.reps || 0}`)
+                      .join(" · ")
+                  : "No previous log"}
+              </span>
+            </div>
+            {liveStats.workingVolume > 0 && (
+              <div className="text-[10px] text-slate-400 font-mono tabular-nums">
+                Vol:{" "}
+                <span className="text-slate-200 font-semibold">
+                  {liveStats.workingVolume.toLocaleString()} kg
+                </span>
+                {liveStats.bestE1rm > 0 && (
+                  <>
+                    {" · "}Best e1RM:{" "}
+                    <span className="text-slate-200 font-semibold">
+                      {liveStats.bestE1rm} kg
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {activeSetIdx >= 0 && (ghostData || sets.some((s) => s.weight)) && (
+            <button
+              type="button"
+              onClick={handleQuickFill}
+              className="inline-flex min-h-8 items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-slate-200 hover:bg-slate-700 transition-colors shrink-0"
+              title="Auto-fill remaining sets from previous log or first set"
+            >
+              <Copy size={11} aria-hidden="true" /> Fill sets
+            </button>
+          )}
         </div>
 
         {/* Sets Table */}
         <div className="p-3 space-y-2">
+          {/* Quick +/- Weight Stepper for the Active Set (one-handed gym convenience) */}
+          {activeSetIdx >= 0 && (
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/90 bg-slate-900/50 px-2.5 py-1.5 text-[11px]">
+              <span className="text-slate-400">
+                Set{" "}
+                <strong className="text-white tabular-nums">
+                  {activeSetIdx + 1}
+                </strong>{" "}
+                quick weight
+              </span>
+              <div className="flex items-center gap-1.5">
+                {[-5, -2.5, +2.5, +5].map((delta) => (
+                  <button
+                    key={delta}
+                    type="button"
+                    onClick={() => handleNudgeActiveWeight(delta)}
+                    aria-label={`Adjust set ${activeSetIdx + 1} weight by ${delta > 0 ? `+${delta}` : delta} kg`}
+                    className="min-h-8 min-w-10 rounded-lg border border-slate-700/80 bg-slate-800 px-2 text-[11px] font-mono font-medium text-slate-200 hover:bg-slate-700 active:scale-95 transition-all tabular-nums"
+                  >
+                    {delta > 0 ? `+${delta}` : delta}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Table header */}
-          <div className={`${SET_GRID} text-[10px] text-slate-400 uppercase tracking-wider font-semibold px-1 pb-1.5 border-b border-border-slate/50`}>
+          <div
+            className={`${SET_GRID} text-[10px] text-slate-400 uppercase tracking-wider font-semibold px-1 pb-1.5 border-b border-slate-800/70`}
+          >
             <span className="text-center">Set</span>
             <span className="text-center">Type</span>
             <span className="text-center">Weight (kg)</span>
@@ -155,15 +372,18 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
           {/* Set Rows */}
           {sets.map((set, si) => {
             const typeMeta = SET_TYPE_META[set.type || "N"];
+            const isActiveRow = si === activeSetIdx;
             return (
               <div
                 key={si}
-                className={`${SET_GRID} p-2 rounded-2xl relative ${
+                className={`${SET_GRID} p-2 rounded-2xl relative transition-colors ${
                   set.type === "F"
-                    ? "border border-rose-600/30 bg-rose-600/[0.04]"
+                    ? "border border-rose-600/35 bg-rose-600/[0.04]"
                     : set.done
-                      ? "bg-neon-emerald/5 border border-neon-emerald/20"
-                      : "bg-slate-800/30 border border-slate-700/40"
+                      ? "bg-emerald-500/[0.06] border border-emerald-500/25"
+                      : isActiveRow
+                        ? "bg-slate-800/60 border border-slate-600/80"
+                        : "bg-slate-800/30 border border-slate-800"
                 }`}
               >
                 {/* Set Number */}
@@ -171,8 +391,10 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                   <span
                     className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold font-mono transition-colors ${
                       set.done
-                        ? "text-neon-emerald bg-neon-emerald/15"
-                        : "text-slate-400 bg-slate-800"
+                        ? "text-emerald-400 bg-emerald-500/15"
+                        : isActiveRow
+                          ? "text-slate-950 bg-slate-200"
+                          : "text-slate-400 bg-slate-800"
                     }`}
                   >
                     {si + 1}
@@ -201,8 +423,10 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                   placeholder={String(ghostData?.sets[si]?.weight ?? 0)}
                   value={set.weight}
                   disabled={set.done}
-                  onChange={(event) => updateSet(exerciseIndex, si, "weight", event.target.value)}
-                  className="h-11 min-w-0 w-full rounded-xl border border-slate-700/70 bg-bg-deep/60 px-2 text-center text-base font-semibold tabular-nums text-white placeholder:text-slate-500 focus:border-neon-cyan/60 focus:outline-none focus:shadow-none disabled:text-slate-400"
+                  onChange={(event) =>
+                    updateSet(exerciseIndex, si, "weight", event.target.value)
+                  }
+                  className="h-11 min-w-0 w-full rounded-xl border border-slate-700/70 bg-bg-deep/70 px-2 text-center text-base font-semibold tabular-nums text-white placeholder:text-slate-500 focus:border-slate-400 focus:outline-none disabled:text-slate-400"
                   aria-label={`Set ${si + 1} weight in kg`}
                 />
                 <input
@@ -210,11 +434,15 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                   inputMode="numeric"
                   autoComplete="off"
                   spellCheck={false}
-                  placeholder={String(ghostData?.sets[si]?.reps ?? exercise.default_reps ?? 10)}
+                  placeholder={String(
+                    ghostData?.sets[si]?.reps ?? exercise.default_reps ?? 10,
+                  )}
                   value={set.reps}
                   disabled={set.done}
-                  onChange={(event) => updateSet(exerciseIndex, si, "reps", event.target.value)}
-                  className="h-11 min-w-0 w-full rounded-xl border border-slate-700/70 bg-bg-deep/60 px-2 text-center text-base font-semibold tabular-nums text-white placeholder:text-slate-500 focus:border-neon-cyan/60 focus:outline-none focus:shadow-none disabled:text-slate-400"
+                  onChange={(event) =>
+                    updateSet(exerciseIndex, si, "reps", event.target.value)
+                  }
+                  className="h-11 min-w-0 w-full rounded-xl border border-slate-700/70 bg-bg-deep/70 px-2 text-center text-base font-semibold tabular-nums text-white placeholder:text-slate-500 focus:border-slate-400 focus:outline-none disabled:text-slate-400"
                   aria-label={`Set ${si + 1} reps`}
                 />
 
@@ -222,14 +450,14 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                 <button
                   type="button"
                   onClick={() => handleToggleDone(si)}
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none ${
+                  className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all btn-press focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:outline-none ${
                     set.done ? "animate-set-complete " : ""
                   }${
                     set.done
-                      ? "bg-neon-emerald text-bg-deep font-bold shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                      ? "bg-emerald-500 text-slate-950 font-bold"
                       : set.type === "F"
                         ? "bg-rose-950/60 text-rose-300 border border-rose-600/40"
-                        : "bg-slate-800 text-slate-400 border border-slate-700"
+                        : "bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700"
                   }`}
                   aria-label={
                     set.done
@@ -241,27 +469,32 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                 </button>
 
                 {/* Progressive Overload Indicator */}
-                {ghostData?.sets[si] && set.weight && (set.type || "N") !== "W" && (
-                  <div className="absolute -right-1 -top-1" aria-hidden="true">
-                    {Number(set.weight) > ghostData.sets[si].weight ? (
-                      <span className="flex items-center text-[9px] bg-neon-green/20 text-neon-green px-1 rounded-full border border-neon-green/30 font-bold">
-                        <TrendingUp size={9} className="mr-0.5" /> +PR
-                      </span>
-                    ) : Number(set.weight) < ghostData.sets[si].weight ? (
-                      <TrendingDown size={10} className="text-red-400" />
-                    ) : null}
-                  </div>
-                )}
+                {ghostData?.sets[si] &&
+                  set.weight &&
+                  (set.type || "N") !== "W" && (
+                    <div
+                      className="absolute -right-1 -top-1"
+                      aria-hidden="true"
+                    >
+                      {Number(set.weight) > ghostData.sets[si].weight ? (
+                        <span className="flex items-center text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 rounded-full border border-emerald-500/30 font-bold">
+                          <TrendingUp size={9} className="mr-0.5" /> +PR
+                        </span>
+                      ) : Number(set.weight) < ghostData.sets[si].weight ? (
+                        <TrendingDown size={10} className="text-red-400" />
+                      ) : null}
+                    </div>
+                  )}
               </div>
             );
           })}
 
           {/* Add/Remove set buttons */}
-          <div className="flex items-center justify-between pt-3 border-t border-border-slate/40 mt-2 px-1">
+          <div className="flex items-center justify-between pt-3 border-t border-slate-800/60 mt-2 px-1">
             <button
               type="button"
               onClick={() => removeSet(exerciseIndex, sets.length - 1)}
-              className="text-xs text-slate-400 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none px-2 py-1 rounded-lg"
+              className="min-h-9 text-xs text-slate-400 hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-30 px-2.5 py-1 rounded-lg"
               disabled={sets.length <= 1}
               aria-label="Remove last set"
             >
@@ -270,7 +503,7 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
             <button
               type="button"
               onClick={() => addSet(exerciseIndex)}
-              className="text-xs text-neon-cyan font-semibold hover:text-neon-cyan/80 flex items-center gap-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:outline-none bg-neon-cyan/10 px-3 py-1 rounded-lg border border-neon-cyan/20"
+              className="min-h-9 text-xs text-slate-950 font-semibold bg-slate-200 hover:bg-white flex items-center gap-1.5 transition-colors px-3 py-1 rounded-lg"
               aria-label="Add a set"
             >
               <Plus size={13} /> Add Set
@@ -278,10 +511,12 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
           </div>
 
           {/* Set-type legend */}
-          <p className="text-[9px] text-slate-500 pt-1 px-1">
-            <span className="text-amber-400 font-semibold">W</span> Warm-up (excluded from volume & PRs) ·{" "}
+          <p className="text-[10px] text-slate-500 pt-1 px-1">
+            <span className="text-amber-400 font-semibold">W</span> Warm-up
+            (excluded from volume & PRs) ·{" "}
             <span className="text-slate-300 font-semibold">N</span> Normal ·{" "}
-            <span className="text-rose-400 font-semibold">F</span> Failure — tap the Type badge to cycle
+            <span className="text-rose-400 font-semibold">F</span> Failure — tap
+            Type to cycle
           </p>
         </div>
       </div>

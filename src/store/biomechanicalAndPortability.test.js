@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import exercisesDatabase, { trainingPlans } from '../data/exercises';
+import exercisesDatabase, { trainingPlans, CORE_SPLIT_ANGLES } from '../data/exercises';
 import { exportUserData, importUserData, DATABASE_VERSION } from './helpers';
 import useWorkoutStore from './workoutStore';
 
 describe('Biomechanical Angle Coverage & Training Splits (Requirement 4)', () => {
   const exMap = Object.fromEntries(exercisesDatabase.map((e) => [e.id, e]));
 
-  it('guarantees 100% (25/25) angle coverage for ppl_upper with ZERO neglected angles', () => {
+  it('guarantees 100% (25/25) core split angle coverage for ppl_upper with ZERO neglected core angles', () => {
     const plan = trainingPlans.ppl_upper;
     expect(plan).toBeDefined();
 
@@ -19,18 +19,17 @@ describe('Biomechanical Angle Coverage & Training Splits (Requirement 4)', () =>
       });
     });
 
-    // All 25 angles represented in exercisesDatabase
-    const allDbAngles = new Set(exercisesDatabase.map((e) => e.targetAngle));
-    expect(allDbAngles.size).toBe(25);
+    // All 25 core split angles must remain covered while catalog grows to additional categories (e.g., Glutes)
+    const coreAngleSet = new Set(CORE_SPLIT_ANGLES);
+    expect(coreAngleSet.size).toBe(25);
     expect(coveredAngles.size).toBe(25);
 
-    // Verify zero missing angles
-    allDbAngles.forEach((angle) => {
-      expect(coveredAngles.has(angle), `Angle ${angle} should be covered in ppl_upper`).toBe(true);
+    coreAngleSet.forEach((angle) => {
+      expect(coveredAngles.has(angle), `Core angle ${angle} should be covered in ppl_upper`).toBe(true);
     });
   });
 
-  it('guarantees 100% (25/25) angle coverage for bro_split with ZERO neglected angles', () => {
+  it('guarantees 100% (25/25) core split angle coverage for bro_split with ZERO neglected core angles', () => {
     const plan = trainingPlans.bro_split;
     expect(plan).toBeDefined();
 
@@ -43,11 +42,11 @@ describe('Biomechanical Angle Coverage & Training Splits (Requirement 4)', () =>
       });
     });
 
-    const allDbAngles = new Set(exercisesDatabase.map((e) => e.targetAngle));
+    const coreAngleSet = new Set(CORE_SPLIT_ANGLES);
     expect(coveredAngles.size).toBe(25);
 
-    allDbAngles.forEach((angle) => {
-      expect(coveredAngles.has(angle), `Angle ${angle} should be covered in bro_split`).toBe(true);
+    coreAngleSet.forEach((angle) => {
+      expect(coveredAngles.has(angle), `Core angle ${angle} should be covered in bro_split`).toBe(true);
     });
   });
 

@@ -182,7 +182,8 @@ export default function ActiveWorkout() {
   }, [activeWorkout, hydrationIntervalMinutes]);
 
   const progress = useMemo(() => {
-    if (!activeWorkout) return { totalSets: 0, doneSets: 0, percent: 0 };
+    if (!activeWorkout)
+      return { totalSets: 0, doneSets: 0, percent: 0, workingVolume: 0 };
     const totalSets = activeWorkout.exercises.reduce(
       (acc, e) => acc + e.sets.length,
       0,
@@ -191,9 +192,19 @@ export default function ActiveWorkout() {
       (acc, e) => acc + e.sets.filter((s) => s.done).length,
       0,
     );
+    const workingVolume = activeWorkout.exercises.reduce(
+      (acc, e) =>
+        acc +
+        e.sets.reduce((sAcc, s) => {
+          if (!s.done || s.type === "W") return sAcc;
+          return sAcc + (Number(s.weight) || 0) * (Number(s.reps) || 0);
+        }, 0),
+      0,
+    );
     return {
       totalSets,
       doneSets,
+      workingVolume: Math.round(workingVolume),
       percent: totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0,
     };
   }, [activeWorkout]);
@@ -266,7 +277,7 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] lg:h-[calc(100dvh-2rem)] overflow-hidden bg-bg-deep">
+    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] lg:h-[calc(100dvh-2rem)] overflow-hidden bg-bg-deep">
       {/* ═══ TOP FIXED HEADER ═══ */}
       <header className="shrink-0 bg-bg-surface/70 px-3 pt-2 pb-1.5 space-y-2">
         {/* Row 1: Back, Program Name, Elapsed Timer, Cancel */}
@@ -284,13 +295,15 @@ export default function ActiveWorkout() {
             <h1 className="text-sm font-semibold tracking-tight text-white truncate">
               {activeWorkout.programName || "Active Routine"}
             </h1>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-400">
+            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-400 tabular-nums">
               <span
-                className="h-1.5 w-1.5 rounded-full bg-neon-emerald"
+                className="h-1.5 w-1.5 rounded-full bg-emerald-400"
                 aria-hidden="true"
               />
-              {progress.doneSets}/{progress.totalSets} sets · {progress.percent}
-              %
+              {progress.doneSets}/{progress.totalSets} sets · {progress.percent}%
+              {progress.workingVolume > 0 && (
+                <span> · {progress.workingVolume.toLocaleString()} kg</span>
+              )}
             </p>
           </div>
 
@@ -464,12 +477,50 @@ export default function ActiveWorkout() {
               )
             }
             disabled={currentIndex >= totalExercises - 1}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-700/70 text-white hover:bg-slate-600 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
             aria-label="Next exercise"
           >
             <ArrowRight size={18} />
           </button>
         </div>
+
+        {/* Quick Exercise Step Progress Strip */}
+        {totalExercises > 1 && (
+          <div
+            className="mt-1.5 flex items-center gap-1 overflow-x-auto pb-0.5"
+            aria-label="Exercise progress steps"
+          >
+            {activeWorkout.exercises.map((entry, idx) => {
+              const allDone =
+                entry.sets.length > 0 && entry.sets.every((s) => s.done);
+              const anyDone = entry.sets.some((s) => s.done);
+              const isCurrent = idx === currentIndex;
+              const exName =
+                exercises.find((e) => e.id === entry.exerciseId)?.name ||
+                `Exercise ${idx + 1}`;
+              return (
+                <button
+                  key={`${entry.exerciseId}-step-${idx}`}
+                  type="button"
+                  onClick={() => setCurrentIndex(idx)}
+                  aria-label={`Jump to ${idx + 1}: ${exName}${allDone ? " (completed)" : ""}`}
+                  aria-current={isCurrent ? "step" : undefined}
+                  className={`h-7 min-w-7 flex-1 rounded-md text-[11px] font-mono font-semibold transition-colors tabular-nums ${
+                    isCurrent
+                      ? "bg-slate-200 text-slate-950"
+                      : allDone
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                        : anyDone
+                          ? "bg-slate-700/80 text-slate-200 border border-slate-600"
+                          : "bg-slate-800/70 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {allDone ? "✓" : idx + 1}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ═══ CENTER WORKOUT EXECUTION AREA (Zero Scroll Optimized) ═══ */}

@@ -1268,4 +1268,77 @@ export const exerciseBiomechanics = {
       "Rotating the wrist early, losing the biceps-biased ascent."
     ],
   },
+  // ── PILOT GATE ADDITION (Glutes — Hip Extension / Thrust) ──
+  glute_bb_hip_thrust: {
+    primaryTarget: "Gluteus Maximus & Gluteus Medius (Shortened Hip Extension)",
+    secondaryMuscles: ["Hamstrings", "Quadriceps", "Core Stabilizers"],
+    jointAction: "Loaded Hip Extension with Neutral Lumbar Posterior Pelvic Tilt",
+    setupAlignment: "Lower edge of scapulae anchored across horizontal bench, padded barbell over hip crease, shins vertical at top",
+    executionCues: [
+      "Keep chin tucked slightly and ribs down so motion drives strictly from the hips.",
+      "Drive through the heels to full hip extension with a 1-second glute squeeze at the top.",
+      "Lower hips under control without letting the lumbar spine arch."
+    ],
+    commonMistakes: [
+      "Hyperextending the lower back at lockout instead of tilting the pelvis posteriorly.",
+      "Placing feet too close (quad dominant) or too far forward (hamstring cramp)."
+    ],
+  },
+  // ── WAVE-2 VERIFIED DUAL-ASSET ADDITIONS ──
+  leg_front_squat: {
+    primaryTarget: "Quadriceps (Upright Knee-Dominant Overload)",
+    secondaryMuscles: ["Glutes", "Upper Back / Thoracic Erectors", "Anterior Core"],
+    jointAction: "Deep Knee Flexion + Upright Hip Extension in Front-Rack Load",
+    setupAlignment: "Barbell seated cleanly across anterior deltoid shelf, elbows elevated parallel to floor, heels shoulder-width",
+    executionCues: [
+      "Keep elbows high throughout the descent so the bar never rolls forward.",
+      "Allow knees to track freely over toes with a vertical torso and drive smoothly out of the hole."
+    ],
+    commonMistakes: [
+      "Dropping the elbows at the bottom, causing thoracic rounding.",
+      "Heels lifting off the floor due to insufficient ankle dorsiflexion."
+    ],
+  },
+  leg_hip_adduction: {
+    primaryTarget: "Adductor Magnus, Longus & Brevis (Inner Thigh)",
+    secondaryMuscles: ["Gracilis", "Pectineus"],
+    jointAction: "Seated Bilateral Hip Adduction",
+    setupAlignment: "Seated upright with lumbar flush against pad, inner knee/thigh pads set to a comfortable wide stretch",
+    executionCues: [
+      "Drive the inner thighs together smoothly and hold a 1-second isometric squeeze at full closure.",
+      "Control the eccentric opening back to a gentle adductor stretch without letting the weight stack slam."
+    ],
+    commonMistakes: [
+      "Using excessive momentum to bounce out of the stretched position.",
+      "Leaning forward off the backrest to leverage body weight."
+    ],
+  },
+  arm_single_arm_cable_ext: {
+    primaryTarget: "Triceps Brachii Long Head (Unilateral Overhead Stretch)",
+    secondaryMuscles: ["Triceps Lateral & Medial Heads", "Anconeus", "Core Stabilizers"],
+    jointAction: "Unilateral Elbow Extension in Overhead Shoulder Flexion",
+    setupAlignment: "Staggered stance facing away from low-to-mid pulley, single handle held behind head with elbow pointed up",
+    executionCues: [
+      "Anchor the upper arm in place and extend the forearm cleanly to full elbow lockout.",
+      "Lower slowly behind the head for a deep long-head stretch before initiating the next rep."
+    ],
+    commonMistakes: [
+      "Flaring the elbow far outward or swinging the shoulder forward.",
+      "Arching the lower back instead of bracing the ribcage down."
+    ],
+  },
+  forearm_farmer_walk: {
+    primaryTarget: "Forearm Flexors & Isometric Crush Grip",
+    secondaryMuscles: ["Upper Trapezius", "Brachioradialis", "Obliques & Deep Core", "Calves"],
+    jointAction: "Loaded Isometric Grip Carry with Anti-Lateral Flexion Stability",
+    setupAlignment: "Heavy kettlebells held firmly at sides, chest tall, shoulder blades depressed and packed, neutral wrist alignment",
+    executionCues: [
+      "Crush the handles tightly and walk with brisk, short, controlled strides.",
+      "Keep shoulders level and ribs stacked over pelvis without side-to-side sway."
+    ],
+    commonMistakes: [
+      "Letting shoulders slump forward or shrug unevenly.",
+      "Taking overly long strides that cause the weights to swing into the thighs."
+    ],
+  },
 };

@@ -1,46 +1,17 @@
 import defaultExercises, { trainingPlans } from "../data/exercises";
 import {
-  DATABASE_VERSION,
   loadFromStorage,
   saveToStorage,
   generateId,
   sanitizeExerciseList,
 } from "./helpers";
+import { migrateUserDatabase } from "./migration";
 
-// ── Database Version Check & Hard Reset ──
-export const purgeAndSyncDatabase = () => {
-  try {
-    if (typeof window === "undefined" || !window.localStorage) return;
-    const storedVersion = localStorage.getItem("gym_db_version");
-    const currentVersion = storedVersion?.startsWith('"')
-      ? JSON.parse(storedVersion)
-      : storedVersion;
-    if (currentVersion !== DATABASE_VERSION) {
-      // Hard wipe of all exercise and program states
-      localStorage.removeItem("gym_exercises");
-      localStorage.removeItem("gym_programs");
-      localStorage.removeItem("gym_schedule");
-      localStorage.removeItem("gym_custom_program_overrides");
-      localStorage.removeItem("gym_custom_overrides");
+// ── Safe Non-Destructive Database Migration (v3 -> v4) ──
+export const purgeAndSyncDatabase = () =>
+  migrateUserDatabase({ defaultExercises, trainingPlans });
 
-      // Set pristine 72-exercise database and initial programs
-      const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
-      const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
-      const pristineExercises = sanitizeExerciseList(defaultExercises);
-      localStorage.setItem("gym_exercises", JSON.stringify(pristineExercises));
-      localStorage.setItem("gym_programs", JSON.stringify(plan.programs));
-      localStorage.setItem(
-        "gym_schedule",
-        JSON.stringify(plan.defaultSchedule),
-      );
-      localStorage.setItem("gym_db_version", DATABASE_VERSION);
-    }
-  } catch (e) {
-    console.warn("Database purge & sync failed:", e);
-  }
-};
-
-// Execute version check immediately before store initialization
+// Execute safe version migration immediately before store initialization
 purgeAndSyncDatabase();
 
 // ── Seed logic ──

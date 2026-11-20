@@ -14,11 +14,11 @@ export const angleLabels = {
   lat_isolation:        { en: "Lat Isolation",            ar: "عزل المجنص" },
   upper_back_rear_delt: { en: "Upper Back / Rear Delt",  ar: "أعلى الظهر / كتف خلفي" },
   lower_back_posterior: { en: "Lower Back",              ar: "أسفل الظهر" },
-  // Chest
-  upper_chest:          { en: "Upper Chest",              ar: "صدر علوي" },
-  mid_chest:            { en: "Mid Chest",                ar: "صدر أوسط" },
+  // Chest (anatomical emphasis & movement patterns)
+  upper_chest:          { en: "Upper Chest",              ar: "صدر علوي (ترقوي)" },
+  mid_chest:            { en: "Mid Chest",                ar: "صدر أوسط (قصي)" },
   lower_chest:          { en: "Lower Chest",              ar: "صدر سفلي" },
-  inner_chest:          { en: "Inner Chest",              ar: "صدر داخلي" },
+  inner_chest:          { en: "Chest Adduction / Fly",    ar: "تقريب ورفرفة الصدر" },
   machine_compound:     { en: "Machine Compound",         ar: "ضغط آلي مركب" },
   // Shoulders
   anterior_delt:        { en: "Front Delt",               ar: "كتف أمامي" },
@@ -27,19 +27,58 @@ export const angleLabels = {
   upper_traps:          { en: "Upper Traps",              ar: "ترابيز علوي" },
   // Legs
   quad_compound:        { en: "Quad Compound",            ar: "رباعية مركب" },
-  quad_isolation:       { en: "Quad Isolation",           ar: "عزل رباعية" },
+  quad_isolation:       { en: "Quad Focus (Knee Ext.)",   ar: "تركيز رباعية (مد الركبة)" },
   hamstring_hinge:      { en: "Hamstring Hinge",          ar: "خلفيات - مفصلي" },
   hamstring_curl:       { en: "Hamstring Curl",           ar: "خلفيات - كيرل" },
   calves:               { en: "Calves",                   ar: "سمانة" },
+  hip_adductors:        { en: "Hip Adductors",            ar: "الضامة" },
+  // Glutes
+  glutes_thrust:        { en: "Glute Thrust / Bridge",    ar: "دفع الحوض والأرداف" },
+  glutes_abduction:     { en: "Glute Abduction / Medius", ar: "إبعاد الورك والأرداف" },
   // Arms
-  bicep_long_head:      { en: "Bicep Long Head",          ar: "بايسبس - رأس طويل" },
-  bicep_short_head:     { en: "Bicep Short Head",         ar: "بايسبس - رأس قصير" },
-  brachialis:           { en: "Brachialis",               ar: "عضلة عضدية" },
-  tricep_long_head:     { en: "Tricep Long Head",         ar: "ترايسبس - رأس طويل" },
-  tricep_lateral_medial:{ en: "Tricep Lateral/Medial",    ar: "ترايسبس - جانبي" },
-  // Core
-  core_abs:             { en: "Core & Abs",               ar: "بطن و Core" },
+  bicep_long_head:      { en: "Bicep Long-Head Bias",     ar: "بايسبس - تحيز الرأس الطويل" },
+  bicep_short_head:     { en: "Bicep Short-Head Bias",    ar: "بايسبس - تحيز الرأس القصير" },
+  brachialis:           { en: "Brachialis / Neutral",     ar: "عضلة عضدية / قبضة محايدة" },
+  tricep_long_head:     { en: "Tricep Long-Head Bias",    ar: "ترايسبس - تحيز الرأس الطويل" },
+  tricep_lateral_medial:{ en: "Tricep Lateral/Medial",    ar: "ترايسبس - جانبي/أوسط" },
+  // Forearms
+  forearms_flexors:     { en: "Forearm Flexors & Grip",   ar: "قابضات الساعد والقبضة" },
+  forearms_extensors:   { en: "Forearm Extensors",        ar: "باسطات الساعد" },
+  // Core (functional patterns; core_abs retained for backward compatibility)
+  core_abs:             { en: "Core & Trunk",             ar: "بطن وجذع" },
+  core_upper_flexion:   { en: "Trunk Flexion (Top-Down)", ar: "ثني علوي للعمود الفقري" },
+  core_lower_pelvic:    { en: "Pelvic Tilt / Leg Raise",  ar: "إمالة الحوض ورفع السفلي" },
+  core_obliques_rotation:{ en: "Obliques & Rotation",     ar: "الجانبيات والدوران" },
+  core_anti_extension:  { en: "Anti-Extension Stability", ar: "مقاومة التمدد والثبات" },
 };
+
+export const CORE_SPLIT_ANGLES = [
+  "vertical_pull",
+  "horizontal_row",
+  "unilateral_row",
+  "lat_isolation",
+  "upper_back_rear_delt",
+  "lower_back_posterior",
+  "upper_chest",
+  "mid_chest",
+  "lower_chest",
+  "inner_chest",
+  "anterior_delt",
+  "lateral_delt",
+  "posterior_delt",
+  "upper_traps",
+  "quad_compound",
+  "quad_isolation",
+  "hamstring_hinge",
+  "hamstring_curl",
+  "calves",
+  "bicep_long_head",
+  "bicep_short_head",
+  "brachialis",
+  "tricep_long_head",
+  "tricep_lateral_medial",
+  "core_abs",
+];
 
 const baseExercisesDatabase = [
   // ==========================================
@@ -1502,6 +1541,103 @@ const baseExercisesDatabase = [
     image: "/exercises/arm_zottman_curl.png",
     tips: "Curl supinated, then rotate to pronated grip at the top and lower slowly. One movement trains biceps, brachialis and forearms.",
   },
+  // ── PILOT GATE ADDITION (Glutes — Hip Extension / Thrust) ──
+  {
+    id: "glute_bb_hip_thrust",
+    name: "Barbell Hip Thrust",
+    nameAr: "دفع الحوض بالبار للأرداف",
+    primaryMuscle: "glutes",
+    muscle: "Glutes",
+    targetAngle: "glutes_thrust",
+    equipment: "barbell",
+    category: "compound",
+    difficulty: "intermediate",
+    defaultSets: 3,
+    defaultReps: 10,
+    default_sets: 3,
+    default_reps: 10,
+    image: null,
+    imageUnavailableReason:
+      "Covered by the v2 verified dual-asset pilot pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed.",
+    tips: "Anchor upper back across a horizontal bench, tuck chin slightly, and drive hips through heels to a 1-second glute squeeze at lockout.",
+  },
+  // ── WAVE-2 VERIFIED DUAL-ASSET ADDITIONS ──
+  {
+    id: "leg_front_squat",
+    name: "Barbell Front Squat",
+    nameAr: "سكوات أمامي بالبار",
+    primaryMuscle: "legs",
+    muscle: "Legs",
+    targetAngle: "quad_compound",
+    equipment: "barbell",
+    category: "compound",
+    difficulty: "advanced",
+    defaultSets: 3,
+    defaultReps: 8,
+    default_sets: 3,
+    default_reps: 8,
+    image: null,
+    imageUnavailableReason:
+      "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed.",
+    tips: "Rest barbell across front delts with elbows driven high. Keep torso upright as you descend below parallel and drive through mid-foot.",
+  },
+  {
+    id: "leg_hip_adduction",
+    name: "Seated Hip Adduction Machine",
+    nameAr: "جهاز ضم الفخذين (الضامة)",
+    primaryMuscle: "legs",
+    muscle: "Legs",
+    targetAngle: "hip_adductors",
+    equipment: "machine",
+    category: "isolation",
+    difficulty: "beginner",
+    defaultSets: 3,
+    defaultReps: 15,
+    default_sets: 3,
+    default_reps: 15,
+    image: null,
+    imageUnavailableReason:
+      "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed.",
+    tips: "Sit tall against the backrest with inner thighs braced on the pads. Squeeze legs together smoothly, pause 1 second, and control the return.",
+  },
+  {
+    id: "arm_single_arm_cable_ext",
+    name: "Single-Arm Overhead Cable Extension",
+    nameAr: "ترايسبس كابل أحادي فوق الرأس",
+    primaryMuscle: "arms",
+    muscle: "Arms",
+    targetAngle: "tricep_long_head",
+    equipment: "cable",
+    category: "isolation",
+    difficulty: "intermediate",
+    defaultSets: 3,
+    defaultReps: 12,
+    default_sets: 3,
+    default_reps: 12,
+    image: null,
+    imageUnavailableReason:
+      "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed.",
+    tips: "Face away from a low or mid pulley with one arm angled overhead. Keep upper arm still and extend elbow fully for a deep long-head stretch.",
+  },
+  {
+    id: "forearm_farmer_walk",
+    name: "Kettlebell Farmer's Walk",
+    nameAr: "مشي المزارع بالكاتل بيل للسواعد",
+    primaryMuscle: "forearms",
+    muscle: "Forearms",
+    targetAngle: "forearms_flexors",
+    equipment: "kettlebell",
+    category: "compound",
+    difficulty: "intermediate",
+    defaultSets: 3,
+    defaultReps: 40,
+    default_sets: 3,
+    default_reps: 40,
+    image: null,
+    imageUnavailableReason:
+      "Covered by the v2 verified dual-asset pipeline (anatomy illustration + movement video in public/media/pilot-manifest.json); no legacy 2-frame fallback needed.",
+    tips: "Hold heavy kettlebells tightly at your sides with shoulders packed down and core braced. Take brisk, controlled steps without swaying.",
+  },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -1524,6 +1660,7 @@ const heavyCompoundRest = new Set([
   "back_good_morning",
   "arm_close_grip_bench",
   "leg_bb_deadlift",
+  "leg_front_squat",
 ]);
 
 const coreAndCalfRest = new Set([
@@ -1554,10 +1691,61 @@ export const getRestSecondsFor = (ex) => {
   return categoryDefaultRest[ex.category] ?? 75;
 };
 
+const advancedExercises = new Set([
+  "leg_bb_back_squat",
+  "leg_bb_deadlift",
+  "leg_bulgarian_split_squat",
+  "leg_sissy_squat",
+  "back_pullups",
+  "back_good_morning",
+  "chest_dips",
+  "sh_standing_bb_ohp",
+  "core_hanging_leg_raise",
+  "core_ab_wheel_rollout",
+  "core_hollow_body_hold",
+  "leg_front_squat",
+]);
+
+const beginnerExercises = new Set([
+  "chest_machine_flat_press",
+  "chest_machine_incline_press",
+  "chest_pec_deck_fly",
+  "back_wide_lat_pulldown",
+  "back_close_grip_pulldown",
+  "back_seated_cable_row",
+  "back_chest_supported_row",
+  "back_face_pulls",
+  "back_superman_hold",
+  "sh_machine_shoulder_press",
+  "sh_machine_lateral_raise",
+  "sh_reverse_pec_deck",
+  "sh_db_shrugs",
+  "leg_45_press",
+  "leg_extension",
+  "leg_lying_curl",
+  "leg_seated_curl",
+  "leg_standing_calf_raise",
+  "leg_seated_calf_raise",
+  "arm_rope_pushdown",
+  "arm_straight_bar_pushdown",
+  "arm_db_hammer_curl",
+  "arm_cable_rope_curl",
+  "core_captain_chair_raise",
+  "core_bicycle_crunches",
+]);
+
+const deriveDifficulty = (ex) => {
+  if (ex.difficulty) return ex.difficulty;
+  if (advancedExercises.has(ex.id)) return "advanced";
+  if (beginnerExercises.has(ex.id) || ex.equipment === "machine") return "beginner";
+  return "intermediate";
+};
+
 const catalogWithMeta = baseExercisesDatabase.map((ex) => {
   const bio = exerciseBiomechanics[ex.id] || {};
   return {
     ...ex,
+    difficulty: deriveDifficulty(ex),
     imageStatus: ex.image ? "available" : "unavailable",
     restSeconds: getRestSecondsFor(ex),
     primaryTarget: bio.primaryTarget || ex.name,

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import useWorkoutStore from './workoutStore';
-import exercises, { trainingPlans } from '../data/exercises';
+import exercises, { trainingPlans, CORE_SPLIT_ANGLES } from '../data/exercises';
 
 describe('WorkoutStore & Biomechanical Database', () => {
   beforeEach(() => {
@@ -21,26 +21,27 @@ describe('WorkoutStore & Biomechanical Database', () => {
     expect(trainingPlans.bro_split).toBeDefined();
   });
 
-  it('verifies pristine 89-exercise catalog with every angle covered by 3+ exercises and no duplicates', () => {
-    expect(exercises.length).toBe(89);
+  it('verifies 94-exercise catalog with every core split angle covered by 3+ exercises and no duplicates', () => {
+    expect(exercises.length).toBe(94);
 
     const ids = exercises.map(e => e.id);
     const uniqueIds = new Set(ids);
-    expect(uniqueIds.size).toBe(89);
+    expect(uniqueIds.size).toBe(94);
 
-    const muscleCounts = { chest: 13, back: 19, shoulders: 13, legs: 17, arms: 15, core: 12 };
+    const muscleCounts = { chest: 13, back: 19, shoulders: 13, legs: 19, arms: 16, core: 12, glutes: 1, forearms: 1 };
     Object.entries(muscleCounts).forEach(([m, expected]) => {
       const count = exercises.filter(e => e.primaryMuscle === m).length;
       expect(count, `Expected ${expected} exercises for ${m}, found ${count}`).toBe(expected);
     });
 
-    // Pre-build audit: every biomechanical angle has at least 3 distinct exercises
+    // Every core split biomechanical angle has at least 3 distinct exercises
     const angleCounts = {};
     exercises.forEach((e) => {
       angleCounts[e.targetAngle] = (angleCounts[e.targetAngle] || 0) + 1;
     });
-    Object.entries(angleCounts).forEach(([angle, count]) => {
-      expect(count, `Angle ${angle} has only ${count} exercise(s); need at least 3`).toBeGreaterThanOrEqual(3);
+    CORE_SPLIT_ANGLES.forEach((angle) => {
+      const count = angleCounts[angle] || 0;
+      expect(count, `Core angle ${angle} has only ${count} exercise(s); need at least 3`).toBeGreaterThanOrEqual(3);
     });
   });
 
@@ -68,7 +69,7 @@ describe('WorkoutStore & Biomechanical Database', () => {
       expect(ex.id, `Exercise ${ex.id} missing ID`).toBeDefined();
       expect(ex.name, `Exercise ${ex.id} missing name`).toBeDefined();
       expect(['compound', 'isolation', 'stretch', 'machine']).toContain(ex.category);
-      expect(['chest', 'back', 'shoulders', 'arms', 'legs', 'core']).toContain(ex.primaryMuscle);
+      expect(['chest', 'back', 'shoulders', 'arms', 'legs', 'core', 'glutes', 'forearms']).toContain(ex.primaryMuscle);
       expect(ex.targetAngle).toBeDefined();
       expect(typeof ex.targetAngle).toBe('string');
       expect(ex.targetAngle.length).toBeGreaterThan(0);
@@ -153,24 +154,24 @@ describe('WorkoutStore & Biomechanical Database', () => {
     expect(useWorkoutStore.getState().dailyChecklist.vitamin).toBe(false);
   });
 
-  it('verifies purgeAndSyncDatabase forcefully wipes legacy data on schema version bump to 3.0.0', () => {
-    localStorage.setItem('gym_db_version', '1.0.0');
-    localStorage.setItem('gym_exercises', JSON.stringify([{ id: 'legacy_obsolete_id' }]));
-    localStorage.setItem('gym_programs', JSON.stringify({ old_prog: {} }));
-    localStorage.setItem('gym_custom_program_overrides', JSON.stringify({ foo: 'bar' }));
+  it('verifies non-destructive migration upgrades schema to 4.0.0 while preserving custom user exercises and overrides', async () => {
+    localStorage.setItem('gym_db_version', '3.0.0');
+    localStorage.setItem('gym_exercises', JSON.stringify([{ id: 'user_custom_1', name: 'My Custom Lift', muscle: 'Chest' }]));
+    localStorage.setItem('gym_programs', JSON.stringify({ custom_prog: { id: 'custom_prog', name: 'Custom', exercises: ['user_custom_1'] } }));
+    localStorage.setItem('gym_custom_program_overrides', JSON.stringify({ push_day: { chest_bb_flat_bench: 'chest_db_flat_press' } }));
 
-    const { purgeAndSyncDatabase } = useWorkoutStore.getState();
-    if (typeof purgeAndSyncDatabase === 'function') {
-      purgeAndSyncDatabase();
-    } else {
-      // Direct call
-      import('../store/exerciseSlice').then(({ purgeAndSyncDatabase: sync }) => sync());
-    }
+    const { purgeAndSyncDatabase } = await import('../store/exerciseSlice');
+    purgeAndSyncDatabase();
 
-    expect(localStorage.getItem('gym_db_version')).toBe('3.0.0');
+    expect(localStorage.getItem('gym_db_version')).toBe('4.0.0');
     const syncedExercises = JSON.parse(localStorage.getItem('gym_exercises'));
-    expect(syncedExercises.length).toBe(89);
+    expect(syncedExercises.length).toBe(95); // 94 built-ins + 1 preserved custom exercise
     expect(syncedExercises.some(e => e.id === 'chest_bb_flat_bench')).toBe(true);
-    expect(localStorage.getItem('gym_custom_program_overrides')).toBeNull();
+    expect(syncedExercises.some(e => e.id === 'glute_bb_hip_thrust')).toBe(true);
+    expect(syncedExercises.some(e => e.id === 'forearm_farmer_walk')).toBe(true);
+    expect(syncedExercises.some(e => e.id === 'user_custom_1')).toBe(true);
+    expect(JSON.parse(localStorage.getItem('gym_custom_program_overrides'))).toEqual({
+      push_day: { chest_bb_flat_bench: 'chest_db_flat_press' },
+    });
   });
 });

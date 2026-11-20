@@ -1,5 +1,5 @@
 // ── Schema Version ──
-export const DATABASE_VERSION = "3.0.0";
+export const DATABASE_VERSION = "4.0.0";
 
 // ── Helper: Deduplication & Sanitizer ──
 export const sanitizeExerciseList = (list) => {

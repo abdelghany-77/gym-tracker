@@ -37,6 +37,18 @@ export const angleColors = {
   brachialis:           { bg: "bg-neon-emerald/10", text: "text-neon-emerald", border: "border-neon-emerald/20" },
   tricep_long_head:     { bg: "bg-vivid-purple/10", text: "text-vivid-purple", border: "border-vivid-purple/20" },
   tricep_lateral_medial:{ bg: "bg-amber-accent/10", text: "text-amber-accent", border: "border-amber-accent/20" },
+  // Legs (extended)
+  hip_adductors:        { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
+  // Glutes
+  glutes_thrust:        { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
+  glutes_abduction:     { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
+  // Forearms
+  forearms_flexors:     { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
+  forearms_extensors:   { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
   // Core
-  core_abs: { bg: "bg-neon-emerald/10", text: "text-neon-emerald", border: "border-neon-emerald/20" },
+  core_abs:             { bg: "bg-neon-emerald/10", text: "text-neon-emerald", border: "border-neon-emerald/20" },
+  core_upper_flexion:   { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
+  core_lower_pelvic:    { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
+  core_obliques_rotation:{ bg: "bg-slate-800/80",    text: "text-slate-200",    border: "border-slate-700" },
+  core_anti_extension:  { bg: "bg-slate-800/80",     text: "text-slate-200",    border: "border-slate-700" },
 };

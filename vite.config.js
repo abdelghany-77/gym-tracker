@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
-import process from "node:process";
 
 // ── Base path strategy ──
 // Relative base "./" ensures all bundled JS, CSS, local exercise images,
@@ -52,18 +51,37 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg}"],
+        maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+        globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,jpg,jpeg}"],
         navigateFallback: "index.html",
         runtimeCaching: [
+          {
+            // Dedicated Range-request aware offline cache for verified movement MP4 videos
+            urlPattern: ({ url }) =>
+              url.origin === self.location.origin &&
+              url.pathname.includes("/media/videos/"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "gym-videos-v1",
+              rangeRequests: true,
+              cacheableResponse: {
+                statuses: [0, 200, 206],
+              },
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+              },
+            },
+          },
           {
             // Same-origin app assets cached for offline resilience
             urlPattern: ({ url }) =>
               url.origin === self.location.origin,
             handler: "CacheFirst",
             options: {
-              cacheName: "gym-cache-v3",
+              cacheName: "gym-cache-v4",
               expiration: {
-                maxEntries: 100,
+                maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
               },
             },

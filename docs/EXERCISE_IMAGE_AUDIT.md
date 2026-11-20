@@ -134,6 +134,11 @@ The source column is the exact upstream exercise directory; append `/0.jpg` or `
 | 87 | `leg_ball_hamstring_curl` | Stability Ball Leg Curl | Available | `Ball_Leg_Curl` | Verified supine stability-ball leg curl, hips bridged. |
 | 88 | `leg_db_calf_raise` | Dumbbell Calf Raise | Available | `Calf_Raise_On_A_Dumbbell` | Verified standing calf raise on a dumbbell surface. |
 | 89 | `arm_zottman_curl` | Zottman Curl | Available | `Zottman_Curl` | Verified Zottman curl, supinated up / pronated down. |
+| 90 | `glute_bb_hip_thrust` | Barbell Hip Thrust | **Unavailable** (v1 fallback) | — | Covered by v2 verified dual-asset pilot pipeline (anatomy WebP + live-action MP4 in `public/media/pilot-manifest.json`); no legacy 2-frame fallback needed. |
+| 91 | `leg_front_squat` | Barbell Front Squat | **Unavailable** (v1 fallback) | — | Covered by v2 verified dual-asset pipeline (anatomy WebP + live-action MP4 in `public/media/pilot-manifest.json`); no legacy 2-frame fallback needed. |
+| 92 | `leg_hip_adduction` | Seated Hip Adduction Machine | **Unavailable** (v1 fallback) | — | Covered by v2 verified dual-asset pipeline (anatomy WebP + live-action MP4 in `public/media/pilot-manifest.json`); no legacy 2-frame fallback needed. |
+| 93 | `arm_single_arm_cable_ext` | Single-Arm Overhead Cable Extension | **Unavailable** (v1 fallback) | — | Covered by v2 verified dual-asset pipeline (anatomy WebP + live-action MP4 in `public/media/pilot-manifest.json`); no legacy 2-frame fallback needed. |
+| 94 | `forearm_farmer_walk` | Kettlebell Farmer's Walk | **Unavailable** (v1 fallback) | — | Covered by v2 verified dual-asset pipeline (anatomy WebP + live-action MP4 in `public/media/pilot-manifest.json`); no legacy 2-frame fallback needed. |
 
 ## Pre-build audit round (2026-11-14)
 
@@ -141,8 +146,15 @@ A strict pre-Capacitor audit closed every remaining gap in the image ledger:
 
 - **7 promotions:** previously `unavailable` entries whose exact movement now exists in the source repo were visually re-verified frame-by-frame (landmine row, single-arm cable row, good morning, superman hold, sissy squat, overhead cable curl, drag curl) and given reviewed local PNGs with full provenance. Two entries (`back_incline_reverse_fly`, `back_cable_rear_delt_row`) remain `unavailable` because no upstream source depicts their described variation — no substitute pictures were attached.
 - **8 additions:** one new exercise per previously under-covered angle (inner chest, lat isolation, upper traps, quad isolation, hamstring hinge, hamstring curl, calves, brachialis), each with a verified source-matched image composed to the standard 768×384 dual-frame format.
-- **Totals:** 89 catalog exercises — 77 available, 12 explicitly unavailable.
+- **Totals:** 94 catalog exercises — 77 legacy v1 available, 17 legacy v1 unavailable (including 5 v2-only additions verified under the v2 dual-asset pipeline).
 
 ## Phase-1 angle-coverage expansion (2026-11-14)
 
 Nine exercises were added to close under-covered biomechanical angles (unilateral row, upper-back/rear-delt, lower back, quad isolation, bicep long head). Per the audit policy above, seven of them were later promoted in the pre-build audit round with verified source-matched images; the two without an accurate upstream match (`back_incline_reverse_fly`, `back_cable_rear_delt_row`) remain explicitly `unavailable` with `null` path/source/hash in `public/exercises/manifest.json` and render the audited "Image unavailable" placeholder.
+
+## Dual-Asset Media Expansion (v2 — Wave 1 + Wave 2: 40 Verified Exercises)
+
+Forty visually audited exercises spanning all 8 muscle groups (Chest 6, Back 5, Shoulders 7, Legs 11, Glutes 1, Arms 8, Core 1, Forearms 1) are independently verified in `public/media/pilot-manifest.json` with BOTH:
+- An exercise-specific anatomical WebP illustration (`public/media/anatomy/<id>.webp`, 640×480, budget <= 60 KB).
+- A real live-action looping H.264 MP4 movement video (`public/media/videos/<id>.mp4`, open-licensed via `wger.de` CC-BY-SA 4.0 and Wikimedia Commons CC BY 3.0 / CC BY-SA 4.0 / Public Domain, budget <= 350 KB).
+- Independent SHA-256 and 64-bit perceptual dHash duplicate checks pass across all 40 entries with zero exact or visual duplicates.
