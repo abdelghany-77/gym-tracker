@@ -1,11 +1,12 @@
 import {
   DATABASE_VERSION,
-  loadFromStorage,
   loadProgramOverrides,
   sanitizeExerciseList,
 } from "./helpers";
 
 export const PRE_MIGRATION_BACKUP_KEY = "gym_pre_migration_backup_v3";
+export const CATALOG_SIGNATURE_KEY = "gym_catalog_signature";
+export const DELETED_BUILTINS_KEY = "gym_deleted_builtin_ids";
 
 const USER_STORAGE_KEYS = [
   "gym_history",
@@ -20,7 +21,33 @@ const USER_STORAGE_KEYS = [
   "gym_measurements",
   "gym_nutrition",
   "gym_db_version",
+  CATALOG_SIGNATURE_KEY,
+  DELETED_BUILTINS_KEY,
 ];
+
+function readJsonFromStorage(storage, key, fallback) {
+  try {
+    const raw = storage.getItem(key);
+    return raw !== null ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function getCatalogSignature(builtInCatalog = []) {
+  if (!Array.isArray(builtInCatalog) || builtInCatalog.length === 0) {
+    return "0:0";
+  }
+  let hash = 2166136261;
+  for (const ex of builtInCatalog) {
+    const token = `${ex?.id || ""}|${ex?.image || ""}|${ex?.name || ""}|${ex?.targetAngle || ""}`;
+    for (let i = 0; i < token.length; i += 1) {
+      hash ^= token.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+  }
+  return `${builtInCatalog.length}:${(hash >>> 0).toString(36)}`;
+}
 
 function readRawVersion(storage) {
   const raw = storage.getItem("gym_db_version");
@@ -41,18 +68,26 @@ function readRawVersion(storage) {
  * - Preserves every user-created custom exercise (isCustom: true or non-catalog ID)
  * - Deduplicates duplicate IDs without overwriting custom user entries
  */
-export function mergeExercisesNonDestructively(storedList, builtInCatalog) {
+export function mergeExercisesNonDestructively(
+  storedList,
+  builtInCatalog,
+  { deletedIds = [] } = {},
+) {
+  const deletedSet = new Set(Array.isArray(deletedIds) ? deletedIds : []);
+  const activeBuiltIns = builtInCatalog.filter((ex) => !deletedSet.has(ex.id));
   const builtInById = new Map(builtInCatalog.map((ex) => [ex.id, ex]));
   const storedSanitized = sanitizeExerciseList(
     Array.isArray(storedList) ? storedList : [],
   );
 
   const customExercises = storedSanitized.filter(
-    (ex) => ex.isCustom === true || !builtInById.has(ex.id),
+    (ex) =>
+      ex.isCustom === true ||
+      (!builtInById.has(ex.id) && !deletedSet.has(ex.id)),
   );
 
   // Built-in exercises take canonical catalog metadata; custom user exercises append cleanly.
-  return sanitizeExerciseList([...builtInCatalog, ...customExercises]);
+  return sanitizeExerciseList([...activeBuiltIns, ...customExercises]);
 }
 
 /**
@@ -115,8 +150,46 @@ export function migrateUserDatabase({
   }
 
   const currentVersion = readRawVersion(storage);
+  const catalogSignature = getCatalogSignature(defaultExercises);
+  const rawDeletedIds = readJsonFromStorage(storage, DELETED_BUILTINS_KEY, []);
+  const deletedIds = Array.isArray(rawDeletedIds) ? rawDeletedIds : [];
+  const deletedSet = new Set(deletedIds);
+
   if (currentVersion === DATABASE_VERSION) {
-    return { migrated: false, rolledBack: false, version: DATABASE_VERSION };
+    const rawStoredExercises = readJsonFromStorage(
+      storage,
+      "gym_exercises",
+      null,
+    );
+    if (!Array.isArray(rawStoredExercises)) {
+      return { migrated: false, rolledBack: false, version: DATABASE_VERSION };
+    }
+
+    const storedSanitized = sanitizeExerciseList(rawStoredExercises);
+    const storedIds = new Set(storedSanitized.map((ex) => ex.id));
+    const hasMissingBuiltIns = defaultExercises.some(
+      (ex) => !deletedSet.has(ex.id) && !storedIds.has(ex.id),
+    );
+    const storedCatalogSig = storage.getItem(CATALOG_SIGNATURE_KEY);
+
+    if (!hasMissingBuiltIns && storedCatalogSig === catalogSignature) {
+      return { migrated: false, rolledBack: false, version: DATABASE_VERSION };
+    }
+
+    const mergedExercises = mergeExercisesNonDestructively(
+      storedSanitized,
+      defaultExercises,
+      { deletedIds },
+    );
+    storage.setItem("gym_exercises", JSON.stringify(mergedExercises));
+    storage.setItem(CATALOG_SIGNATURE_KEY, catalogSignature);
+    return {
+      migrated: false,
+      catalogSynced: true,
+      rolledBack: false,
+      version: DATABASE_VERSION,
+      exerciseCount: mergedExercises.length,
+    };
   }
 
   const snapshot = createPreMigrationSnapshot(storage);
@@ -128,11 +201,16 @@ export function migrateUserDatabase({
       storage.setItem(PRE_MIGRATION_BACKUP_KEY, JSON.stringify(snapshot));
     }
 
-    // 2. Non-destructively merge exercises (preserve custom exercises & all 89 legacy IDs)
-    const rawStoredExercises = loadFromStorage("gym_exercises", null);
+    // 2. Non-destructively merge exercises (preserve custom exercises & all legacy IDs)
+    const rawStoredExercises = readJsonFromStorage(
+      storage,
+      "gym_exercises",
+      null,
+    );
     const mergedExercises = mergeExercisesNonDestructively(
       rawStoredExercises,
       defaultExercises,
+      { deletedIds },
     );
 
     // Validate integrity before writing
@@ -141,20 +219,25 @@ export function migrateUserDatabase({
       throw new Error("Duplicate exercise IDs detected after migration merge.");
     }
     for (const builtIn of defaultExercises) {
-      if (!mergedIds.has(builtIn.id)) {
+      if (!deletedSet.has(builtIn.id) && !mergedIds.has(builtIn.id)) {
         throw new Error(`Built-in exercise missing after merge: ${builtIn.id}`);
       }
     }
 
     // 3. Seed programs/schedule ONLY if missing; never overwrite saved user plans or overrides
-    const activePlan = loadFromStorage("gym_active_program", "ppl_upper");
+    const activePlan = readJsonFromStorage(
+      storage,
+      "gym_active_program",
+      "ppl_upper",
+    );
     const plan = trainingPlans[activePlan] || trainingPlans.ppl_upper;
 
-    const existingPrograms = loadFromStorage("gym_programs", null);
-    const existingSchedule = loadFromStorage("gym_schedule", null);
+    const existingPrograms = readJsonFromStorage(storage, "gym_programs", null);
+    const existingSchedule = readJsonFromStorage(storage, "gym_schedule", null);
     const existingOverrides = loadProgramOverrides();
 
     storage.setItem("gym_exercises", JSON.stringify(mergedExercises));
+    storage.setItem(CATALOG_SIGNATURE_KEY, catalogSignature);
 
     if (!existingPrograms || Object.keys(existingPrograms).length === 0) {
       storage.setItem("gym_programs", JSON.stringify(plan.programs));

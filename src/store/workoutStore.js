@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { createWorkoutSlice } from "./workoutSlice";
 import { calculateMacros, createNutritionSlice } from "./nutritionSlice";
 import { createProfileSlice } from "./profileSlice";
-import { createExerciseSlice } from "./exerciseSlice";
+import { createExerciseSlice, purgeAndSyncDatabase } from "./exerciseSlice";
 import { createReminderSlice } from "./reminderSlice";
 import { createMeasurementSlice } from "./measurementSlice";
 import { createMealSlice } from "./mealSlice";
@@ -64,6 +64,12 @@ const useWorkoutStore = create((set, get) => ({
 
   // ── Reactive Rehydration ──
   rehydrateFromStorage: () => {
+    if (
+      typeof localStorage !== "undefined" &&
+      localStorage.getItem("gym_exercises") !== null
+    ) {
+      purgeAndSyncDatabase();
+    }
     const restoredProfile = loadFromStorage("gym_profile", null);
     const storedTargets = loadFromStorage("gym_nutrition", null);
     const validProfile =

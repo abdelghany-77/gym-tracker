@@ -213,4 +213,61 @@ describe("v3 -> v4 safe non-destructive migration, deduplication, and rollback",
     ]);
     expect(JSON.parse(localStorage.getItem("gym_prs"))).toEqual(LEGACY_V3_PRS);
   });
+
+  it("syncs older 72-exercise v4.0.0 storage up to full 94 built-in catalog without data loss", () => {
+    const staleBuiltInSubset = defaultExercises.slice(0, 72);
+    localStorage.setItem("gym_db_version", DATABASE_VERSION);
+    localStorage.setItem("gym_history", JSON.stringify(LEGACY_V3_HISTORY));
+    localStorage.setItem("gym_prs", JSON.stringify(LEGACY_V3_PRS));
+    localStorage.setItem(
+      "gym_exercises",
+      JSON.stringify([...staleBuiltInSubset, LEGACY_CUSTOM_EXERCISE]),
+    );
+    localStorage.setItem("gym_programs", JSON.stringify(LEGACY_SAVED_PROGRAMS));
+
+    const result = migrateUserDatabase({
+      defaultExercises,
+      trainingPlans,
+      storage: localStorage,
+    });
+
+    expect(result.catalogSynced).toBe(true);
+    expect(localStorage.getItem("gym_db_version")).toBe(DATABASE_VERSION);
+
+    const synced = JSON.parse(localStorage.getItem("gym_exercises"));
+    expect(synced).toHaveLength(defaultExercises.length + 1);
+    for (const ex of defaultExercises) {
+      expect(synced.some((item) => item.id === ex.id)).toBe(true);
+    }
+    expect(synced.find((item) => item.id === LEGACY_CUSTOM_EXERCISE.id)).toEqual(
+      LEGACY_CUSTOM_EXERCISE,
+    );
+    expect(JSON.parse(localStorage.getItem("gym_history"))).toEqual(
+      LEGACY_V3_HISTORY,
+    );
+    expect(JSON.parse(localStorage.getItem("gym_prs"))).toEqual(LEGACY_V3_PRS);
+    expect(JSON.parse(localStorage.getItem("gym_programs"))).toEqual(
+      LEGACY_SAVED_PROGRAMS,
+    );
+  });
+
+  it("respects explicitly deleted built-in exercises across v4 catalog syncs until reset", () => {
+    const deletedId = defaultExercises[defaultExercises.length - 1].id;
+    const remainingBuiltIns = defaultExercises.filter((ex) => ex.id !== deletedId);
+
+    localStorage.setItem("gym_db_version", DATABASE_VERSION);
+    localStorage.setItem("gym_exercises", JSON.stringify(remainingBuiltIns));
+    localStorage.setItem("gym_deleted_builtin_ids", JSON.stringify([deletedId]));
+
+    const result = migrateUserDatabase({
+      defaultExercises,
+      trainingPlans,
+      storage: localStorage,
+    });
+
+    expect(result.catalogSynced).toBe(true);
+    const synced = JSON.parse(localStorage.getItem("gym_exercises"));
+    expect(synced).toHaveLength(defaultExercises.length - 1);
+    expect(synced.some((ex) => ex.id === deletedId)).toBe(false);
+  });
 });

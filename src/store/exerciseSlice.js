@@ -5,7 +5,15 @@ import {
   generateId,
   sanitizeExerciseList,
 } from "./helpers";
-import { migrateUserDatabase } from "./migration";
+import {
+  CATALOG_SIGNATURE_KEY,
+  DELETED_BUILTINS_KEY,
+  getCatalogSignature,
+  mergeExercisesNonDestructively,
+  migrateUserDatabase,
+} from "./migration";
+
+const BUILT_IN_EXERCISE_IDS = new Set(defaultExercises.map((ex) => ex.id));
 
 // ── Safe Non-Destructive Database Migration (v3 -> v4) ──
 export const purgeAndSyncDatabase = () =>
@@ -16,14 +24,31 @@ purgeAndSyncDatabase();
 
 // ── Seed logic ──
 const seedExercises = () => {
+  const catalogSignature = getCatalogSignature(defaultExercises);
   const stored = loadFromStorage("gym_exercises", null);
-  if (stored) {
+  if (Array.isArray(stored)) {
+    const rawDeleted = loadFromStorage(DELETED_BUILTINS_KEY, []);
+    const deletedIds = Array.isArray(rawDeleted) ? rawDeleted : [];
+    const deletedSet = new Set(deletedIds);
     const sanitized = sanitizeExerciseList(stored);
-    saveToStorage("gym_exercises", sanitized);
-    return sanitized;
+    const storedIds = new Set(sanitized.map((ex) => ex.id));
+    const hasMissingBuiltIns = defaultExercises.some(
+      (ex) => !deletedSet.has(ex.id) && !storedIds.has(ex.id),
+    );
+    const finalList = hasMissingBuiltIns
+      ? mergeExercisesNonDestructively(sanitized, defaultExercises, { deletedIds })
+      : sanitized;
+    saveToStorage("gym_exercises", finalList);
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(CATALOG_SIGNATURE_KEY, catalogSignature);
+    }
+    return finalList;
   }
   const initial = sanitizeExerciseList(defaultExercises);
   saveToStorage("gym_exercises", initial);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(CATALOG_SIGNATURE_KEY, catalogSignature);
+  }
   return initial;
 };
 
@@ -158,6 +183,16 @@ export const createExerciseSlice = (set, get) => ({
           ),
         };
       });
+      if (BUILT_IN_EXERCISE_IDS.has(id)) {
+        const existingDeleted = loadFromStorage(DELETED_BUILTINS_KEY, []);
+        const nextDeleted = Array.from(
+          new Set([
+            ...(Array.isArray(existingDeleted) ? existingDeleted : []),
+            id,
+          ]),
+        );
+        saveToStorage(DELETED_BUILTINS_KEY, nextDeleted);
+      }
       saveToStorage("gym_exercises", updated);
       saveToStorage("gym_programs", updatedPrograms);
       return { exercises: updated, programs: updatedPrograms };
@@ -244,6 +279,11 @@ export const createExerciseSlice = (set, get) => ({
     saveToStorage("gym_schedule", plan.defaultSchedule);
     saveToStorage("gym_custom_program_overrides", {});
     localStorage.removeItem("gym_custom_overrides");
+    localStorage.removeItem(DELETED_BUILTINS_KEY);
+    localStorage.setItem(
+      CATALOG_SIGNATURE_KEY,
+      getCatalogSignature(defaultExercises),
+    );
     set({
       customProgramOverrides: {},
       exercises: sanitizedDefaults,
