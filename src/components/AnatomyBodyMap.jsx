@@ -169,8 +169,8 @@ export default function AnatomyBodyMap({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[170px_1fr] items-center gap-4">
-        <div className="mx-auto w-[160px] select-none">
+      <div className="flex flex-col gap-3">
+        <div className="mx-auto w-[124px] select-none">
           <svg
             viewBox="0 0 200 345"
             className="h-auto w-full"
@@ -239,8 +239,8 @@ export default function AnatomyBodyMap({
           </svg>
         </div>
 
-        {/* Accessible list buttons paired with the SVG map */}
-        <div className="space-y-1.5">
+        {/* Accessible 2-column muscle buttons paired with the SVG map */}
+        <div className="grid grid-cols-2 gap-1.5">
           {zones.map((zone) => {
             const isSelected = selectedMuscle === zone.id;
             const count = countsByMuscle[zone.id] || 0;
@@ -252,19 +252,24 @@ export default function AnatomyBodyMap({
                 onMouseEnter={() => setHovered(zone.id)}
                 onMouseLeave={() => setHovered(null)}
                 aria-pressed={isSelected}
-                className={`flex min-h-11 w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-xs transition-colors ${
+                className={`flex min-h-11 w-full items-center justify-between gap-1.5 rounded-xl border px-2.5 py-1.5 text-left text-xs transition-colors min-w-0 ${
                   isSelected
                     ? "border-red-500/60 bg-red-950/30 text-white"
                     : "border-slate-800 bg-slate-900/50 text-slate-300 hover:border-slate-700 hover:text-white"
                 }`}
               >
-                <span className="font-medium">
-                  {zone.label}{" "}
-                  <span lang="ar" className="text-slate-400">
-                    · {zone.labelAr}
+                <div className="min-w-0 flex-1">
+                  <span className="block font-medium truncate leading-tight">
+                    {zone.label}
                   </span>
-                </span>
-                <span className="font-mono text-slate-400 tabular-nums">
+                  <span
+                    lang="ar"
+                    className="block text-[10px] text-slate-400 truncate leading-tight mt-0.5"
+                  >
+                    {zone.labelAr}
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] text-slate-400 tabular-nums shrink-0">
                   {count}
                 </span>
               </button>

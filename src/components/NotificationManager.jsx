@@ -17,8 +17,8 @@ function Toast({ id, message, icon: Icon, color, onClose }) {
   }, [id, onClose]);
 
   return (
-    <div className="animate-slideDown w-full">
-      <div className="bg-bg-surface/95 backdrop-blur-xl border border-slate-700 rounded-2xl p-3.5 shadow-2xl shadow-black/40 flex items-center gap-3">
+    <div className="animate-slideDown pointer-events-auto w-full">
+      <div className="bg-bg-surface/95 backdrop-blur-xl border border-slate-700 rounded-2xl p-3 shadow-2xl shadow-black/40 flex items-center gap-3">
         <div
           className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}
         >
@@ -127,6 +127,25 @@ export default function NotificationManager() {
       });
       if (!state.remindersEnabled) return;
 
+      const hour = new Date().getHours();
+      if (
+        !state.dailyChecklist?.vitamin &&
+        state.lastVitaminReminderDate !== todayKey() &&
+        hour >= 8 &&
+        hour < 22
+      ) {
+        showNotification(
+          "Vitamin Reminder",
+          "Don't forget to take your multivitamins today!",
+          Pill,
+          "bg-violet-500/15 text-violet-400",
+          "#/nutrition",
+        );
+        state.markVitaminReminderSent();
+        // Stagger reminders: let the next check handle water so two toasts never pile on top of each other
+        return;
+      }
+
       const waterGoal = state.getWaterGoal();
       const currentWater = state.dailyChecklist?.water || 0;
       const elapsed = state.lastWaterReminderTime
@@ -144,23 +163,6 @@ export default function NotificationManager() {
           "#/nutrition",
         );
         state.updateLastWaterReminderTime();
-      }
-
-      const hour = new Date().getHours();
-      if (
-        !state.dailyChecklist?.vitamin &&
-        state.lastVitaminReminderDate !== todayKey() &&
-        hour >= 8 &&
-        hour < 22
-      ) {
-        showNotification(
-          "Vitamin Reminder",
-          "Don't forget to take your multivitamins today!",
-          Pill,
-          "bg-violet-500/15 text-violet-400",
-          "#/nutrition",
-        );
-        state.markVitaminReminderSent();
       }
     };
 
@@ -194,7 +196,7 @@ export default function NotificationManager() {
   }, [showNotification, pushBackgroundSync]);
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-sm w-[calc(100%-2rem)] flex flex-col gap-3">
+    <div className="fixed top-3 inset-x-3 sm:left-auto sm:right-4 sm:w-96 z-[100] pointer-events-none flex flex-col gap-2.5">
       {toasts.map((t) => (
         <Toast
           key={t.id}

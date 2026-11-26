@@ -119,13 +119,13 @@ export default function ActivityChart({
   return (
     <div className="space-y-3.5">
       {/* ── Monthly Consistency Summary Strip ── */}
-      <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-3 py-2.5">
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <CalendarCheck2 size={12} className="text-emerald-400 shrink-0" />
-            <span className="truncate">Active Days</span>
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-2 sm:px-3 py-2 sm:py-2.5 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-400">
+            <CalendarCheck2 size={11} className="text-emerald-400 shrink-0" />
+            <span className="whitespace-nowrap">Active Days</span>
           </div>
-          <p className="text-base font-bold font-mono tabular-nums text-white mt-0.5">
+          <p className="text-sm sm:text-base font-bold font-mono tabular-nums text-white mt-0.5">
             {summary.activeDays}
             <span className="text-[11px] font-normal text-slate-500">
               /{summary.targetDays}
@@ -133,22 +133,22 @@ export default function ActivityChart({
           </p>
         </div>
 
-        <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-3 py-2.5">
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <Activity size={12} className="text-sky-400 shrink-0" />
-            <span className="truncate">Sessions</span>
+        <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-2 sm:px-3 py-2 sm:py-2.5 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-400">
+            <Activity size={11} className="text-sky-400 shrink-0" />
+            <span className="whitespace-nowrap">Sessions</span>
           </div>
-          <p className="text-base font-bold font-mono tabular-nums text-white mt-0.5">
+          <p className="text-sm sm:text-base font-bold font-mono tabular-nums text-white mt-0.5">
             {summary.totalSessions}
           </p>
         </div>
 
-        <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-3 py-2.5">
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <Flame size={12} className="text-amber-400 shrink-0" />
-            <span className="truncate">Best Streak</span>
+        <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-2 sm:px-3 py-2 sm:py-2.5 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-400">
+            <Flame size={11} className="text-amber-400 shrink-0" />
+            <span className="whitespace-nowrap">Best Streak</span>
           </div>
-          <p className="text-base font-bold font-mono tabular-nums text-white mt-0.5">
+          <p className="text-sm sm:text-base font-bold font-mono tabular-nums text-white mt-0.5">
             {summary.bestStreak}d
           </p>
         </div>

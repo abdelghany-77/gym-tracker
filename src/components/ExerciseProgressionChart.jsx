@@ -37,7 +37,11 @@ export default function ExerciseProgressionChart() {
     return Array.from(counts.entries())
       .map(([id, sessions]) => ({
         id,
-        name: exerciseById.get(id)?.name || id,
+        name:
+          exerciseById.get(id)?.name ||
+          String(id)
+            .replace(/[-_]+/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase()),
         muscle: exerciseById.get(id)?.muscle || "",
         sessions,
       }))

@@ -271,19 +271,21 @@ export default function ManageExercises() {
   };
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-3xl mx-auto space-y-4 animate-fadeIn">
+    <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-24 lg:pb-8 max-w-6xl mx-auto space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate("/exercises")}
-          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"
+          className="min-w-11 min-h-11 rounded-xl bg-bg-surface border border-slate-800 flex items-center justify-center hover:bg-slate-800 active:scale-95 transition-colors text-slate-300"
           aria-label="Back to Exercise Library"
         >
           <ArrowLeft size={18} />
         </button>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-white">Manage Exercises</h1>
-          <p className="text-[11px] text-slate-500">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg sm:text-xl font-bold text-white truncate">
+            Manage Exercises
+          </h1>
+          <p className="text-xs text-slate-400">
             Pick exercises for each workout program
           </p>
         </div>
@@ -292,7 +294,7 @@ export default function ManageExercises() {
             resetForm();
             setShowAddForm(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neon-blue/10 text-neon-blue text-xs font-semibold border border-neon-blue/20 hover:bg-neon-blue/20 transition-all active:scale-95"
+          className="min-h-11 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 text-slate-950 text-xs font-bold hover:bg-white transition-colors active:scale-95 shrink-0"
         >
           <Plus size={14} />
           New
@@ -300,12 +302,12 @@ export default function ManageExercises() {
       </div>
 
       {/* View Toggle */}
-      <div className="flex bg-slate-800/60 rounded-xl p-1 gap-1">
+      <div className="flex bg-bg-surface border border-slate-800 rounded-xl p-1 gap-1">
         <button
           onClick={() => setView("program")}
-          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex-1 min-h-10 py-2 rounded-lg text-xs font-semibold transition-colors ${
             view === "program"
-              ? "bg-slate-700 text-white shadow-sm"
+              ? "bg-slate-100 text-slate-950"
               : "text-slate-400 hover:text-white"
           }`}
         >
@@ -314,9 +316,9 @@ export default function ManageExercises() {
         </button>
         <button
           onClick={() => setView("all")}
-          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex-1 min-h-10 py-2 rounded-lg text-xs font-semibold transition-colors ${
             view === "all"
-              ? "bg-slate-700 text-white shadow-sm"
+              ? "bg-slate-100 text-slate-950"
               : "text-slate-400 hover:text-white"
           }`}
         >
@@ -325,18 +327,18 @@ export default function ManageExercises() {
         </button>
       </div>
 
-      {/* Equipment Filter Pills */}
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
+      {/* Equipment Filter Buttons (wrap cleanly — zero horizontal overflow) */}
+      <div className="flex flex-wrap gap-1.5">
         {equipmentOptions.map((opt) => {
           const isSelected = selectedEquipment === opt.id;
           return (
             <button
               key={opt.id}
               onClick={() => setSelectedEquipment(opt.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-95 border ${
+              className={`min-h-9 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors active:scale-95 border ${
                 isSelected
-                  ? "bg-neon-blue/20 text-neon-blue border-neon-blue/40 shadow-sm"
-                  : "bg-slate-800/60 text-slate-400 border-slate-700/50 hover:bg-slate-800 hover:text-white"
+                  ? "bg-slate-100 text-slate-950 border-slate-100"
+                  : "bg-bg-surface text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white"
               }`}
             >
               {opt.label}
@@ -348,33 +350,26 @@ export default function ManageExercises() {
       {/* ═══ PROGRAM VIEW ═══ */}
       {view === "program" && (
         <>
-          {/* Program Tabs */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
+          {/* Program Tabs (wrap cleanly on mobile & desktop) */}
+          <div className="flex flex-wrap gap-2">
             {programList.map((prog) => {
-              const mainMuscle = prog.muscles?.[0];
-              const colors = muscleColors[mainMuscle] || muscleColors.Chest;
               const isSelected = prog.id === selectedProgramId;
               return (
                 <button
                   key={prog.id}
                   onClick={() => setSelectedProgramId(prog.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-95 border shrink-0 ${
+                  className={`flex items-center gap-2 min-h-10 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors active:scale-95 border ${
                     isSelected
-                      ? `${colors.activeBg} ${colors.text} ${colors.activeBorder}`
-                      : "bg-slate-800/60 text-slate-400 border-slate-700/50 hover:bg-slate-800 hover:text-white"
+                      ? "bg-slate-100 text-slate-950 border-slate-100"
+                      : "bg-bg-surface text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white"
                   }`}
                 >
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      isSelected ? colors.dot : "bg-slate-600"
-                    }`}
-                  />
                   {prog.name}
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                    className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-md ${
                       isSelected
-                        ? `${colors.bg} ${colors.text}`
-                        : "bg-slate-700/50 text-slate-500"
+                        ? "bg-slate-950/10 text-slate-900"
+                        : "bg-slate-800 text-slate-400"
                     }`}
                   >
                     {prog.exercises?.length || 0}
@@ -438,7 +433,7 @@ export default function ManageExercises() {
           )}
 
           {/* Available Exercises (with checkboxes) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {availableExercises.map((ex) => {
               const selected = isInProgram(ex.id);
               const colors = muscleColors[ex.muscle] || muscleColors.Chest;
@@ -555,7 +550,7 @@ export default function ManageExercises() {
                     <div className="h-px bg-slate-800 flex-1" />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
                   {items.map((ex) => (
                     <div
                       key={ex.id}

@@ -118,9 +118,9 @@ export default function ProgramSelector() {
               {/* Content */}
               <div className="relative z-10">
                 {/* Top row: Icon + Name + Tag */}
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex flex-wrap items-start gap-2.5 sm:gap-3 mb-3">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                    className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${
                       isActive
                         ? `${meta.accentBg} ${meta.accentBorder}`
                         : "bg-slate-800 border-slate-700"
@@ -132,7 +132,7 @@ export default function ProgramSelector() {
                     />
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-[140px]">
                     <div className="flex items-center gap-2">
                       <h3
                         className={`text-base font-bold ${isActive ? "text-white" : "text-slate-300"}`}
@@ -146,13 +146,13 @@ export default function ProgramSelector() {
                         />
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium">
+                    <p className="text-[11px] text-slate-400 font-medium mt-0.5">
                       {plan.nameAr}
                     </p>
                   </div>
 
                   <span
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap shrink-0 ${
                       isActive
                         ? meta.tagBg
                         : "bg-slate-800/80 text-slate-400 border-slate-700"

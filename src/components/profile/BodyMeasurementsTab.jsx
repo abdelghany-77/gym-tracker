@@ -125,21 +125,23 @@ export default function BodyMeasurementsTab() {
   const deltas = latestEntry && previousEntry ? calculateInbodyDeltas(latestEntry, previousEntry) : null;
 
   return (
-    <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4 shadow-lg">
+    <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800 space-y-4">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="min-w-0">
           <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <Activity size={16} className="text-neon-blue" />
-            InBody & Body Composition
+            <Activity size={16} className="text-sky-400 shrink-0" />
+            <span>InBody &amp; Body Composition</span>
           </h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Track height, age, weight & InBody scan metrics</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Track height, age, weight &amp; InBody scan metrics
+          </p>
         </div>
         <button
           onClick={() => (showForm ? setShowForm(false) : handleOpenForm())}
-          className="text-xs px-3 py-1.5 rounded-xl bg-neon-blue/10 text-neon-blue hover:bg-neon-blue/20 font-medium transition-all flex items-center gap-1 border border-neon-blue/30 shadow-sm"
+          className="min-h-10 text-xs px-3.5 py-2 rounded-xl bg-slate-100 text-slate-950 hover:bg-white font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 self-start sm:self-auto"
         >
-          <Plus size={14} />
+          <Plus size={14} className="shrink-0" />
           {showForm ? "Cancel" : "New InBody Scan"}
         </button>
       </div>

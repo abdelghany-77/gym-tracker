@@ -38,8 +38,8 @@ export default function Onboarding({ onComplete }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-8">
+    <div className="min-h-screen bg-bg-deep flex items-center justify-center p-6">
+      <div className="w-full max-w-sm rounded-3xl border border-slate-800 bg-bg-surface p-6 sm:p-7 space-y-7">
         {/* Progress dots */}
         <div className="flex justify-center gap-2">
           {steps.map((_, i) => (
@@ -47,9 +47,9 @@ export default function Onboarding({ onComplete }) {
               key={i}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 i === step
-                  ? "w-8 bg-neon-blue"
+                  ? "w-8 bg-slate-100"
                   : i < step
-                    ? "w-4 bg-neon-blue/40"
+                    ? "w-4 bg-slate-400"
                     : "w-4 bg-slate-700"
               }`}
             />
@@ -59,12 +59,12 @@ export default function Onboarding({ onComplete }) {
         {/* Step 0: Welcome */}
         {step === 0 && (
           <div className="text-center space-y-6 animate-fadeIn">
-            <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 border border-slate-700 flex items-center justify-center">
-              <Dumbbell size={40} className="text-neon-blue" />
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-slate-100 text-slate-950 flex items-center justify-center">
+              <Dumbbell size={36} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white mb-2">
-                Welcome to <span className="text-neon-blue">GymTracker</span>
+              <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">
+                Welcome to GymTracker
               </h1>
               <p className="text-sm text-slate-400 leading-relaxed">
                 Track your workouts, nutrition, and progress — all in one place.
@@ -72,9 +72,9 @@ export default function Onboarding({ onComplete }) {
             </div>
             <button
               onClick={() => setStep(1)}
-              className="w-full bg-neon-blue text-slate-950 px-6 py-3.5 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20 flex items-center justify-center gap-2"
+              className="w-full min-h-12 bg-slate-100 text-slate-950 px-6 py-3.5 rounded-xl text-sm font-bold hover:bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             >
-              Get Started <ChevronRight size={16} strokeWidth={3} />
+              Get Started <ChevronRight size={16} strokeWidth={2.5} />
             </button>
           </div>
         )}
@@ -89,11 +89,11 @@ export default function Onboarding({ onComplete }) {
             className="space-y-6 animate-fadeIn"
           >
             <div className="text-center">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center mb-3">
-                <User size={24} className="text-neon-blue" />
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-bg-deep border border-slate-800 flex items-center justify-center mb-3">
+                <User size={22} className="text-slate-200" />
               </div>
               <h2 className="text-lg font-bold text-white">Your Profile</h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 Help us personalize your experience
               </p>
             </div>
@@ -105,13 +105,13 @@ export default function Onboarding({ onComplete }) {
                 aria-label="Your Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-slate-800 text-white rounded-xl px-4 py-3 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors placeholder:text-slate-500"
+                className="w-full min-h-11 bg-bg-deep text-white rounded-xl px-4 py-3 border border-slate-700 focus:border-slate-400 focus:outline-none transition-colors placeholder:text-slate-500"
               />
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label
                     htmlFor="onboarding-weight"
-                    className="text-[10px] text-slate-500 mb-1 block"
+                    className="text-[11px] text-slate-400 mb-1 block"
                   >
                     Weight (kg)
                   </label>
@@ -126,13 +126,13 @@ export default function Onboarding({ onComplete }) {
                     onChange={(e) =>
                       setForm({ ...form, weight: e.target.value })
                     }
-                    className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-blue focus:outline-none focus:ring-1 focus:ring-neon-blue/30 transition-colors"
+                    className="w-full min-h-11 bg-bg-deep text-white font-mono tabular-nums rounded-xl px-3 py-2.5 border border-slate-700 focus:border-slate-400 focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="onboarding-height"
-                    className="text-[10px] text-slate-500 mb-1 block"
+                    className="text-[11px] text-slate-400 mb-1 block"
                   >
                     Height (cm)
                   </label>
@@ -147,13 +147,13 @@ export default function Onboarding({ onComplete }) {
                     onChange={(e) =>
                       setForm({ ...form, height: e.target.value })
                     }
-                    className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-green focus:outline-none focus:ring-1 focus:ring-neon-green/30 transition-colors"
+                    className="w-full min-h-11 bg-bg-deep text-white font-mono tabular-nums rounded-xl px-3 py-2.5 border border-slate-700 focus:border-slate-400 focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="onboarding-age"
-                    className="text-[10px] text-slate-500 mb-1 block"
+                    className="text-[11px] text-slate-400 mb-1 block"
                   >
                     Age
                   </label>
@@ -166,7 +166,7 @@ export default function Onboarding({ onComplete }) {
                     placeholder="24"
                     value={form.age}
                     onChange={(e) => setForm({ ...form, age: e.target.value })}
-                    className="w-full bg-slate-800 text-white rounded-xl px-3 py-2.5 border border-slate-700 focus:border-neon-purple focus:outline-none focus:ring-1 focus:ring-neon-purple/30 transition-colors"
+                    className="w-full min-h-11 bg-bg-deep text-white font-mono tabular-nums rounded-xl px-3 py-2.5 border border-slate-700 focus:border-slate-400 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -176,15 +176,15 @@ export default function Onboarding({ onComplete }) {
               <button
                 type="button"
                 onClick={() => setStep(0)}
-                className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors text-sm"
+                className="flex-1 min-h-11 py-3 rounded-xl bg-bg-deep border border-slate-700 text-slate-300 font-medium hover:text-white transition-colors text-sm"
               >
                 Back
               </button>
               <button
                 type="submit"
-                className="flex-[2] bg-neon-blue text-slate-950 py-3 rounded-xl text-sm font-bold hover:bg-neon-blue/90 active:scale-95 transition-all shadow-lg shadow-neon-blue/20 flex items-center justify-center gap-2"
+                className="flex-[2] min-h-11 bg-slate-100 text-slate-950 py-3 rounded-xl text-sm font-bold hover:bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
-                Continue <ChevronRight size={14} strokeWidth={3} />
+                Continue <ChevronRight size={14} strokeWidth={2.5} />
               </button>
             </div>
           </form>
@@ -194,11 +194,11 @@ export default function Onboarding({ onComplete }) {
         {step === 2 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="text-center">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3">
-                <Bell size={24} className="text-amber-400" />
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-bg-deep border border-slate-800 flex items-center justify-center mb-3">
+                <Bell size={22} className="text-amber-400" />
               </div>
               <h2 className="text-lg font-bold text-white">Preferences</h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 Set up your reminders
               </p>
             </div>
@@ -211,30 +211,30 @@ export default function Onboarding({ onComplete }) {
                 onClick={() =>
                   setPrefs((p) => ({ ...p, reminders: !p.reminders }))
                 }
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-colors ${
                   prefs.reminders
-                    ? "bg-cyan-500/10 border-cyan-500/30"
-                    : "bg-slate-800/50 border-slate-700"
+                    ? "bg-sky-500/10 border-sky-500/30"
+                    : "bg-bg-deep border-slate-800"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <Droplets
                     size={18}
                     className={
-                      prefs.reminders ? "text-cyan-400" : "text-slate-500"
+                      prefs.reminders ? "text-sky-400" : "text-slate-500"
                     }
                   />
                   <div className="text-left">
                     <p className="text-sm font-medium text-white">
                       Water Reminders
                     </p>
-                    <p className="text-[10px] text-slate-500">
+                    <p className="text-[11px] text-slate-400">
                       Stay hydrated throughout the day
                     </p>
                   </div>
                 </div>
                 <div
-                  className={`w-10 h-5 rounded-full transition-all ${prefs.reminders ? "bg-cyan-500" : "bg-slate-700"}`}
+                  className={`w-10 h-5 rounded-full transition-all shrink-0 ${prefs.reminders ? "bg-sky-500" : "bg-slate-700"}`}
                 >
                   <div
                     className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all mt-0.5 ${prefs.reminders ? "ml-[22px]" : "ml-0.5"}`}
@@ -247,10 +247,10 @@ export default function Onboarding({ onComplete }) {
                 aria-label="Notification Sounds"
                 aria-checked={prefs.sound}
                 onClick={() => setPrefs((p) => ({ ...p, sound: !p.sound }))}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-colors ${
                   prefs.sound
                     ? "bg-violet-500/10 border-violet-500/30"
-                    : "bg-slate-800/50 border-slate-700"
+                    : "bg-bg-deep border-slate-800"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -264,13 +264,13 @@ export default function Onboarding({ onComplete }) {
                     <p className="text-sm font-medium text-white">
                       Notification Sounds
                     </p>
-                    <p className="text-[10px] text-slate-500">
+                    <p className="text-[11px] text-slate-400">
                       Play a chime for reminders
                     </p>
                   </div>
                 </div>
                 <div
-                  className={`w-10 h-5 rounded-full transition-all ${prefs.sound ? "bg-violet-500" : "bg-slate-700"}`}
+                  className={`w-10 h-5 rounded-full transition-all shrink-0 ${prefs.sound ? "bg-violet-500" : "bg-slate-700"}`}
                 >
                   <div
                     className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all mt-0.5 ${prefs.sound ? "ml-[22px]" : "ml-0.5"}`}
@@ -282,15 +282,15 @@ export default function Onboarding({ onComplete }) {
             <div className="flex gap-2">
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors text-sm"
+                className="flex-1 min-h-11 py-3 rounded-xl bg-bg-deep border border-slate-700 text-slate-300 font-medium hover:text-white transition-colors text-sm"
               >
                 Back
               </button>
               <button
                 onClick={handleFinish}
-                className="flex-[2] bg-neon-green text-slate-950 py-3 rounded-xl text-sm font-bold hover:bg-neon-green/90 active:scale-95 transition-all shadow-lg shadow-neon-green/20 flex items-center justify-center gap-2"
+                className="flex-[2] min-h-11 bg-emerald-500 text-slate-950 py-3 rounded-xl text-sm font-bold hover:bg-emerald-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
-                Start Training 🚀
+                Start Training
               </button>
             </div>
           </div>
@@ -302,7 +302,7 @@ export default function Onboarding({ onComplete }) {
             completeOnboarding();
             onComplete?.();
           }}
-          className="block mx-auto text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
+          className="block mx-auto min-h-9 px-3 text-xs text-slate-400 hover:text-white transition-colors"
         >
           Skip Setup →
         </button>

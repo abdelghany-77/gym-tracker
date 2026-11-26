@@ -338,19 +338,15 @@ export default function AngleRadarChart({ showRecommendations = true }) {
     .join(" ");
 
   return (
-    <div className="bg-[#0B0F17] rounded-3xl p-5 border border-slate-800/80 shadow-2xl relative overflow-hidden space-y-4">
-      {/* Background ambient neon glow */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-[#00F0FF]/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#10B981]/5 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800 relative overflow-hidden space-y-4">
       {/* Header & View Switcher */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10">
-        <div>
+      <div className="flex flex-col gap-3 relative z-10">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-xl bg-neon-cyan/10 border border-neon-cyan/20 text-[#00F0FF]">
+            <span className="p-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 shrink-0">
               <Crosshair size={16} />
             </span>
-            <h2 className="text-base font-extrabold text-white tracking-wide">
+            <h2 className="text-base font-bold text-white tracking-tight truncate">
               Biomechanical Angle Radar
             </h2>
           </div>
@@ -368,19 +364,19 @@ export default function AngleRadarChart({ showRecommendations = true }) {
         </div>
 
         {/* View Toggle */}
-        <div className="flex items-center bg-[#121824] p-1 rounded-xl border border-slate-800 self-stretch sm:self-auto">
+        <div className="flex items-center bg-bg-deep p-1 rounded-xl border border-slate-800 w-full gap-1">
           <button
             onClick={() => {
               setViewMode("macro");
               setActiveTooltip(null);
             }}
-            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-h-9 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap ${
               viewMode === "macro"
-                ? "bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30 shadow-[0_0_12px_rgba(0,240,255,0.2)]"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-slate-100 text-slate-950"
+                : "text-slate-400 hover:text-white"
             }`}
           >
-            <Layers size={13} />
+            <Layers size={13} className="shrink-0" />
             Macro Balance
           </button>
           <button
@@ -388,13 +384,13 @@ export default function AngleRadarChart({ showRecommendations = true }) {
               setViewMode("micro");
               setActiveTooltip(null);
             }}
-            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-h-9 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap ${
               viewMode === "micro"
-                ? "bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-slate-100 text-slate-950"
+                : "text-slate-400 hover:text-white"
             }`}
           >
-            <Crosshair size={13} />
+            <Crosshair size={13} className="shrink-0" />
             Micro Angles
           </button>
         </div>
@@ -402,7 +398,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
 
       {/* ── Current Week vs Target Distribution toggle ── */}
       <div
-        className="flex items-center bg-[#121824] p-1 rounded-xl border border-slate-800 relative z-10 self-stretch sm:self-auto"
+        className="flex items-center bg-bg-deep p-1 rounded-xl border border-slate-800 relative z-10 w-full gap-1"
         role="group"
         aria-label="Chart data comparison"
       >
@@ -411,13 +407,13 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             setDataMode("30d");
             setActiveTooltip(null);
           }}
-          className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 min-h-9 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 whitespace-nowrap ${
             dataMode === "30d"
-              ? "bg-slate-700/60 text-white border border-slate-600"
-              : "text-slate-400 hover:text-slate-200"
+              ? "bg-slate-800 text-white border border-slate-700"
+              : "text-slate-400 hover:text-white"
           }`}
         >
-          <Layers size={12} />
+          <Layers size={12} className="shrink-0" />
           30 Days
         </button>
         <button
@@ -425,13 +421,13 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             setDataMode("week");
             setActiveTooltip(null);
           }}
-          className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 min-h-9 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 whitespace-nowrap ${
             dataMode === "week"
-              ? "bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30"
-              : "text-slate-400 hover:text-slate-200"
+              ? "bg-sky-500/15 text-sky-400 border border-sky-500/30"
+              : "text-slate-400 hover:text-white"
           }`}
         >
-          <Crosshair size={12} />
+          <Crosshair size={12} className="shrink-0" />
           أسبوعك الحالي
         </button>
         <button
@@ -439,20 +435,20 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             setDataMode("compare");
             setActiveTooltip(null);
           }}
-          className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 min-h-9 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 whitespace-nowrap ${
             dataMode === "compare"
-              ? "bg-[#A855F7]/15 text-[#A855F7] border border-[#A855F7]/30"
-              : "text-slate-400 hover:text-slate-200"
+              ? "bg-violet-500/15 text-violet-400 border border-violet-500/30"
+              : "text-slate-400 hover:text-white"
           }`}
         >
-          <GitCompareArrows size={12} />
+          <GitCompareArrows size={12} className="shrink-0" />
           المقارنة
         </button>
       </div>
 
       {/* Per-Muscle Filter Pills (Visible in Micro Mode) */}
       {viewMode === "micro" && (
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none relative z-10">
+        <div className="flex items-center gap-1.5 flex-wrap pb-1 pt-0.5 relative z-10">
           {MUSCLE_GROUPS.map((m) => (
             <button
               key={m.id}
@@ -460,10 +456,10 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                 setSelectedMuscle(m.id);
                 setActiveTooltip(null);
               }}
-              className={`px-3 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${
+              className={`min-h-8 px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border ${
                 selectedMuscle === m.id
-                  ? "bg-[#121824] text-white border-neon-cyan shadow-sm font-bold"
-                  : "bg-[#0B0F17] text-slate-400 border-slate-800 hover:border-slate-700"
+                  ? "bg-slate-100 text-slate-950 border-slate-100 font-semibold"
+                  : "bg-bg-deep text-slate-400 border-slate-800 hover:border-slate-700 hover:text-white"
               }`}
             >
               {m.label}
@@ -504,7 +500,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
               key={idx}
               points={pts}
               fill="none"
-              stroke="#1E293B"
+              className="stroke-slate-700/70"
               strokeWidth="1"
               strokeDasharray={idx === 3 ? "none" : "2,3"}
             />
@@ -520,7 +516,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                 y1={cy}
                 x2={end.x}
                 y2={end.y}
-                stroke="#1E293B"
+                className="stroke-slate-700/70"
                 strokeWidth="1"
               />
             );
@@ -530,10 +526,9 @@ export default function AngleRadarChart({ showRecommendations = true }) {
           <polygon
             points={dataPolygonPoints}
             fill="url(#radarNeonFill)"
-            stroke="#00F0FF"
-            strokeWidth="2.5"
+            stroke="#0284c7"
+            strokeWidth="2.2"
             strokeLinejoin="round"
-            filter="url(#glow)"
             className="transition-all duration-500 ease-out"
           />
 
@@ -564,7 +559,6 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                 }
                 className="cursor-pointer"
               >
-                {/* Outer Pulse ring if neglected */}
                 {isAmber && (
                   <circle
                     cx={pt.x}
@@ -577,15 +571,13 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                     className="animate-ping"
                   />
                 )}
-                {/* Inner Dot */}
                 <circle
                   cx={pt.x}
                   cy={pt.y}
                   r={isAmber ? "5" : "4"}
-                  fill={isAmber ? "#F59E0B" : "#00F0FF"}
-                  stroke="#0B0F17"
+                  fill={isAmber ? "#F59E0B" : "#0ea5e9"}
+                  className="stroke-bg-surface"
                   strokeWidth="2"
-                  filter="url(#glow)"
                 />
               </g>
             );
@@ -605,17 +597,17 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                 y={labelPt.y + 4}
                 textAnchor={textAnchor}
                 className={`text-[10px] font-bold tracking-tight transition-colors ${
-                  axis.isNeglected ? "fill-[#F59E0B]" : "fill-slate-300"
+                  axis.isNeglected ? "fill-amber-500" : "fill-current text-slate-300"
                 }`}
               >
                 {axis.label}
-                <tspan className="fill-slate-500 text-[9px] font-normal" dx="3">
+                <tspan className="fill-current text-slate-500 text-[9px] font-normal" dx="3">
                   {dataMode === "compare"
                     ? `(${axis.value}/${axis.target})`
                     : `(${axis.value}s)`}
                 </tspan>
                 {axis.isNeglected && (
-                  <tspan className="fill-[#F59E0B]" dx="2" role="img" aria-label="Neglected warning">
+                  <tspan className="fill-amber-500" dx="2" role="img" aria-label="Neglected warning">
                     ⚠
                   </tspan>
                 )}
@@ -626,7 +618,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
 
         {/* Floating tooltip on tapped point */}
         {activeTooltip && (
-          <div className="absolute top-3 bg-[#121824]/95 backdrop-blur-md border border-slate-700 p-2.5 rounded-xl shadow-xl text-xs z-30 animate-fadeIn">
+          <div className="absolute top-3 bg-bg-surface/95 backdrop-blur-md border border-slate-700 p-2.5 rounded-xl shadow-xl text-xs z-30 animate-fadeIn">
             {(() => {
               const item = chartAxes.find((a) => a.id === activeTooltip);
               if (!item) return null;
@@ -635,14 +627,14 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                   <p className="font-bold text-white flex items-center gap-1.5">
                     {item.label}
                     {item.isNeglected && (
-                      <span className="text-[10px] bg-[#F59E0B]/20 text-[#F59E0B] px-1.5 py-0.2 rounded-full border border-[#F59E0B]/30">
+                      <span className="text-[10px] bg-amber-500/15 text-amber-400 px-1.5 py-0.5 rounded-full border border-amber-500/30">
                         Neglected
                       </span>
                     )}
                   </p>
                   <p className="text-slate-400 text-[11px]">
                     30-Day Total:{" "}
-                    <span className="text-[#00F0FF] font-semibold">
+                    <span className="text-sky-400 font-semibold">
                       {item.value} sets
                     </span>
                   </p>
@@ -652,8 +644,8 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                       <span
                         className={
                           item.sets14 < 3
-                            ? "text-[#F59E0B] font-semibold"
-                            : "text-[#10B981] font-semibold"
+                            ? "text-amber-400 font-semibold"
+                            : "text-emerald-400 font-semibold"
                         }
                       >
                         {item.sets14} sets
@@ -668,14 +660,14 @@ export default function AngleRadarChart({ showRecommendations = true }) {
 
         {/* Compare-mode legend */}
         {dataMode === "compare" && (
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 whitespace-nowrap z-10 bg-[#0B0F17]/80 px-3 py-1 rounded-full border border-slate-800">
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[#00F0FF]">
-              <span className="w-2.5 h-2.5 rounded-sm bg-[#00F0FF]/70 border border-[#00F0FF]" aria-hidden="true" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 whitespace-nowrap z-10 bg-bg-deep/90 px-3 py-1 rounded-full border border-slate-800">
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-sky-400">
+              <span className="w-2.5 h-2.5 rounded-sm bg-sky-500/70 border border-sky-400" aria-hidden="true" />
               Current Week · أسبوعك الحالي
             </span>
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[#A855F7]">
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-violet-400">
               <span
-                className="w-2.5 h-2.5 rounded-sm bg-[#A855F7]/20 border border-dashed border-[#A855F7]"
+                className="w-2.5 h-2.5 rounded-sm bg-violet-500/20 border border-dashed border-violet-400"
                 aria-hidden="true"
               />
               Target · المتوسط المستهدف
@@ -737,7 +729,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
                 ({ angle, label, sets14, week, target, recommendation }) => (
                   <div
                     key={angle}
-                    className="bg-[#121824] rounded-2xl p-3 border border-slate-800 hover:border-[#F59E0B]/40 transition-all flex items-center justify-between gap-3"
+                    className="bg-bg-deep rounded-2xl p-3 border border-slate-800 hover:border-amber-500/40 transition-colors flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">

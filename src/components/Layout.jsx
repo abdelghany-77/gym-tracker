@@ -112,7 +112,7 @@ export default function Layout() {
         tabIndex={-1}
         className="app-main min-h-dvh w-full min-w-0 lg:pl-56 lg:pb-8"
       >
-        <div key={location.pathname} className="animate-fadeIn w-full min-w-0">
+        <div key={location.pathname} className="w-full min-w-0">
           <Suspense fallback={<LoadingSkeleton />}>
             <Outlet />
           </Suspense>

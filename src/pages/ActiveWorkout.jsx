@@ -278,41 +278,42 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] lg:h-[calc(100dvh-2rem)] overflow-hidden bg-bg-deep">
-      {/* ═══ TOP FIXED HEADER ═══ */}
-      <header className="shrink-0 bg-bg-surface/70 px-3 pt-2 pb-1.5 space-y-2">
-        {/* Row 1: Back, Program Name, Elapsed Timer, Cancel */}
+    <div className="max-w-6xl mx-auto min-w-0 bg-bg-deep">
+      {/* ═══ COMPACT STICKY WORKOUT HEADER ═══ */}
+      <header className="sticky top-0 z-30 bg-bg-deep/95 backdrop-blur-md border-b border-slate-800/80 px-3 sm:px-6 pt-2 pb-2 space-y-1.5">
+        {/* Row 1: Back, Program + Progress, Timer, Utilities */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => navigate("/workout")}
-            className="w-9 h-9 shrink-0 rounded-full bg-slate-800/60 flex items-center justify-center hover:bg-slate-700 transition-colors text-slate-300"
+            className="w-9 h-9 shrink-0 rounded-xl bg-bg-surface border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors text-slate-300"
             aria-label="Go back"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </button>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-semibold tracking-tight text-white truncate">
-              {activeWorkout.programName || "Active Routine"}
-            </h1>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-400 tabular-nums">
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-emerald-400"
-                aria-hidden="true"
-              />
-              {progress.doneSets}/{progress.totalSets} sets · {progress.percent}%
-              {progress.workingVolume > 0 && (
-                <span> · {progress.workingVolume.toLocaleString()} kg</span>
-              )}
-            </p>
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="text-sm font-semibold tracking-tight text-white truncate">
+                {activeWorkout.programName || "Active Routine"}
+              </h1>
+              <span className="text-[11px] text-slate-400 font-mono tabular-nums shrink-0">
+                {progress.doneSets}/{progress.totalSets}
+                {progress.workingVolume > 0 && (
+                  <span className="hidden sm:inline">
+                    {" "}
+                    · {progress.workingVolume.toLocaleString()}kg
+                  </span>
+                )}
+              </span>
+            </div>
           </div>
 
           <div
-            className="flex items-center gap-1 text-xs font-medium tabular-nums text-neon-cyan shrink-0"
+            className="flex items-center gap-1 text-xs font-mono font-semibold tabular-nums text-sky-400 shrink-0"
             aria-label="Workout elapsed time"
           >
-            <Clock size={14} aria-hidden="true" />
+            <Clock size={13} aria-hidden="true" />
             <span>{formatTime(elapsed)}</span>
           </div>
 
@@ -321,118 +322,55 @@ export default function ActiveWorkout() {
             onClick={() => setShowHydrationMenu((open) => !open)}
             aria-label="Hydration reminder settings"
             title={`Hydration reminder: ${hydrationIntervalMinutes ? `every ${hydrationIntervalMinutes} min` : "Off"}`}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
               hydrationIntervalMinutes
-                ? "text-cyan-400 hover:bg-cyan-500/10"
-                : "text-slate-400 hover:bg-slate-800 hover:text-cyan-400"
+                ? "text-sky-400 hover:bg-sky-500/10"
+                : "text-slate-400 hover:bg-slate-800 hover:text-sky-400"
             }`}
           >
-            <Droplets size={16} aria-hidden="true" />
+            <Droplets size={15} aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={() => setShowCoverage(true)}
             aria-label="Training coverage"
             title="Training coverage"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-neon-cyan transition-colors"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
           >
-            <Layers size={16} aria-hidden="true" />
+            <Layers size={15} aria-hidden="true" />
           </button>
+          {totalExercises > 0 && currentIndex < totalExercises - 1 && (
+            <button
+              type="button"
+              onClick={() => setShowConfirmFinish(true)}
+              aria-label="Finish session early"
+              title="Finish and save workout"
+              className="h-9 px-2.5 shrink-0 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-colors flex items-center gap-1 text-xs font-semibold"
+            >
+              <Flag size={13} aria-hidden="true" />
+              <span className="hidden xs:inline sm:inline">Finish</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setShowConfirmCancel(true)}
-            className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center hover:bg-red-500/10 hover:text-red-400 transition-colors text-slate-400"
+            className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center hover:bg-rose-500/10 hover:text-rose-400 transition-colors text-slate-400"
             aria-label="Cancel workout"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
-        <div
-          className="h-0.5 overflow-hidden rounded-full bg-slate-800/80"
-          role="progressbar"
-          aria-label="Workout progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress.percent}
-        >
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-neon-cyan to-neon-emerald transition-[width] duration-300"
-            style={{ width: `${progress.percent}%` }}
-          />
-        </div>
-
-        {/* ── Hydration reminder quick settings ── */}
-        {showHydrationMenu && (
-          <div className="rounded-xl bg-slate-900/95 border border-slate-700 p-2.5 space-y-2 animate-fadeIn">
-            <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold flex items-center gap-1.5">
-              <Droplets size={11} className="text-cyan-400" /> Remind me to drink water every
-            </p>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {HYDRATION_PRESETS.map((minutes) => (
-                <button
-                  key={minutes}
-                  type="button"
-                  onClick={() => setHydrationInterval(minutes)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all border ${
-                    hydrationIntervalMinutes === minutes
-                      ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
-                      : "bg-slate-800/60 text-slate-400 border-slate-700/50 hover:text-white"
-                  }`}
-                >
-                  {minutes === 0 ? "Off" : `${minutes}m`}
-                </button>
-              ))}
-              <span className="w-px h-5 bg-slate-700 mx-0.5" aria-hidden="true" />
-              <input
-                type="number"
-                inputMode="numeric"
-                min="5"
-                max="180"
-                placeholder="min"
-                value={customHydration}
-                onChange={(event) => setCustomHydration(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    const value = Number(customHydration);
-                    if (Number.isFinite(value) && value > 0) {
-                      setHydrationInterval(value);
-                      setCustomHydration("");
-                    }
-                  }
-                }}
-                className="w-14 bg-slate-800 text-white rounded-lg px-2 py-1 border border-slate-600 focus:border-cyan-400 focus:outline-none text-xs text-center tabular-nums"
-                aria-label="Custom hydration interval in minutes"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const value = Number(customHydration);
-                  if (Number.isFinite(value) && value > 0) {
-                    setHydrationInterval(value);
-                    setCustomHydration("");
-                  }
-                }}
-                className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25"
-              >
-                Set
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* ═══ EXERCISE ARROW NAVIGATION ═══ */}
-      <div className="shrink-0 px-3 pb-1.5 bg-bg-surface/70 border-b border-border-slate/50">
-        <div className="flex items-center gap-1 rounded-xl bg-slate-800/40 p-0.5">
+        {/* Row 2: Compact Exercise Navigation Switcher */}
+        <div className="flex items-center gap-1.5 rounded-xl bg-bg-surface border border-slate-800 p-0.5">
           <button
             type="button"
             onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
             disabled={currentIndex === 0}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-700/60 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
             aria-label="Previous exercise"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={15} />
           </button>
 
           <div className="relative min-w-0 flex-1">
@@ -444,7 +382,7 @@ export default function ActiveWorkout() {
               value={currentIndex}
               onChange={(event) => setCurrentIndex(Number(event.target.value))}
               disabled={!totalExercises}
-              className="w-full min-h-9 cursor-pointer appearance-none rounded-lg border-0 bg-transparent pl-2 pr-7 text-xs font-medium text-white truncate focus-visible:ring-1 focus-visible:ring-neon-cyan/40"
+              className="w-full h-8 cursor-pointer appearance-none rounded-lg border-0 bg-transparent pl-2 pr-7 text-xs font-medium text-white truncate focus-visible:ring-1 focus-visible:ring-slate-400"
             >
               {!totalExercises && <option value={0}>No exercises</option>}
               {(activeWorkout.exercises || []).map((entry, index) => (
@@ -465,8 +403,8 @@ export default function ActiveWorkout() {
               ))}
             </select>
             <ChevronDown
-              size={16}
-              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-neon-cyan"
+              size={14}
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
           </div>
@@ -479,60 +417,95 @@ export default function ActiveWorkout() {
               )
             }
             disabled={currentIndex >= totalExercises - 1}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-700/70 text-white hover:bg-slate-600 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-colors disabled:cursor-not-allowed disabled:opacity-25"
             aria-label="Next exercise"
           >
-            <ArrowRight size={18} />
+            <ArrowRight size={15} />
           </button>
         </div>
 
-        {/* Quick Exercise Step Progress Strip */}
-        {totalExercises > 1 && (
+        {/* Slim Session Progress Bar */}
+        <div
+          className="h-1 overflow-hidden rounded-full bg-slate-800"
+          role="progressbar"
+          aria-label="Workout progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress.percent}
+        >
           <div
-            className="mt-1.5 flex items-center gap-1 overflow-x-auto pb-0.5"
-            aria-label="Exercise progress steps"
-          >
-            {(activeWorkout.exercises || []).map((entry, idx) => {
-              const entrySets = entry.sets || [];
-              const allDone =
-                entrySets.length > 0 && entrySets.every((s) => s.done);
-              const anyDone = entrySets.some((s) => s.done);
-              const isCurrent = idx === currentIndex;
-              const exName =
-                exercises.find((e) => e.id === entry.exerciseId)?.name ||
-                `Exercise ${idx + 1}`;
-              return (
+            className="h-full rounded-full bg-emerald-400 transition-[width] duration-300"
+            style={{ width: `${progress.percent}%` }}
+          />
+        </div>
+
+        {/* Hydration reminder quick settings */}
+        {showHydrationMenu && (
+          <div className="rounded-xl bg-bg-surface border border-slate-700 p-2.5 space-y-2">
+            <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+              <Droplets size={12} className="text-sky-400" /> Remind me to drink
+              water every
+            </p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {HYDRATION_PRESETS.map((minutes) => (
                 <button
-                  key={`${entry.exerciseId}-step-${idx}`}
+                  key={minutes}
                   type="button"
-                  onClick={() => setCurrentIndex(idx)}
-                  aria-label={`Jump to ${idx + 1}: ${exName}${allDone ? " (completed)" : ""}`}
-                  aria-current={isCurrent ? "step" : undefined}
-                  className={`h-7 min-w-7 flex-1 rounded-md text-[11px] font-mono font-semibold transition-colors tabular-nums ${
-                    isCurrent
-                      ? "bg-slate-200 text-slate-950"
-                      : allDone
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                        : anyDone
-                          ? "bg-slate-700/80 text-slate-200 border border-slate-600"
-                          : "bg-slate-800/70 text-slate-400 hover:text-white"
+                  onClick={() => setHydrationInterval(minutes)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors border ${
+                    hydrationIntervalMinutes === minutes
+                      ? "bg-slate-100 text-slate-950 border-slate-100"
+                      : "bg-bg-deep text-slate-300 border-slate-700 hover:text-white"
                   }`}
                 >
-                  {allDone ? "✓" : idx + 1}
+                  {minutes === 0 ? "Off" : `${minutes}m`}
                 </button>
-              );
-            })}
+              ))}
+              <input
+                type="number"
+                inputMode="numeric"
+                min="5"
+                max="180"
+                placeholder="min"
+                value={customHydration}
+                onChange={(event) => setCustomHydration(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    const value = Number(customHydration);
+                    if (Number.isFinite(value) && value > 0) {
+                      setHydrationInterval(value);
+                      setCustomHydration("");
+                    }
+                  }
+                }}
+                className="w-14 bg-bg-deep text-white rounded-lg px-2 py-1 border border-slate-700 focus:border-slate-400 focus:outline-none text-xs text-center tabular-nums"
+                aria-label="Custom hydration interval in minutes"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const value = Number(customHydration);
+                  if (Number.isFinite(value) && value > 0) {
+                    setHydrationInterval(value);
+                    setCustomHydration("");
+                  }
+                }}
+                className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-white border border-slate-700 hover:bg-slate-700"
+              >
+                Set
+              </button>
+            </div>
           </div>
         )}
-      </div>
+      </header>
 
-      {/* ═══ CENTER WORKOUT EXECUTION AREA (Zero Scroll Optimized) ═══ */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 space-y-3 custom-scrollbar">
-        {/* Auto-advance confirmation (brief, cancellable) — Rest Timer stays docked below */}
+      {/* ═══ MAIN WORKOUT EXECUTION AREA ═══ */}
+      <div className="px-3 sm:px-6 py-3 space-y-3">
+        {/* Auto-advance confirmation (brief, cancellable) */}
         {advanceNotice && (
-          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-neon-emerald/10 border border-neon-emerald/30 animate-fadeIn">
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
             <div className="flex items-center gap-2 text-xs min-w-0">
-              <CheckCircle2 size={16} className="text-neon-emerald shrink-0" />
+              <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
               <span className="text-white font-semibold">Exercise complete!</span>
               <span className="text-slate-400 truncate">Advancing…</span>
             </div>
@@ -540,7 +513,7 @@ export default function ActiveWorkout() {
               <button
                 type="button"
                 onClick={dismissAdvanceNotice}
-                className="text-[10px] px-2 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
               >
                 Stay
               </button>
@@ -550,7 +523,7 @@ export default function ActiveWorkout() {
                   dismissAdvanceNotice();
                   goNextExercise();
                 }}
-                className="text-[10px] px-2 py-1 rounded-lg bg-neon-cyan/15 text-neon-cyan flex items-center gap-0.5"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 text-slate-950 font-semibold flex items-center gap-0.5"
               >
                 Next <ChevronRight size={11} />
               </button>
@@ -559,7 +532,7 @@ export default function ActiveWorkout() {
         )}
 
         {currentExercise && (
-          <div key={currentExercise.exerciseId} className="animate-fadeIn">
+          <div key={currentExercise.exerciseId}>
             <ExerciseCard
               exerciseIndex={currentIndex}
               exerciseData={currentExercise}
@@ -568,20 +541,30 @@ export default function ActiveWorkout() {
           </div>
         )}
 
-        {(totalExercises === 0 || currentIndex === totalExercises - 1) && (
-          <button
-            type="button"
-            onClick={() => setShowConfirmFinish(true)}
-            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-neon-emerald px-4 py-3 text-sm font-semibold text-bg-deep"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+          <section
+            aria-label="Rest timer"
+            className={
+              totalExercises === 0 || currentIndex === totalExercises - 1
+                ? "lg:col-span-7"
+                : "lg:col-span-12"
+            }
           >
-            <Flag size={17} /> Finish workout
-          </button>
-        )}
+            <RestTimer inline />
+          </section>
 
-        {/* Rest timer stays below the exercise card and never changes exercise selection. */}
-        <section aria-label="Rest timer">
-          <RestTimer inline />
-        </section>
+          {(totalExercises === 0 || currentIndex === totalExercises - 1) && (
+            <div className="lg:col-span-5">
+              <button
+                type="button"
+                onClick={() => setShowConfirmFinish(true)}
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 hover:bg-emerald-400 transition-colors px-4 py-3 text-sm font-bold text-slate-950"
+              >
+                <Flag size={16} /> Finish workout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ═══ DIALOGS & MODALS ═══ */}

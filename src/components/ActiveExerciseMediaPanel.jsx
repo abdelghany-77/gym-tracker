@@ -6,7 +6,6 @@ import {
   ChevronUp,
   ZoomIn,
   Film,
-  Layers,
   ExternalLink,
   ImageOff,
 } from "lucide-react";
@@ -15,9 +14,9 @@ import ImageLightbox from "./ImageLightbox";
 import { getExerciseMediaInfo } from "../utils/imageUtil";
 
 /**
- * Active Workout Side-by-Side Visual Guide:
- * Left: Interactive Image Slider (Anatomical Target Plate <-> Start/Peak Form Reference) with swipe & zoom.
- * Right: Continuous Movement Video (offline-ready verified MP4) + Pro Coach Form Breakdown reference.
+ * Compact Active Workout Side-by-Side Visual Guide:
+ * Always renders side-by-side (grid-cols-2 on mobile & desktop) so the athlete sees both
+ * the anatomical image slider AND continuous movement video without pushing sets below the fold.
  */
 export default function ActiveExerciseMediaPanel({
   exercise,
@@ -86,7 +85,7 @@ export default function ActiveExerciseMediaPanel({
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     touchStartX.current = null;
-    if (Math.abs(dx) > 40) {
+    if (Math.abs(dx) > 36) {
       if (dx < 0) goNext();
       else goPrev();
     }
@@ -100,44 +99,13 @@ export default function ActiveExerciseMediaPanel({
 
   return (
     <div className="rounded-xl border border-slate-800 bg-[#0b0f17] overflow-hidden">
-      {/* Compact Header Toggle */}
-      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-800/80 bg-slate-900/60">
-        <div className="flex items-center gap-2 min-w-0 text-xs">
-          <Layers size={14} className="text-slate-400 shrink-0" aria-hidden="true" />
-          <span className="font-medium text-slate-200 truncate">
-            Visual Guide
-          </span>
-          <span className="text-[11px] text-slate-400 hidden sm:inline">
-            {media.hasVerifiedDualMedia
-              ? "· Anatomy Slider + Movement Video"
-              : "· Form Slider + Pro Video"}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          aria-expanded={expanded}
-          className="inline-flex min-h-8 items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1 text-[11px] font-medium text-slate-200 hover:bg-slate-700 transition-colors"
-        >
-          {expanded ? (
-            <>
-              Hide <ChevronUp size={13} aria-hidden="true" />
-            </>
-          ) : (
-            <>
-              Show <ChevronDown size={13} aria-hidden="true" />
-            </>
-          )}
-        </button>
-      </div>
-
-      {expanded && (
-        <div className="p-2.5 space-y-2.5">
-          {/* Side-by-Side: Image Slider (Left) + Continuous Video (Right) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-stretch">
+      {expanded ? (
+        <div className="p-2 space-y-1.5">
+          {/* Side-by-Side on ALL screen sizes: Image Slider (Left) + Continuous Video (Right) */}
+          <div className="grid grid-cols-2 gap-2 items-stretch">
             {/* LEFT: Interactive Image Slider */}
-            <div className="flex flex-col rounded-xl border border-slate-800 bg-[#0b0f17] overflow-hidden">
-              <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-slate-800/80 bg-slate-900/50 text-[11px]">
+            <div className="flex flex-col rounded-lg border border-slate-800/90 bg-[#0b0f17] overflow-hidden min-w-0">
+              <div className="flex items-center justify-between gap-1 px-2 py-1 border-b border-slate-800/80 bg-slate-900/60 text-[10px]">
                 <span className="font-medium text-slate-200 truncate">
                   {activeSlide
                     ? `${safeIndex + 1}/${slides.length} · ${activeSlide.label}`
@@ -152,10 +120,10 @@ export default function ActiveExerciseMediaPanel({
                         onClick={() => setSlideIndex(idx)}
                         aria-label={`Show ${s.label} slide`}
                         aria-pressed={idx === safeIndex}
-                        className={`h-2 rounded-full transition-all ${
+                        className={`h-1.5 rounded-full transition-all ${
                           idx === safeIndex
-                            ? "w-5 bg-slate-200"
-                            : "w-2 bg-slate-600 hover:bg-slate-400"
+                            ? "w-3.5 bg-slate-200"
+                            : "w-1.5 bg-slate-600 hover:bg-slate-400"
                         }`}
                       />
                     ))}
@@ -164,7 +132,7 @@ export default function ActiveExerciseMediaPanel({
               </div>
 
               <div
-                className="relative aspect-[4/3] w-full bg-[#0b0f17] flex items-center justify-center overflow-hidden select-none"
+                className="relative h-28 sm:h-36 lg:h-44 w-full bg-[#0b0f17] flex items-center justify-center overflow-hidden select-none"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
@@ -189,8 +157,8 @@ export default function ActiveExerciseMediaPanel({
                           }))
                         }
                       />
-                      <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-slate-200 opacity-85 group-hover:opacity-100">
-                        <ZoomIn size={11} aria-hidden="true" /> Zoom
+                      <span className="absolute bottom-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-black/75 text-slate-200 opacity-85 group-hover:opacity-100">
+                        <ZoomIn size={11} aria-hidden="true" />
                       </span>
                     </button>
 
@@ -200,7 +168,7 @@ export default function ActiveExerciseMediaPanel({
                           type="button"
                           onClick={goPrev}
                           aria-label="Previous image slide"
-                          className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
+                          className="absolute left-1 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
                         >
                           <ChevronLeft size={16} />
                         </button>
@@ -208,7 +176,7 @@ export default function ActiveExerciseMediaPanel({
                           type="button"
                           onClick={goNext}
                           aria-label="Next image slide"
-                          className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
                         >
                           <ChevronRight size={16} />
                         </button>
@@ -216,54 +184,39 @@ export default function ActiveExerciseMediaPanel({
                     )}
                   </>
                 ) : (
-                  <div className="flex flex-col items-center justify-center gap-1.5 p-4 text-center text-slate-400">
-                    <ImageOff size={22} aria-hidden="true" />
-                    <span className="text-xs">Reference image unavailable</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Primary / Secondary Anatomical Color Legend */}
-              <div className="border-t border-slate-800/80 bg-slate-900/60 px-2.5 py-2 space-y-1 text-[11px]">
-                <div className="flex items-start gap-1.5">
-                  <span
-                    className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#dc2626]"
-                    aria-hidden="true"
-                  />
-                  <span className="text-slate-200 leading-snug">
-                    <strong className="text-white">Primary:</strong>{" "}
-                    {exercise.primaryTarget || exercise.muscle}
-                  </span>
-                </div>
-                {exercise.secondaryMuscles?.length > 0 && (
-                  <div className="flex items-start gap-1.5">
-                    <span
-                      className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#d97706]"
-                      aria-hidden="true"
-                    />
-                    <span className="text-slate-400 leading-snug truncate">
-                      <strong className="text-slate-300">Secondary:</strong>{" "}
-                      {exercise.secondaryMuscles.join(", ")}
-                    </span>
+                  <div className="flex flex-col items-center justify-center gap-1 p-2 text-center text-slate-500">
+                    <ImageOff size={18} aria-hidden="true" />
+                    <span className="text-[10px]">No image</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* RIGHT: Continuous Movement Video + Pro Coach Link */}
-            <div className="flex flex-col justify-between rounded-xl border border-slate-800 bg-[#0b0f17] overflow-hidden">
-              <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-slate-800/80 bg-slate-900/50 text-[11px]">
-                <span className="font-medium text-slate-200 flex items-center gap-1.5">
-                  <Film size={12} className="text-slate-400" aria-hidden="true" />
-                  Movement Video
+            {/* RIGHT: Continuous Movement Video */}
+            <div className="flex flex-col rounded-lg border border-slate-800/90 bg-[#0b0f17] overflow-hidden min-w-0">
+              <div className="flex items-center justify-between gap-1 px-2 py-1 border-b border-slate-800/80 bg-slate-900/60 text-[10px]">
+                <span className="font-medium text-slate-200 flex items-center gap-1 truncate">
+                  <Film
+                    size={11}
+                    className="text-slate-400 shrink-0"
+                    aria-hidden="true"
+                  />
+                  Video
                 </span>
-                <span className="text-[10px] text-slate-400">
-                  {media.videoUrl ? "Offline Loop" : "Coach Guide"}
-                </span>
+                <a
+                  href={proCoachUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-0.5 text-[10px] font-medium text-sky-400 hover:text-sky-300 shrink-0"
+                  title="Watch pro coach form breakdown"
+                >
+                  Coach
+                  <ExternalLink size={9} aria-hidden="true" />
+                </a>
               </div>
 
-              {media.videoUrl ? (
-                <div className="flex-1 flex flex-col">
+              <div className="relative h-28 sm:h-36 lg:h-44 w-full bg-[#0b0f17] overflow-hidden">
+                {media.videoUrl ? (
                   <ExerciseVideoPlayer
                     src={media.videoUrl}
                     poster={media.anatomyUrl || media.fallbackImageUrl}
@@ -271,51 +224,78 @@ export default function ActiveExerciseMediaPanel({
                     attribution={media.video.attribution}
                     license={media.video.license}
                     durationSec={media.video.durationSec}
-                    className="rounded-none border-0 flex-1"
+                    compact
                   />
-                  <div className="border-t border-slate-800/80 bg-slate-900/60 px-2.5 py-1.5 flex items-center justify-between gap-2">
-                    <span className="text-[10px] text-slate-400 truncate">
-                      Want full coaching cues?
-                    </span>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center gap-1.5 p-2 text-center">
+                    <Film
+                      size={18}
+                      className="text-slate-500"
+                      aria-hidden="true"
+                    />
                     <a
                       href={proCoachUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-200 hover:text-white shrink-0"
+                      className="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-2.5 py-1 text-[10px] font-semibold text-slate-950 hover:bg-white transition-colors"
                     >
-                      Pro Coach Video
-                      <ExternalLink size={11} aria-hidden="true" />
+                      Pro Video
+                      <ExternalLink size={10} aria-hidden="true" />
                     </a>
                   </div>
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center gap-3 p-5 text-center">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300">
-                    <Film size={20} aria-hidden="true" />
-                  </div>
-                  <div className="space-y-1 max-w-[240px]">
-                    <p className="text-xs font-medium text-slate-200">
-                      Offline loop pending audit
-                    </p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Watch a verified pro coach form breakdown for exact
-                      technique and tempo.
-                    </p>
-                  </div>
-                  <a
-                    href={proCoachUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-950 hover:bg-white transition-colors"
-                  >
-                    Pro Coach Form Video
-                    <ExternalLink size={13} aria-hidden="true" />
-                  </a>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Slim 1-line Primary / Secondary Legend + Hide Button */}
+          <div className="flex items-center justify-between gap-2 px-1 pt-0.5 text-[10px]">
+            <div className="flex items-center gap-2 min-w-0 truncate">
+              <span className="inline-flex items-center gap-1 text-slate-200 truncate">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#dc2626]"
+                  aria-hidden="true"
+                />
+                <span className="truncate">
+                  {exercise.primaryTarget || exercise.muscle}
+                </span>
+              </span>
+              {exercise.secondaryMuscles?.length > 0 && (
+                <span className="hidden sm:inline-flex items-center gap-1 text-slate-400 truncate">
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#d97706]"
+                    aria-hidden="true"
+                  />
+                  <span className="truncate">
+                    {exercise.secondaryMuscles.slice(0, 2).join(", ")}
+                  </span>
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              aria-expanded={true}
+              className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-400 hover:text-white shrink-0 py-0.5 px-1.5 rounded hover:bg-slate-800/70 transition-colors"
+            >
+              Hide <ChevronUp size={11} aria-hidden="true" />
+            </button>
+          </div>
         </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          aria-expanded={false}
+          className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-900/50 hover:bg-slate-900/80 transition-colors text-xs"
+        >
+          <span className="flex items-center gap-2 text-slate-300 font-medium truncate">
+            <Film size={13} className="text-slate-400 shrink-0" />
+            Show Anatomy Slider &amp; Movement Video
+          </span>
+          <ChevronDown size={14} className="text-slate-400 shrink-0" />
+        </button>
       )}
 
       {lightboxSlide && (

@@ -28,6 +28,8 @@ const DIFFICULTY_OPTIONS = [
   { id: "advanced", label: "Advanced" },
 ];
 
+const PAGE_SIZE = 24;
+
 export default function ExerciseLibrary() {
   const exercises = useWorkoutStore((s) => s.exercises);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,11 +38,20 @@ export default function ExerciseLibrary() {
   const [selectedEquipment, setSelectedEquipment] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
-  const [showBodyMap, setShowBodyMap] = useState(true);
+  const [showBodyMap, setShowBodyMap] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true,
+  );
   const [viewMode, setViewMode] = useState("grid");
   const [selectedId, setSelectedId] = useState(null);
   const [compareIds, setCompareIds] = useState([]);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
+  const filterSignature = `${searchTerm}|${selectedMuscle}|${selectedAngle}|${selectedEquipment}|${selectedDifficulty}|${verifiedOnly}`;
+  const [prevFilterSig, setPrevFilterSig] = useState(filterSignature);
+  if (filterSignature !== prevFilterSig) {
+    setPrevFilterSig(filterSignature);
+    setVisibleLimit(PAGE_SIZE);
+  }
 
   const selectedExercise = exercises.find(
     (exercise) => exercise.id === selectedId,
@@ -142,14 +153,19 @@ export default function ExerciseLibrary() {
     verifiedOnly,
   ]);
 
+  const visibleExercises = useMemo(
+    () => filteredExercises.slice(0, visibleLimit),
+    [filteredExercises, visibleLimit],
+  );
+
   const groupedExercises = useMemo(
     () =>
-      filteredExercises.reduce((groups, exercise) => {
+      visibleExercises.reduce((groups, exercise) => {
         const muscle = exercise.muscle || "Other";
         (groups[muscle] ||= []).push(exercise);
         return groups;
       }, {}),
-    [filteredExercises],
+    [visibleExercises],
   );
 
   const clearFilters = () => {
@@ -638,6 +654,25 @@ export default function ExerciseLibrary() {
             </div>
           </section>
         ))}
+
+        {filteredExercises.length > visibleLimit && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
+            <button
+              type="button"
+              onClick={() => setVisibleLimit((n) => n + PAGE_SIZE)}
+              className="min-h-11 w-full sm:w-auto px-6 py-2.5 rounded-xl bg-slate-100 hover:bg-white text-slate-950 text-sm font-semibold transition-colors"
+            >
+              Show more ({visibleExercises.length} of {filteredExercises.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setVisibleLimit(filteredExercises.length)}
+              className="min-h-11 w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-700 bg-bg-surface hover:border-slate-500 text-slate-300 hover:text-white text-sm font-medium transition-colors"
+            >
+              Show all ({filteredExercises.length})
+            </button>
+          </div>
+        )}
 
         {filteredExercises.length === 0 && (
           <div className="rounded-2xl border border-dashed border-slate-700 px-4 py-16 text-center">

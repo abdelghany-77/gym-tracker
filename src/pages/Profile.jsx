@@ -41,7 +41,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="px-4 pt-5 pb-24 max-w-3xl mx-auto space-y-5 animate-fadeIn">
+    <div className="px-4 sm:px-6 pt-5 pb-24 lg:pb-8 max-w-6xl mx-auto space-y-5">
       {/* ── Header: User Avatar & Greeting ── */}
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-2xl bg-bg-surface border border-slate-800 flex items-center justify-center text-xl font-bold text-slate-100 shrink-0">
@@ -91,12 +91,12 @@ export default function Profile() {
       </div>
 
       {/* ── Tab Contents ── */}
-      <div className="animate-fadeIn">
+      <div>
         {/* OVERVIEW TAB */}
         {activeTab === "overview" && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* User Stats */}
-            <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800 space-y-4">
+            <div className="lg:col-span-7 bg-bg-surface rounded-2xl p-5 border border-slate-800 space-y-4">
               <h2 className="text-sm font-semibold text-white">Your Stats</h2>
               <div className="grid grid-cols-3 gap-3">
                 <div>
@@ -237,7 +237,7 @@ export default function Profile() {
             </div>
 
             {/* Weekly Trend + Training Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
               <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800 space-y-3">
                 <h2 className="text-sm font-semibold text-white flex items-center gap-2">
                   <Activity size={14} className="text-sky-400" />
@@ -319,22 +319,27 @@ export default function Profile() {
 
         {/* PROGRESS TAB (BodyMeasurementsTab intentionally lives only in InBody) */}
         {activeTab === "progress" && (
-          <div className="space-y-4">
-            <ScheduleEditor />
-            <PersonalRecordsTab />
-            <AchievementsList />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            <div className="lg:col-span-6">
+              <ScheduleEditor />
+            </div>
+            <div className="lg:col-span-6 space-y-4">
+              <PersonalRecordsTab />
+              <AchievementsList />
+            </div>
           </div>
         )}
 
         {/* SETTINGS TAB */}
         {activeTab === "settings" && (
-          <div className="space-y-4">
-            <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800">
-              <ProgramSelector />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            <div className="space-y-4">
+              <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800">
+                <ProgramSelector />
+              </div>
 
-            {/* Theme Toggle */}
-            <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800">
+              {/* Theme Toggle */}
+              <div className="bg-bg-surface rounded-2xl p-5 border border-slate-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {theme === "dark" ? (
@@ -362,10 +367,13 @@ export default function Profile() {
                   />
                 </button>
               </div>
+              </div>
             </div>
 
-            <ReminderSettings />
-            <DataManagement />
+            <div className="space-y-4">
+              <ReminderSettings />
+              <DataManagement />
+            </div>
           </div>
         )}
       </div>

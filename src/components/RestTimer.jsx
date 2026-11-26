@@ -64,7 +64,18 @@ export default function RestTimer({ inline = false }) {
   const restTimerSetType = useWorkoutStore((s) => s.restTimerSetType);
   const getRestTimeForExercise = useWorkoutStore((s) => s.getRestTimeForExercise);
   const previousTriggerRef = useRef(restTimerTrigger);
+  const inlineContainerRef = useRef(null);
   const [deadline, setDeadline] = useState(null);
+
+  // Scroll expanded inline timer smoothly into view so mobile bottom nav never obscures it
+  useEffect(() => {
+    if (inline && isOpen && inlineContainerRef.current?.scrollIntoView) {
+      inlineContainerRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [inline, isOpen]);
 
   // Auto-start timer when a set is marked as done.
   // Working sets (N/F) use the biomechanics-based default duration;
@@ -212,33 +223,41 @@ export default function RestTimer({ inline = false }) {
   // ═══ INLINE VERSION (embedded in page flow) ═══
   if (inline) {
     if (!isOpen && !isRunning) {
-      // Collapsed inline bar
+      // Compact collapsed inline bar
       return (
         <button
+          type="button"
           onClick={() => setIsOpen(true)}
-          className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800/60 active:scale-[0.98]"
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-bg-surface border border-slate-800 hover:border-slate-700 transition-colors active:scale-[0.99]"
           aria-label="Open rest timer"
         >
-          <div className="w-9 h-9 rounded-xl bg-neon-blue/10 flex items-center justify-center shrink-0">
-            <Timer size={16} className="text-neon-blue" />
+          <div className="w-8 h-8 rounded-xl bg-sky-500/10 flex items-center justify-center shrink-0">
+            <Timer size={15} className="text-sky-400" />
           </div>
-          <div className="flex-1 text-left">
-            <p className="text-xs text-slate-400 font-medium">Rest Timer</p>
-            <p className="text-[10px] text-slate-500">Tap to set up</p>
+          <div className="flex-1 text-left flex items-center gap-2 min-w-0">
+            <p className="text-xs text-slate-200 font-semibold">Rest Timer</p>
+            <span className="text-[11px] text-slate-500 truncate">
+              · Tap to start
+            </span>
           </div>
-          <span className="text-xs text-slate-500 font-mono">{totalTime}s</span>
+          <span className="text-xs text-slate-300 font-mono tabular-nums font-semibold">
+            {totalTime}s
+          </span>
         </button>
       );
     }
 
     // Expanded inline timer
     return (
-      <div className="w-full bg-slate-900/80 border border-slate-800/60 rounded-2xl overflow-hidden animate-fadeIn">
+      <div
+        ref={inlineContainerRef}
+        className="w-full bg-bg-surface border border-slate-800 rounded-2xl overflow-hidden animate-fadeIn scroll-mb-24"
+      >
         {/* Compact header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/40">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80">
           <div className="flex items-center gap-2">
-            <Timer size={13} className="text-neon-blue" />
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <Timer size={13} className="text-sky-400" />
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
               Rest Timer
             </span>
           </div>
@@ -248,7 +267,7 @@ export default function RestTimer({ inline = false }) {
               setIsRunning(false);
               setTimeLeft(0);
             }}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
             aria-label="Close rest timer"
           >
             <X size={14} />

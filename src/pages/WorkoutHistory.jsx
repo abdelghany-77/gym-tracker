@@ -56,7 +56,11 @@ export default function WorkoutHistory() {
     [exercises],
   );
 
-  const getExerciseName = (id) => exerciseById.get(id)?.name || id;
+  const getExerciseName = (id) =>
+    exerciseById.get(id)?.name ||
+    String(id || "")
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
 
   // Map date -> count of PRs achieved on that date
   const prsByDate = useMemo(() => {
@@ -159,7 +163,7 @@ export default function WorkoutHistory() {
   );
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-3xl mx-auto space-y-4 animate-fadeIn">
+    <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-24 lg:pb-8 max-w-6xl mx-auto space-y-5">
       {/* ── Header ── */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -275,7 +279,7 @@ export default function WorkoutHistory() {
               </button>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {filteredSessions.map((session) => {
                 const volume = getSessionVolume(session);
                 const setsCount = (session.exercises || []).reduce(
@@ -378,8 +382,8 @@ export default function WorkoutHistory() {
 
       {/* ── TAB 3: CALENDAR VIEW ── */}
       {activeTab === "calendar" && (
-        <div className="space-y-3.5 animate-fadeIn">
-          <div className="bg-bg-surface p-4 border border-slate-800 rounded-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          <div className="lg:col-span-7 bg-bg-surface p-4 border border-slate-800 rounded-2xl">
             {/* Month navigation */}
             <div className="flex items-center justify-between mb-3.5">
               <button
@@ -467,7 +471,7 @@ export default function WorkoutHistory() {
 
           {/* Multi-session day picker */}
           {selectedCalendarDate && selectedDaySessions.length > 0 && (
-            <div className="bg-bg-surface p-4 border border-slate-800 rounded-2xl space-y-2.5 animate-fadeIn">
+            <div className="lg:col-span-5 bg-bg-surface p-4 border border-slate-800 rounded-2xl space-y-2.5">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold text-white">
                   {parseLocalDate(selectedCalendarDate).toLocaleDateString(

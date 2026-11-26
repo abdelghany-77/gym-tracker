@@ -95,7 +95,7 @@ export default function Nutrition() {
   };
 
   return (
-    <div className="px-4 pt-4 pb-24 max-w-3xl mx-auto space-y-4 animate-fadeIn">
+    <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-24 lg:pb-8 max-w-6xl mx-auto space-y-5">
       {/* ── Compact Header ── */}
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -193,14 +193,16 @@ export default function Nutrition() {
         </form>
       )}
 
-      {/* ── Macro Overview + Hydration/Vitamins (2-Col on Desktop) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-        <NutritionCard />
-        <ReminderWidget />
-      </div>
+      {/* ── Main 2-Column Desktop Grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="lg:col-span-5 space-y-4">
+          <NutritionCard />
+          <ReminderWidget />
+        </div>
 
-      {/* ── Quick Add Food / Snack ── */}
-      <div className="bg-bg-surface rounded-2xl p-4 border border-slate-800 space-y-3">
+        <div className="lg:col-span-7 space-y-4">
+          {/* ── Quick Add Food / Snack ── */}
+          <div className="bg-bg-surface rounded-2xl p-4 border border-slate-800 space-y-3">
         <div>
           <h2 className="text-xs font-bold text-white">
             Quick Add Food or Snack
@@ -359,6 +361,8 @@ export default function Nutrition() {
             </p>
           </div>
         )}
+      </div>
+        </div>
       </div>
 
       {/* Meal Plan Modal */}

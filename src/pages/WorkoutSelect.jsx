@@ -84,7 +84,7 @@ export default function WorkoutSelect() {
   };
 
   return (
-    <div className="px-4 pt-5 pb-24 max-w-3xl mx-auto space-y-5 animate-fadeIn">
+    <div className="px-4 sm:px-6 pt-5 pb-24 lg:pb-8 max-w-6xl mx-auto space-y-5">
       {/* ── Header + Quick Plan Switcher ── */}
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
@@ -186,7 +186,7 @@ export default function WorkoutSelect() {
       )}
 
       {/* ── Program Cards ── */}
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {programList.map((program) => {
           const resolvedExercises = resolveProgramExercises(program);
           const thumbnails = resolvedExercises.slice(0, 4);
