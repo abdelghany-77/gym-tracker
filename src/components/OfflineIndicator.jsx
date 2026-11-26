@@ -20,7 +20,10 @@ export default function OfflineIndicator() {
   if (!isOffline || dismissed) return null;
 
   return (
-    <div className="fixed top-0 inset-x-0 z-[90] animate-slideDown">
+    <div
+      className="fixed inset-x-0 z-[90] animate-slideDown"
+      style={{ top: "var(--safe-top)" }}
+    >
       <div className="bg-amber-500/10 backdrop-blur-md border-b border-amber-500/20 px-4 py-2 flex items-center justify-between max-w-lg mx-auto">
         <div className="flex items-center gap-2">
           <WifiOff size={14} className="text-amber-400" />

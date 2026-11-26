@@ -31,13 +31,13 @@ export default function AchievementsList() {
         <Trophy size={14} className="text-amber-400" />
         Achievements
       </h2>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {achievements.map((a) => {
           const IconComponent = achievementIcons[a.icon] || Award;
           return (
             <div
               key={a.id}
-              className={`relative group aspect-square rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-2 border transition-all ${
+              className={`relative group min-h-[104px] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center gap-2 border transition-all ${
                 a.earned
                   ? "bg-slate-800 border-slate-700 hover:border-neon-blue/50"
                   : "bg-slate-900/50 border-slate-800 opacity-50"

@@ -149,12 +149,12 @@ export default function BodyMeasurementsTab() {
       {/* ── Add Entry Form ── */}
       {showForm && (
         <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700 space-y-4 animate-fadeIn">
-          <div className="flex items-center justify-between border-b border-slate-700 pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-2">
             <span className="text-xs font-semibold text-neon-blue flex items-center gap-1.5">
               <Sparkles size={14} /> Record InBody Test Data
             </span>
             <div className="flex items-center gap-2">
-              <Calendar size={13} className="text-slate-400" />
+              <Calendar size={13} className="text-slate-400 shrink-0" />
               <input
                 type="date"
                 value={form.date}
@@ -169,38 +169,38 @@ export default function BodyMeasurementsTab() {
             <label className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider block">
               Personal Attributes
             </label>
-            <div className="grid grid-cols-3 gap-2.5">
-              <div className="bg-slate-900/90 p-2.5 rounded-xl border border-slate-700/80">
-                <label className="text-[10px] text-slate-400 block mb-1 font-medium">Height (cm)</label>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+              <div className="bg-slate-900/90 p-2 sm:p-2.5 rounded-xl border border-slate-700/80 min-w-0">
+                <label className="text-[10px] text-slate-400 block mb-1 font-medium truncate">Height (cm)</label>
                 <input
                   type="number"
                   inputMode="decimal"
                   placeholder="175"
                   value={form.height}
                   onChange={(e) => setForm({ ...form, height: e.target.value })}
-                  className="w-full bg-slate-800 text-white font-semibold rounded-lg px-2.5 py-1.5 text-xs border border-slate-700 focus:border-neon-blue focus:outline-none"
+                  className="w-full min-w-0 bg-slate-800 text-white font-semibold rounded-lg px-2 sm:px-2.5 py-1.5 text-xs border border-slate-700 focus:border-neon-blue focus:outline-none"
                 />
               </div>
-              <div className="bg-slate-900/90 p-2.5 rounded-xl border border-slate-700/80">
-                <label className="text-[10px] text-slate-400 block mb-1 font-medium">Age (years)</label>
+              <div className="bg-slate-900/90 p-2 sm:p-2.5 rounded-xl border border-slate-700/80 min-w-0">
+                <label className="text-[10px] text-slate-400 block mb-1 font-medium truncate">Age (yrs)</label>
                 <input
                   type="number"
                   inputMode="numeric"
                   placeholder="24"
                   value={form.age}
                   onChange={(e) => setForm({ ...form, age: e.target.value })}
-                  className="w-full bg-slate-800 text-white font-semibold rounded-lg px-2.5 py-1.5 text-xs border border-slate-700 focus:border-neon-purple focus:outline-none"
+                  className="w-full min-w-0 bg-slate-800 text-white font-semibold rounded-lg px-2 sm:px-2.5 py-1.5 text-xs border border-slate-700 focus:border-neon-purple focus:outline-none"
                 />
               </div>
-              <div className="bg-slate-900/90 p-2.5 rounded-xl border border-slate-700/80">
-                <label className="text-[10px] text-slate-400 block mb-1 font-medium">Weight (kg)</label>
+              <div className="bg-slate-900/90 p-2 sm:p-2.5 rounded-xl border border-slate-700/80 min-w-0">
+                <label className="text-[10px] text-slate-400 block mb-1 font-medium truncate">Weight (kg)</label>
                 <input
                   type="number"
                   inputMode="decimal"
                   placeholder="70.0"
                   value={form.weight}
                   onChange={(e) => handleWeightChange(e.target.value)}
-                  className="w-full bg-slate-800 text-white font-semibold rounded-lg px-2.5 py-1.5 text-xs border border-slate-700 focus:border-neon-green focus:outline-none"
+                  className="w-full min-w-0 bg-slate-800 text-white font-semibold rounded-lg px-2 sm:px-2.5 py-1.5 text-xs border border-slate-700 focus:border-neon-green focus:outline-none"
                 />
               </div>
             </div>
@@ -286,7 +286,7 @@ export default function BodyMeasurementsTab() {
             <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
               Tape Circumferences (cm) & Notes (Optional)
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {["chest", "waist", "arms", "thighs"].map((key) => (
                 <div key={key}>
                   <label className="text-[9px] text-slate-500 block capitalize">{key}</label>
@@ -431,17 +431,17 @@ export default function BodyMeasurementsTab() {
                   key={entry.id}
                   className="bg-slate-800/40 rounded-xl p-3 border border-slate-700/50 hover:border-slate-600 transition-all text-xs"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-slate-400 font-medium">{entry.date}</span>
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 min-w-0">
+                      <span className="text-slate-400 font-medium shrink-0">{entry.date}</span>
+                      <div className="flex items-center gap-2 min-w-0">
                         {entry.weight && <span className="font-semibold text-white">{entry.weight} kg</span>}
                         {entry.height && <span className="text-slate-400">({entry.height} cm)</span>}
                         {entry.age && <span className="text-slate-500">{entry.age} yrs</span>}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
                       {entry.skeletalMuscleMass && (
                         <span className="text-neon-blue font-medium hidden sm:inline">
                           SMM: {entry.skeletalMuscleMass}kg
@@ -497,7 +497,7 @@ export default function BodyMeasurementsTab() {
                       </div>
 
                       {(entry.chest || entry.waist || entry.arms || entry.thighs) && (
-                        <div className="col-span-2 sm:col-span-4 pt-1 flex gap-3 text-slate-400">
+                        <div className="col-span-2 sm:col-span-4 pt-1 flex flex-wrap gap-x-3 gap-y-1 text-slate-400">
                           <span className="text-slate-500">Tape:</span>
                           {entry.chest && <span>Chest: {entry.chest}cm</span>}
                           {entry.waist && <span>Waist: {entry.waist}cm</span>}

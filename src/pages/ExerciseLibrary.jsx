@@ -701,7 +701,7 @@ export default function ExerciseLibrary() {
         <div
           role="region"
           aria-label="Selected exercises for comparison"
-          className="fixed bottom-16 md:bottom-4 left-4 right-4 z-40 mx-auto max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/95 px-4 py-2.5 shadow-xl backdrop-blur-md flex items-center justify-between gap-3"
+          className="fixed bottom-[calc(4.5rem+var(--safe-bottom))] lg:bottom-4 left-4 right-4 z-40 mx-auto max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/95 px-4 py-2.5 shadow-xl backdrop-blur-md flex items-center justify-between gap-3"
         >
           <div className="min-w-0 text-xs text-slate-200">
             <span className="font-semibold text-white tabular-nums">

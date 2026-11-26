@@ -1,3 +1,5 @@
+import { downloadBlobWeb, exportFile, isNative } from "../utils/nativeBridge";
+
 // ── Schema Version ──
 export const DATABASE_VERSION = "4.0.0";
 
@@ -67,13 +69,21 @@ export const generateId = () =>
 
 // ── Backup & Restore Engine ──
 
+const safeExportMeasurements = () => {
+  try {
+    const raw = loadFromStorage("gym_measurements", { entries: [] });
+    return normalizeMeasurements(raw ?? { entries: [] });
+  } catch {
+    return { entries: [] };
+  }
+};
+
 /**
- * Export all core gym tracker data into a single timestamped JSON file
- * and trigger browser download.
+ * Build the canonical backup payload from persisted localStorage state.
  */
-export const exportUserData = () => {
+export const buildExportPayload = () => {
   const nutritionTargets = loadFromStorage("gym_nutrition", null);
-  const exportPayload = {
+  return {
     ...(isValidNutritionTargets(nutritionTargets)
       ? { gym_nutrition: nutritionTargets }
       : {}),
@@ -92,27 +102,55 @@ export const exportUserData = () => {
       age: 0,
     }),
     gym_active_program: loadFromStorage("gym_active_program", "ppl_upper"),
-    gym_measurements: normalizeMeasurements(
-      loadFromStorage("gym_measurements", { entries: [] }),
-    ),
+    gym_measurements: safeExportMeasurements(),
     exportedAt: new Date().toISOString(),
   };
+};
+
+/**
+ * Export all core gym tracker data into a single timestamped JSON file.
+ * Preserves synchronous return of the payload for tests while supporting
+ * both Web blob download and Capacitor native share/filesystem export.
+ */
+export const exportUserData = () => {
+  const exportPayload = buildExportPayload();
 
   if (typeof window !== "undefined" && typeof document !== "undefined") {
     const jsonStr = JSON.stringify(exportPayload, null, 2);
-    const blob = new Blob([jsonStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const dateStr = todayKey(); // YYYY-MM-DD
-    a.href = url;
-    a.download = `gym-backup-${dateStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const fileName = `gym-backup-${todayKey()}.json`;
+    if (isNative()) {
+      void exportFile({
+        fileName,
+        data: jsonStr,
+        mimeType: "application/json",
+        title: "GymTracker Backup",
+        dialogTitle: "Save or Share Backup (.json)",
+      });
+    } else {
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      downloadBlobWeb(blob, fileName);
+    }
   }
 
   return exportPayload;
+};
+
+/**
+ * Async backup export for interactive UI callers so native Share/Filesystem
+ * errors and cancellations are accurately awaited and reported.
+ */
+export const exportBackupFile = async () => {
+  const exportPayload = buildExportPayload();
+  const jsonStr = JSON.stringify(exportPayload, null, 2);
+  const fileName = `gym-backup-${todayKey()}.json`;
+  const result = await exportFile({
+    fileName,
+    data: jsonStr,
+    mimeType: "application/json",
+    title: "GymTracker Backup",
+    dialogTitle: "Save or Share Backup (.json)",
+  });
+  return { payload: exportPayload, fileName, jsonStr, ...result };
 };
 
 /**

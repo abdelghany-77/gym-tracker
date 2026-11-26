@@ -398,7 +398,7 @@ export default function AngleRadarChart({ showRecommendations = true }) {
 
       {/* ── Current Week vs Target Distribution toggle ── */}
       <div
-        className="flex items-center bg-bg-deep p-1 rounded-xl border border-slate-800 relative z-10 w-full gap-1"
+        className="grid grid-cols-3 bg-bg-deep p-1 rounded-xl border border-slate-800 relative z-10 w-full gap-1"
         role="group"
         aria-label="Chart data comparison"
       >
@@ -407,42 +407,42 @@ export default function AngleRadarChart({ showRecommendations = true }) {
             setDataMode("30d");
             setActiveTooltip(null);
           }}
-          className={`flex-1 min-h-9 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 whitespace-nowrap ${
+          className={`min-h-9 min-w-0 px-1.5 sm:px-2 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 ${
             dataMode === "30d"
               ? "bg-slate-800 text-white border border-slate-700"
               : "text-slate-400 hover:text-white"
           }`}
         >
           <Layers size={12} className="shrink-0" />
-          30 Days
+          <span className="truncate">30 Days</span>
         </button>
         <button
           onClick={() => {
             setDataMode("week");
             setActiveTooltip(null);
           }}
-          className={`flex-1 min-h-9 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 whitespace-nowrap ${
+          className={`min-h-9 min-w-0 px-1.5 sm:px-2 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 ${
             dataMode === "week"
               ? "bg-sky-500/15 text-sky-400 border border-sky-500/30"
               : "text-slate-400 hover:text-white"
           }`}
         >
           <Crosshair size={12} className="shrink-0" />
-          أسبوعك الحالي
+          <span className="truncate">أسبوعك الحالي</span>
         </button>
         <button
           onClick={() => {
             setDataMode("compare");
             setActiveTooltip(null);
           }}
-          className={`flex-1 min-h-9 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 whitespace-nowrap ${
+          className={`min-h-9 min-w-0 px-1.5 sm:px-2 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 ${
             dataMode === "compare"
               ? "bg-violet-500/15 text-violet-400 border border-violet-500/30"
               : "text-slate-400 hover:text-white"
           }`}
         >
           <GitCompareArrows size={12} className="shrink-0" />
-          المقارنة
+          <span className="truncate">المقارنة</span>
         </button>
       </div>
 
@@ -469,10 +469,10 @@ export default function AngleRadarChart({ showRecommendations = true }) {
       )}
 
       {/* Pure SVG Spider/Radar Chart */}
-      <div className="relative flex items-center justify-center py-2">
+      <div className="relative flex flex-col items-center justify-center py-2">
         <svg
-          viewBox={`0 0 ${svgSize} ${svgSize}`}
-          className="w-full max-w-[340px] h-auto overflow-visible select-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+          viewBox={`-42 -8 ${svgSize + 84} ${svgSize + 16}`}
+          className="w-full max-w-[380px] h-auto select-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
         >
           <defs>
             <linearGradient
@@ -660,14 +660,14 @@ export default function AngleRadarChart({ showRecommendations = true }) {
 
         {/* Compare-mode legend */}
         {dataMode === "compare" && (
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 whitespace-nowrap z-10 bg-bg-deep/90 px-3 py-1 rounded-full border border-slate-800">
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-bg-deep/90 px-3 py-1.5 rounded-full border border-slate-800 max-w-full">
             <span className="flex items-center gap-1.5 text-[10px] font-semibold text-sky-400">
-              <span className="w-2.5 h-2.5 rounded-sm bg-sky-500/70 border border-sky-400" aria-hidden="true" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-sky-500/70 border border-sky-400 shrink-0" aria-hidden="true" />
               Current Week · أسبوعك الحالي
             </span>
             <span className="flex items-center gap-1.5 text-[10px] font-semibold text-violet-400">
               <span
-                className="w-2.5 h-2.5 rounded-sm bg-violet-500/20 border border-dashed border-violet-400"
+                className="w-2.5 h-2.5 rounded-sm bg-violet-500/20 border border-dashed border-violet-400 shrink-0"
                 aria-hidden="true"
               />
               Target · المتوسط المستهدف

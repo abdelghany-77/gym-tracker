@@ -105,7 +105,7 @@ export default function Modal({
     <div
       className={`fixed inset-0 z-[100] flex ${
         position === "bottom" ? "items-end sm:items-center" : "items-center"
-      } justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn`}
+      } justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4 pt-safe pb-safe animate-fadeIn`}
       onClick={onClose}
     >
       <div
@@ -116,7 +116,7 @@ export default function Modal({
         aria-label={!title ? ariaLabel || "Dialog" : undefined}
         tabIndex={-1}
         data-modal-panel=""
-        className={`bg-slate-900 rounded-2xl border border-slate-700 w-full ${maxWidth} shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain`}
+        className={`bg-slate-900 rounded-2xl border border-slate-700 w-full ${maxWidth} shadow-2xl max-h-[calc(100dvh-2rem-var(--safe-top)-var(--safe-bottom))] overflow-y-auto overscroll-contain`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

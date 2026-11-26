@@ -163,7 +163,8 @@ export default function ImageLightbox({ src, alt = "", isOpen, onClose }) {
       <button
         type="button"
         onClick={close}
-        className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all"
+        style={{ top: "calc(1rem + var(--safe-top))" }}
+        className="absolute right-4 z-10 w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all"
         aria-label="Close image viewer"
       >
         <X size={20} />
@@ -174,7 +175,8 @@ export default function ImageLightbox({ src, alt = "", isOpen, onClose }) {
         <button
           type="button"
           onClick={resetView}
-          className="absolute top-4 left-4 z-10 w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all"
+          style={{ top: "calc(1rem + var(--safe-top))" }}
+          className="absolute left-4 z-10 w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all"
           aria-label="Reset zoom"
         >
           <RotateCcw size={18} />
@@ -196,7 +198,10 @@ export default function ImageLightbox({ src, alt = "", isOpen, onClose }) {
       />
 
       {/* Zoom hint */}
-      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[11px] text-white/60 font-medium text-center px-4">
+      <p
+        style={{ bottom: "calc(1.5rem + var(--safe-bottom))" }}
+        className="absolute left-1/2 -translate-x-1/2 w-full max-w-xs text-[11px] text-white/60 font-medium text-center px-4"
+      >
         Pinch or double-tap to zoom · Drag to pan
       </p>
     </div>,

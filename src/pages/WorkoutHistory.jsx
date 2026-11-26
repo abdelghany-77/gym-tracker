@@ -524,11 +524,11 @@ export default function WorkoutHistory() {
       {/* ── Selected Session Modal ── */}
       {selectedSession && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 pt-safe pb-safe animate-fadeIn"
           onClick={() => setSelectedSession(null)}
         >
           <div
-            className="bg-bg-surface rounded-2xl w-full max-w-md border border-slate-700 overflow-hidden shadow-2xl p-4 space-y-3.5"
+            className="bg-bg-surface rounded-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto border border-slate-700 shadow-2xl p-4 space-y-3.5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-800">

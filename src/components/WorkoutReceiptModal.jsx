@@ -14,6 +14,33 @@ import {
 import useWorkoutStore from "../store/workoutStore";
 import { exercisesDatabase } from "../data/exercises";
 import { getAngleLabel } from "../utils/angleUtils";
+import { exportFile, isNative } from "../utils/nativeBridge";
+
+const drawRoundRect = (ctx, x, y, w, h, r) => {
+  if (typeof ctx.roundRect === "function") {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+};
+
+const fitCanvasText = (ctx, str, maxWidth) => {
+  const text = String(str || "");
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let clipped = text;
+  while (clipped.length > 1 && ctx.measureText(`${clipped}…`).width > maxWidth) {
+    clipped = clipped.slice(0, -1);
+  }
+  return `${clipped}…`;
+};
 
 export default function WorkoutReceiptModal({
   isOpen,
@@ -157,7 +184,7 @@ export default function WorkoutReceiptModal({
 
     // Card Surface
     ctx.fillStyle = "#121824";
-    ctx.roundRect(24, 24, width - 48, height - 48, 28);
+    drawRoundRect(ctx, 24, 24, width - 48, height - 48, 28);
     ctx.fill();
 
     // Glowing Cyber Borders
@@ -167,7 +194,7 @@ export default function WorkoutReceiptModal({
     gradBorder.addColorStop(1, "#10B981");
     ctx.strokeStyle = gradBorder;
     ctx.lineWidth = 3;
-    ctx.roundRect(24, 24, width - 48, height - 48, 28);
+    drawRoundRect(ctx, 24, 24, width - 48, height - 48, 28);
     ctx.stroke();
 
     // Top Cyber Banner
@@ -186,7 +213,7 @@ export default function WorkoutReceiptModal({
     // Title & Date
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "bold 32px system-ui, sans-serif";
-    ctx.fillText(metrics.title, 50, 150);
+    ctx.fillText(fitCanvasText(ctx, metrics.title, width - 100), 50, 150);
 
     ctx.fillStyle = "#94A3B8";
     ctx.font = "14px system-ui, sans-serif";
@@ -213,7 +240,7 @@ export default function WorkoutReceiptModal({
     stats.forEach((st, idx) => {
       const bx = 50 + idx * (boxW + 16);
       ctx.fillStyle = "#0B0F17";
-      ctx.roundRect(bx, statY, boxW, 100, 16);
+      drawRoundRect(ctx, bx, statY, boxW, 100, 16);
       ctx.fill();
       ctx.strokeStyle = "rgba(51, 65, 85, 0.8)";
       ctx.stroke();
@@ -224,7 +251,7 @@ export default function WorkoutReceiptModal({
 
       ctx.fillStyle = st.color;
       ctx.font = "bold 20px system-ui, sans-serif";
-      ctx.fillText(st.val, bx + 16, statY + 58);
+      ctx.fillText(fitCanvasText(ctx, st.val, boxW - 32), bx + 16, statY + 58);
 
       ctx.fillStyle = "#94A3B8";
       ctx.font = "11px system-ui, sans-serif";
@@ -242,19 +269,24 @@ export default function WorkoutReceiptModal({
       metrics.newPRs.slice(0, 4).forEach((pr) => {
         currentY += 32;
         ctx.fillStyle = "rgba(245, 158, 11, 0.12)";
-        ctx.roundRect(50, currentY - 22, width - 100, 38, 12);
+        drawRoundRect(ctx, 50, currentY - 22, width - 100, 38, 12);
         ctx.fill();
         ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
         ctx.stroke();
 
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "bold 14px system-ui, sans-serif";
-        ctx.fillText(pr.name, 66, currentY);
-
         ctx.fillStyle = "#FCD34D";
         ctx.font = "bold 15px system-ui, sans-serif";
         const prStr = `${pr.newWeight} kg${pr.diff ? ` (+${pr.diff} kg)` : " (NEW PR)"}`;
-        ctx.fillText(prStr, width - 66 - ctx.measureText(prStr).width, currentY);
+        const prWidth = ctx.measureText(prStr).width;
+        ctx.fillText(prStr, width - 66 - prWidth, currentY);
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "bold 14px system-ui, sans-serif";
+        ctx.fillText(
+          fitCanvasText(ctx, pr.name, width - 148 - prWidth),
+          66,
+          currentY,
+        );
       });
     } else {
       currentY += 28;
@@ -265,13 +297,14 @@ export default function WorkoutReceiptModal({
 
     // Angles Hit Section
     currentY += 50;
+    const footerY = height - 90;
     ctx.fillStyle = "#00F0FF";
     ctx.font = "bold 16px system-ui, sans-serif";
     ctx.fillText("◈ BIOMECHANICAL ANGLES HIT", 50, currentY);
 
     currentY += 24;
     let badgeX = 50;
-    metrics.anglesHit.forEach((angle) => {
+    for (const angle of metrics.anglesHit) {
       const label = getAngleLabel(angle).en;
       ctx.font = "12px system-ui, sans-serif";
       const txtWidth = ctx.measureText(label).width;
@@ -281,9 +314,10 @@ export default function WorkoutReceiptModal({
         badgeX = 50;
         currentY += 34;
       }
+      if (currentY > footerY - 28) break;
 
       ctx.fillStyle = "rgba(0, 240, 255, 0.1)";
-      ctx.roundRect(badgeX, currentY - 18, bW, 26, 13);
+      drawRoundRect(ctx, badgeX, currentY - 18, bW, 26, 13);
       ctx.fill();
       ctx.strokeStyle = "rgba(0, 240, 255, 0.35)";
       ctx.stroke();
@@ -292,10 +326,9 @@ export default function WorkoutReceiptModal({
       ctx.fillText(label, badgeX + 12, currentY);
 
       badgeX += bW + 8;
-    });
+    }
 
     // Bottom Barcode & Footer
-    const footerY = height - 90;
     ctx.strokeStyle = "rgba(51, 65, 85, 0.6)";
     ctx.beginPath();
     ctx.moveTo(50, footerY);
@@ -332,63 +365,65 @@ export default function WorkoutReceiptModal({
   };
 
   const handleShareOrSave = async () => {
+    if (isExporting) return;
     try {
       setIsExporting(true);
       const canvas = renderReceiptToCanvas();
+      const dateTag = new Date().toISOString().split("T")[0];
+      const fileName = `workout-receipt-${dateTag}.png`;
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          setIsExporting(false);
-          return;
+      const dataUrl = canvas.toDataURL("image/png");
+      const base64 = dataUrl.split(",")[1] || "";
+      if (!base64) {
+        throw new Error("Could not encode receipt image.");
+      }
+
+      if (isNative()) {
+        const result = await exportFile({
+          fileName,
+          data: base64,
+          isBase64: true,
+          mimeType: "image/png",
+          title: `${metrics.title} — Workout Receipt`,
+          dialogTitle: "Save or Share Receipt (.png)",
+        });
+        if (result.status === "shared") {
+          setExportNotice("Receipt shared / saved!");
+        } else if (result.status === "cancelled") {
+          setExportNotice("Receipt saved in app storage.");
         }
-
-        const dateTag = new Date().toISOString().split("T")[0];
-        const fileName = `workout-receipt-${dateTag}.png`;
-        const file = new File([blob], fileName, { type: "image/png" });
-
-        // If Web Share API is available with file support
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              title: `${metrics.title} — Workout Receipt`,
-              text: `Crushed ${metrics.title}! Lifted ${metrics.totalVolumeKg.toLocaleString()} kg across ${metrics.totalSets} sets.`,
-              files: [file],
-            });
-            setExportNotice("Receipt shared successfully!");
-            setTimeout(() => setExportNotice(null), 3000);
-            setIsExporting(false);
-            return;
-          } catch (shareErr) {
-            if (shareErr.name === "AbortError") {
-              setIsExporting(false);
-              return;
-            }
-          }
-        }
-
-        // Fallback: direct download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        setExportNotice("Receipt saved to downloads!");
         setTimeout(() => setExportNotice(null), 3500);
         setIsExporting(false);
-      }, "image/png");
+        return;
+      }
+
+      const result = await exportFile({
+        fileName,
+        data: base64,
+        isBase64: true,
+        mimeType: "image/png",
+        title: `${metrics.title} — Workout Receipt`,
+        text: `Crushed ${metrics.title}! Lifted ${metrics.totalVolumeKg.toLocaleString()} kg across ${metrics.totalSets} sets.`,
+        preferShareOnWeb: true,
+      });
+      if (result.status === "shared") {
+        setExportNotice("Receipt shared successfully!");
+      } else if (result.status === "downloaded") {
+        setExportNotice("Receipt saved to downloads!");
+      }
+      setTimeout(() => setExportNotice(null), 3500);
+      setIsExporting(false);
     } catch (err) {
       console.error("Receipt export error:", err);
+      setExportNotice("Could not export receipt. Please try again.");
+      setTimeout(() => setExportNotice(null), 3500);
       setIsExporting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl bg-[#0B0F17] border border-[#00F0FF]/40 shadow-[0_0_40px_rgba(0,240,255,0.2)] p-5 text-white space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-safe pb-safe bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl bg-[#0B0F17] border border-[#00F0FF]/40 shadow-[0_0_40px_rgba(0,240,255,0.2)] p-4 sm:p-5 text-white space-y-5">
         {/* Top Glow Ambient */}
         <div className="absolute top-0 right-0 w-44 h-44 bg-[#00F0FF]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-44 h-44 bg-[#10B981]/10 rounded-full blur-3xl pointer-events-none" />
@@ -445,16 +480,16 @@ export default function WorkoutReceiptModal({
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-[#0B0F17] rounded-xl p-2.5 border border-slate-800">
+            <div className="bg-[#0B0F17] rounded-xl p-2 sm:p-2.5 border border-slate-800 min-w-0">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Volume</p>
-              <p className="text-sm font-black text-[#00F0FF] mt-0.5 tabular-nums">
+              <p className="text-sm font-black text-[#00F0FF] mt-0.5 tabular-nums truncate">
                 {metrics.totalVolumeKg.toLocaleString()}
                 <span className="text-[10px] font-normal text-slate-400 ml-0.5">kg</span>
               </p>
-              <p className="text-[9px] text-slate-500 font-mono mt-0.5 tabular-nums">{metrics.volumeTons} tons</p>
+              <p className="text-[9px] text-slate-500 font-mono mt-0.5 tabular-nums truncate">{metrics.volumeTons} tons</p>
             </div>
 
-            <div className="bg-[#0B0F17] rounded-xl p-2.5 border border-slate-800">
+            <div className="bg-[#0B0F17] rounded-xl p-2 sm:p-2.5 border border-slate-800 min-w-0">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Sets</p>
               <p className="text-sm font-black text-[#10B981] mt-0.5 tabular-nums">
                 {metrics.totalSets}
@@ -462,12 +497,12 @@ export default function WorkoutReceiptModal({
               <p className="text-[9px] text-slate-500 font-mono mt-0.5">Working</p>
             </div>
 
-            <div className="bg-[#0B0F17] rounded-xl p-2.5 border border-slate-800">
+            <div className="bg-[#0B0F17] rounded-xl p-2 sm:p-2.5 border border-slate-800 min-w-0">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Reps</p>
               <p className="text-sm font-black text-neon-purple mt-0.5 tabular-nums">
                 {metrics.totalReps}
               </p>
-              <p className="text-[9px] text-slate-500 font-mono mt-0.5 tabular-nums">
+              <p className="text-[9px] text-slate-500 font-mono mt-0.5 tabular-nums truncate">
                 Avg {metrics.avgIntensity.toFixed(1)} kg/set
               </p>
             </div>

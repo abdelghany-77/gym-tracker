@@ -330,7 +330,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => setEditingDayIndex(day.idx)}
                   aria-label={`${day.label}: ${day.fullLabel}${day.completed ? ", completed" : ""}`}
-                  className={`min-h-14 rounded-xl border px-0.5 sm:px-1.5 py-2 flex flex-col items-center justify-between transition-colors ${
+                  className={`min-h-14 min-w-0 rounded-xl border px-0.5 sm:px-1.5 py-2 flex flex-col items-center justify-between transition-colors ${
                     day.isToday
                       ? "border-sky-400/60 bg-sky-500/10 text-white"
                       : day.completed
@@ -394,7 +394,7 @@ export default function Dashboard() {
 
             {showAnalytics && (
               <div className="p-4 pt-2 border-t border-slate-800 space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs font-semibold text-white">
                     Monthly Consistency
                   </span>

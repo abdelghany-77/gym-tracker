@@ -132,7 +132,7 @@ export default function PlateCalculatorModal({
         </div>
 
         {/* Bar weight selector */}
-        <div className="grid grid-cols-4 gap-1.5 rounded-xl border border-slate-800 bg-bg-deep p-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 rounded-xl border border-slate-800 bg-bg-deep p-1">
           {BAR_OPTIONS.map((opt) => (
             <button
               key={opt.id}
@@ -155,7 +155,7 @@ export default function PlateCalculatorModal({
           <p className="text-[11px] text-slate-400 mb-3 text-center">
             Load on <strong className="text-white">each side</strong> of the bar
           </p>
-          <div className="flex items-center justify-center gap-1 min-h-16">
+          <div className="flex items-center justify-center gap-1 min-h-16 overflow-x-auto pb-1">
             {/* Bar shaft + collar */}
             <div className="h-2.5 w-10 rounded-l bg-slate-500" />
             <div className="h-6 w-2 rounded-sm bg-slate-400" />

@@ -9,6 +9,8 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
+import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 
 /** True when running inside the Capacitor native shell. */
 export const isNative = () => Capacitor.isNativePlatform();
@@ -458,3 +460,130 @@ export const triggerNotification = async (type = "SUCCESS") => {
     /* web vibration unsupported */
   }
 };
+
+/* ══════════════════ Cross-Platform File Export / Share ══════════════════ */
+
+const isShareCancelled = (err) => {
+  const msg = String(err?.message || err || "").toLowerCase();
+  return (
+    err?.name === "AbortError" ||
+    msg.includes("cancel") ||
+    msg.includes("dismiss")
+  );
+};
+
+/**
+ * Trigger an anchor download in web browsers with delayed URL revocation so
+ * slow mobile browsers do not abort before reading the blob.
+ */
+export const downloadBlobWeb = (blob, fileName) => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return false;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => {
+    try {
+      URL.revokeObjectURL(url);
+    } catch {
+      /* ignore */
+    }
+  }, 1000);
+  return true;
+};
+
+/**
+ * Export a text or binary (base64) file reliably on BOTH Capacitor Android/iOS
+ * (via Filesystem + native Share sheet) and Web/PWA (Web Share API or blob download).
+ *
+ * @returns {Promise<{ status: "shared" | "downloaded" | "saved" | "cancelled", uri?: string }>}
+ */
+export const exportFile = async ({
+  fileName,
+  data,
+  mimeType = "application/octet-stream",
+  isBase64 = false,
+  title = fileName,
+  text,
+  dialogTitle,
+  preferShareOnWeb = false,
+}) => {
+  if (isNative()) {
+    const writeOpts = {
+      path: fileName,
+      data,
+      directory: Directory.Cache,
+      recursive: true,
+      ...(isBase64 ? {} : { encoding: Encoding.UTF8 }),
+    };
+    const { uri } = await Filesystem.writeFile(writeOpts);
+
+    // Also keep a persistent copy in app-owned Data/Backups for recovery
+    try {
+      await Filesystem.writeFile({
+        ...writeOpts,
+        path: `Backups/${fileName}`,
+        directory: Directory.Data,
+      });
+    } catch {
+      /* non-fatal — Cache uri is ready for Share */
+    }
+
+    try {
+      await Share.share({
+        title,
+        files: [uri],
+        dialogTitle: dialogTitle || title,
+      });
+      return { status: "shared", uri };
+    } catch (shareErr) {
+      if (isShareCancelled(shareErr)) {
+        return { status: "cancelled", uri };
+      }
+      throw shareErr;
+    }
+  }
+
+  // Web / PWA path
+  let blob;
+  if (isBase64) {
+    const byteString = atob(data);
+    const bytes = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) {
+      bytes[i] = byteString.charCodeAt(i);
+    }
+    blob = new Blob([bytes], { type: mimeType });
+  } else {
+    blob = new Blob([data], { type: mimeType });
+  }
+
+  if (
+    preferShareOnWeb &&
+    typeof navigator !== "undefined" &&
+    typeof File !== "undefined" &&
+    navigator.canShare
+  ) {
+    const file = new File([blob], fileName, { type: mimeType });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ title, text, files: [file] });
+        return { status: "shared" };
+      } catch (err) {
+        if (err?.name === "AbortError") {
+          return { status: "cancelled" };
+        }
+        /* fall through to direct blob download */
+      }
+    }
+  }
+
+  downloadBlobWeb(blob, fileName);
+  return { status: "downloaded" };
+};
+

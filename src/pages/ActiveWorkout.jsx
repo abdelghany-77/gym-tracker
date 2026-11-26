@@ -280,21 +280,24 @@ export default function ActiveWorkout() {
   return (
     <div className="max-w-6xl mx-auto min-w-0 bg-bg-deep">
       {/* ═══ COMPACT STICKY WORKOUT HEADER ═══ */}
-      <header className="sticky top-0 z-30 bg-bg-deep/95 backdrop-blur-md border-b border-slate-800/80 px-3 sm:px-6 pt-2 pb-2 space-y-1.5">
+      <header
+        className="sticky z-30 bg-bg-deep/95 backdrop-blur-md border-b border-slate-800/80 px-2.5 sm:px-6 pt-2 pb-2 space-y-1.5"
+        style={{ top: "var(--safe-top)" }}
+      >
         {/* Row 1: Back, Program + Progress, Timer, Utilities */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <button
             type="button"
             onClick={() => navigate("/workout")}
-            className="w-9 h-9 shrink-0 rounded-xl bg-bg-surface border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors text-slate-300"
+            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-xl bg-bg-surface border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors text-slate-300"
             aria-label="Go back"
           >
             <ArrowLeft size={16} />
           </button>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-sm font-semibold tracking-tight text-white truncate">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <h1 className="text-xs sm:text-sm font-semibold tracking-tight text-white truncate">
                 {activeWorkout.programName || "Active Routine"}
               </h1>
               <span className="text-[11px] text-slate-400 font-mono tabular-nums shrink-0">
@@ -310,10 +313,10 @@ export default function ActiveWorkout() {
           </div>
 
           <div
-            className="flex items-center gap-1 text-xs font-mono font-semibold tabular-nums text-sky-400 shrink-0"
+            className="flex items-center gap-1 text-[11px] sm:text-xs font-mono font-semibold tabular-nums text-sky-400 shrink-0"
             aria-label="Workout elapsed time"
           >
-            <Clock size={13} aria-hidden="true" />
+            <Clock size={12} aria-hidden="true" />
             <span>{formatTime(elapsed)}</span>
           </div>
 
@@ -322,7 +325,7 @@ export default function ActiveWorkout() {
             onClick={() => setShowHydrationMenu((open) => !open)}
             aria-label="Hydration reminder settings"
             title={`Hydration reminder: ${hydrationIntervalMinutes ? `every ${hydrationIntervalMinutes} min` : "Off"}`}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
+            className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
               hydrationIntervalMinutes
                 ? "text-sky-400 hover:bg-sky-500/10"
                 : "text-slate-400 hover:bg-slate-800 hover:text-sky-400"
@@ -335,7 +338,7 @@ export default function ActiveWorkout() {
             onClick={() => setShowCoverage(true)}
             aria-label="Training coverage"
             title="Training coverage"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
           >
             <Layers size={15} aria-hidden="true" />
           </button>
@@ -345,16 +348,16 @@ export default function ActiveWorkout() {
               onClick={() => setShowConfirmFinish(true)}
               aria-label="Finish session early"
               title="Finish and save workout"
-              className="h-9 px-2.5 shrink-0 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-colors flex items-center gap-1 text-xs font-semibold"
+              className="h-8 sm:h-9 px-2 sm:px-2.5 shrink-0 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-colors flex items-center gap-1 text-xs font-semibold"
             >
               <Flag size={13} aria-hidden="true" />
-              <span className="hidden xs:inline sm:inline">Finish</span>
+              <span className="hidden sm:inline">Finish</span>
             </button>
           )}
           <button
             type="button"
             onClick={() => setShowConfirmCancel(true)}
-            className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center hover:bg-rose-500/10 hover:text-rose-400 transition-colors text-slate-400"
+            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-xl flex items-center justify-center hover:bg-rose-500/10 hover:text-rose-400 transition-colors text-slate-400"
             aria-label="Cancel workout"
           >
             <X size={16} />
@@ -570,7 +573,10 @@ export default function ActiveWorkout() {
       {/* ═══ DIALOGS & MODALS ═══ */}
       {/* Hydration toast (subtle, non-intrusive) */}
       {hydrationToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slideUp pointer-events-none px-4">
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-50 animate-slideUp pointer-events-none px-4 w-full max-w-sm"
+          style={{ bottom: "calc(5.5rem + var(--safe-bottom))" }}
+        >
           <div className="flex items-center gap-2.5 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-cyan-500/30 px-4 py-2.5 shadow-2xl shadow-black/50">
             <Droplets size={16} className="text-cyan-400 shrink-0" aria-hidden="true" />
             <p className="text-xs text-white font-medium">

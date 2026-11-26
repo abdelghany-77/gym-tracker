@@ -196,7 +196,10 @@ export default function NotificationManager() {
   }, [showNotification, pushBackgroundSync]);
 
   return (
-    <div className="fixed top-3 inset-x-3 sm:left-auto sm:right-4 sm:w-96 z-[100] pointer-events-none flex flex-col gap-2.5">
+    <div
+      className="fixed inset-x-3 sm:left-auto sm:right-4 sm:w-96 z-[100] pointer-events-none flex flex-col gap-2.5"
+      style={{ top: "calc(0.75rem + var(--safe-top))" }}
+    >
       {toasts.map((t) => (
         <Toast
           key={t.id}

@@ -389,7 +389,7 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
             <div className="p-2.5 sm:p-3 space-y-1.5 flex-1">
               {/* Compact Active Set Weight Nudge Row */}
               {activeSetIdx >= 0 && (
-                <div className="flex items-center justify-between gap-2 pb-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
                   <span className="text-[11px] text-slate-400">
                     Set{" "}
                     <strong className="text-white tabular-nums">
@@ -404,7 +404,7 @@ function ExerciseCard({ exerciseIndex, exerciseData, onAllSetsComplete }) {
                         type="button"
                         onClick={() => handleNudgeActiveWeight(delta)}
                         aria-label={`Adjust set ${activeSetIdx + 1} weight by ${delta > 0 ? `+${delta}` : delta} kg`}
-                        className="min-h-7 min-w-9 rounded-lg border border-slate-700/80 bg-bg-deep px-1.5 text-[11px] font-mono font-medium text-slate-200 hover:bg-slate-800 active:scale-95 transition-all tabular-nums"
+                        className="min-h-7 min-w-8 sm:min-w-9 rounded-lg border border-slate-700/80 bg-bg-deep px-1.5 text-[11px] font-mono font-medium text-slate-200 hover:bg-slate-800 active:scale-95 transition-all tabular-nums"
                       >
                         {delta > 0 ? `+${delta}` : delta}
                       </button>

@@ -20,6 +20,14 @@
   --color-vivid-purple: #a855f7;
 }
 
+/* ── Safe-area helpers (Android 15/16 edge-to-edge + Capacitor SystemBars + iOS) ── */
+:root {
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --safe-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+  --safe-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+}
+
 /* ── Global resets ── */
 * {
   -webkit-tap-highlight-color: transparent;
@@ -30,12 +38,14 @@ html {
   color-scheme: dark;
   scroll-padding-bottom: 6rem;
   touch-action: pan-x pan-y;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   touch-action: pan-x pan-y;
+  overflow-x: clip;
 }
 
 button:not(:disabled),
@@ -53,20 +63,28 @@ button:disabled {
 }
 
 .app-main {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  padding-top: var(--safe-top);
+  padding-bottom: calc(5rem + var(--safe-bottom));
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 .mobile-nav {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 .pt-safe {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--safe-top);
 }
 
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--safe-bottom);
+}
+
+.top-safe {
+  top: var(--safe-top);
 }
 
 .exercise-image {

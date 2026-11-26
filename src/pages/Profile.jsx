@@ -98,11 +98,11 @@ export default function Profile() {
             {/* User Stats */}
             <div className="lg:col-span-7 bg-bg-surface rounded-2xl p-5 border border-slate-800 space-y-4">
               <h2 className="text-sm font-semibold text-white">Your Stats</h2>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="min-w-0">
                   <label
                     htmlFor="profile-weight"
-                    className="text-xs text-slate-400 mb-1 block"
+                    className="text-xs text-slate-400 mb-1 block truncate"
                   >
                     Weight (kg)
                   </label>
@@ -185,9 +185,9 @@ export default function Profile() {
               {/* TDEE & Suggested Macros */}
               {suggestedEnergy && suggestedMacros && (
                 <div className="bg-bg-deep rounded-xl p-3.5 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Flame size={14} className="text-amber-400" />
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Flame size={14} className="text-amber-400 shrink-0" />
                       <h3 className="text-xs font-semibold text-white">
                         Daily Energy &amp; Suggested Macros
                       </h3>
@@ -195,7 +195,7 @@ export default function Profile() {
                     <button
                       type="button"
                       onClick={handleApplyTargets}
-                      className="min-h-9 px-3 rounded-lg bg-slate-100 text-slate-950 text-[11px] font-bold hover:bg-white transition-colors inline-flex items-center gap-1"
+                      className="min-h-9 px-3 rounded-lg bg-slate-100 text-slate-950 text-[11px] font-bold hover:bg-white transition-colors inline-flex items-center gap-1 shrink-0"
                     >
                       {appliedTargets ? (
                         <>
@@ -207,22 +207,22 @@ export default function Profile() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-bg-surface border border-slate-800 py-2 px-1.5">
-                      <p className="text-[10px] text-slate-400">BMR</p>
-                      <p className="text-xs font-bold font-mono tabular-nums text-white mt-0.5">
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                    <div className="rounded-lg bg-bg-surface border border-slate-800 py-2 px-1 sm:px-1.5 min-w-0">
+                      <p className="text-[10px] text-slate-400 truncate">BMR</p>
+                      <p className="text-[11px] sm:text-xs font-bold font-mono tabular-nums text-white mt-0.5 truncate">
                         {suggestedEnergy.bmr} kcal
                       </p>
                     </div>
-                    <div className="rounded-lg bg-bg-surface border border-slate-800 py-2 px-1.5">
-                      <p className="text-[10px] text-slate-400">Maintenance</p>
-                      <p className="text-xs font-bold font-mono tabular-nums text-white mt-0.5">
+                    <div className="rounded-lg bg-bg-surface border border-slate-800 py-2 px-1 sm:px-1.5 min-w-0">
+                      <p className="text-[10px] text-slate-400 truncate">Maintenance</p>
+                      <p className="text-[11px] sm:text-xs font-bold font-mono tabular-nums text-white mt-0.5 truncate">
                         {suggestedEnergy.tdee} kcal
                       </p>
                     </div>
-                    <div className="rounded-lg bg-bg-surface border border-slate-800 py-2 px-1.5">
-                      <p className="text-[10px] text-slate-400">Lean Bulk</p>
-                      <p className="text-xs font-bold font-mono tabular-nums text-sky-400 mt-0.5">
+                    <div className="rounded-lg bg-bg-surface border border-slate-800 py-2 px-1 sm:px-1.5 min-w-0">
+                      <p className="text-[10px] text-slate-400 truncate">Lean Bulk</p>
+                      <p className="text-[11px] sm:text-xs font-bold font-mono tabular-nums text-sky-400 mt-0.5 truncate">
                         {suggestedEnergy.surplus} kcal
                       </p>
                     </div>

@@ -168,17 +168,17 @@ export default function ActiveExerciseMediaPanel({
                           type="button"
                           onClick={goPrev}
                           aria-label="Previous image slide"
-                          className="absolute left-1 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
+                          className="absolute left-1 top-1/2 -translate-y-1/2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
                         >
-                          <ChevronLeft size={16} />
+                          <ChevronLeft size={14} />
                         </button>
                         <button
                           type="button"
                           onClick={goNext}
                           aria-label="Next image slide"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/85 text-white hover:bg-slate-800 transition-colors"
                         >
-                          <ChevronRight size={16} />
+                          <ChevronRight size={14} />
                         </button>
                       </>
                     )}

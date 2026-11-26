@@ -17,6 +17,11 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
   },
   plugins: {
+    SystemBars: {
+      insetsHandling: "css",
+      initialViewportFitValueHint: "cover",
+      style: "DARK",
+    },
     // Dark, icon-centered splash so there is no white flash on cold launch.
     SplashScreen: {
       launchShowDuration: 1200,

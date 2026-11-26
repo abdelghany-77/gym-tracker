@@ -123,7 +123,7 @@ export default function ActivityChart({
         <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-2 sm:px-3 py-2 sm:py-2.5 min-w-0">
           <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-400">
             <CalendarCheck2 size={11} className="text-emerald-400 shrink-0" />
-            <span className="whitespace-nowrap">Active Days</span>
+            <span className="truncate">Active Days</span>
           </div>
           <p className="text-sm sm:text-base font-bold font-mono tabular-nums text-white mt-0.5">
             {summary.activeDays}
@@ -136,7 +136,7 @@ export default function ActivityChart({
         <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-2 sm:px-3 py-2 sm:py-2.5 min-w-0">
           <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-400">
             <Activity size={11} className="text-sky-400 shrink-0" />
-            <span className="whitespace-nowrap">Sessions</span>
+            <span className="truncate">Sessions</span>
           </div>
           <p className="text-sm sm:text-base font-bold font-mono tabular-nums text-white mt-0.5">
             {summary.totalSessions}
@@ -146,7 +146,7 @@ export default function ActivityChart({
         <div className="rounded-xl bg-bg-deep border border-slate-800/90 px-2 sm:px-3 py-2 sm:py-2.5 min-w-0">
           <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-400">
             <Flame size={11} className="text-amber-400 shrink-0" />
-            <span className="whitespace-nowrap">Best Streak</span>
+            <span className="truncate">Best Streak</span>
           </div>
           <p className="text-sm sm:text-base font-bold font-mono tabular-nums text-white mt-0.5">
             {summary.bestStreak}d

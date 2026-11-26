@@ -38,7 +38,13 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-dvh w-full overflow-x-hidden bg-bg-deep text-white">
+    <div className="min-h-dvh w-full overflow-x-clip bg-bg-deep text-white">
+      {/* Status-bar shield prevents scrolled content from bleeding behind system icons */}
+      <div
+        className="fixed top-0 inset-x-0 z-40 bg-bg-deep pointer-events-none"
+        style={{ height: "var(--safe-top)" }}
+        aria-hidden="true"
+      />
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
@@ -47,7 +53,7 @@ export default function Layout() {
       <NotificationManager />
 
       {/* ── Desktop Sidebar (>= lg) ── */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 flex-col border-r border-slate-800 bg-bg-surface p-4 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 flex-col border-r border-slate-800 bg-bg-surface p-4 pt-[calc(1rem+var(--safe-top))] pb-[calc(1rem+var(--safe-bottom))] lg:flex">
         <NavLink
           to="/"
           className="mb-6 flex items-center gap-3 px-2 py-3 rounded-xl hover:bg-slate-800/40 transition-colors"

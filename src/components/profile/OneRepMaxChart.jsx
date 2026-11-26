@@ -105,7 +105,7 @@ export default function OneRepMaxChart() {
         <select
           value={selectedExercise}
           onChange={(e) => setSelectedExercise(e.target.value)}
-          className="bg-slate-800 text-sm text-slate-300 rounded-xl px-3 py-1.5 border border-slate-700 outline-none focus:border-neon-blue"
+          className="w-full sm:w-auto max-w-full bg-slate-800 text-sm text-slate-300 rounded-xl px-3 py-1.5 border border-slate-700 outline-none focus:border-neon-blue"
         >
           {exercisesWithData.map((e) => (
             <option key={e.id} value={e.id}>
@@ -123,11 +123,11 @@ export default function OneRepMaxChart() {
           </p>
         </div>
       ) : (
-        <div className="w-full h-56 -ml-4">
+        <div className="w-full h-56 overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              margin={{ top: 10, right: 10, left: -14, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="colorOrm" x1="0" y1="0" x2="0" y2="1">
